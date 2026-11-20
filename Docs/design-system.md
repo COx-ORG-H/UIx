@@ -144,6 +144,20 @@ cell carries the flex floor + truncate:
 </table>
 ```
 
+**Column resize** (roadmap #11; React: `DataWorkspace` `onColumnWidthsChange`). A person can resize a column
+three ways, all on the grip at the header's end edge (`.uix-table__resize`, a 24 px target inside the header):
+drag it; focus it (a `separator` with `aria-valuenow` / min / max in px) and press ← / → for 8 px, Shift + an
+arrow for the next stop of the width scale above (92, 112, 132, 176, 208, 240, 340, then every 64 px), Home /
+End for the floor and the cap (960 px); or click it without dragging, which opens a width field with − / +,
+*Fit to content* and *Default width*, the single-pointer way WCAG 2.5.7 asks for. A double-click fits the
+widest content on screen. The floor is the column's `minWidth`, else `--uix-col-title-min` for the
+`.uix-col--flex` title and `--uix-col-w-xs` for the rest. The product persists the widths **when a resize
+ends**, never per pointer move: `onColumnWidthsChange` fires once then, with the `ViewState.widths` that
+`serializeView` writes into the URL (`widths=status:176,title:400`) and a saved view stores. Resize uses
+the fixed layout. With a flex column, that column takes the slack and nothing else moves; without one, the
+first resize holds every column at its drawn width (all of them are in the widths), and the table becomes
+exactly as wide as its columns. Frozen columns stay frozen; the cards step has no grips.
+
 **A shown date or time is one token** (HAR-3094). `RelativeTime`, `DateTime` and `DateTimeRange` render
 `<time class="uix-time">`, which never breaks inside itself and has tabular digits; a range breaks only after
 its dash and prints a one-day date once ("11.11.2026 09:00 – 12:00"). The date part follows the date fields'

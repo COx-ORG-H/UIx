@@ -122,9 +122,9 @@
       "brotli": 1061
     },
     "styles/components/command-palette.css": {
-      "raw": 3263,
-      "gzip": 1190,
-      "brotli": 976
+      "raw": 8412,
+      "gzip": 2542,
+      "brotli": 2157
     },
     "styles/components/comments.css": {
       "raw": 3304,
@@ -157,9 +157,9 @@
       "brotli": 1186
     },
     "styles/components/data-workspace.css": {
-      "raw": 14073,
-      "gzip": 3688,
-      "brotli": 3138
+      "raw": 15996,
+      "gzip": 4153,
+      "brotli": 3563
     },
     "styles/components/date-picker.css": {
       "raw": 7484,
@@ -527,9 +527,9 @@
       "brotli": 1804
     },
     "styles/components/table.css": {
-      "raw": 27202,
-      "gzip": 7179,
-      "brotli": 6178
+      "raw": 28824,
+      "gzip": 7565,
+      "brotli": 6520
     },
     "styles/components/tabs.css": {
       "raw": 7115,

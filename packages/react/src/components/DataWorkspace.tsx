@@ -1,12 +1,13 @@
 "use client";
 
-import { memo, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, memo, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type {
   CSSProperties, FocusEvent as ReactFocusEvent, HTMLAttributes, KeyboardEvent as ReactKeyboardEvent,
   MouseEvent as ReactMouseEvent, ReactNode,
 } from 'react';
 import { cx } from '../cx.js';
-import { toggleSort } from '../table-engine.js';
+import { COLUMN_WIDTH_MAX, COLUMN_WIDTH_MIN, COLUMN_WIDTH_SCALE, fitColumnWidth, setColumnWidth, toggleSort } from '../table-engine.js';
+import type { ColumnWidths } from '../table-engine.js';
 import { fillLabel } from '../fill-label.js';
 import { useUixLabels, useUixLocale } from '../labels-context.js';
 import { countLabel } from '../plural.js';
@@ -19,26 +20,34 @@ import { useResolvedFilterLabels } from '../hooks/useResolvedFilterLabels.js';
 import { useVirtualRows } from '../hooks/useVirtualRows.js';
 import { keepClearOfStickyLayers } from '../sticky-layers.js';
 import { useStickyInsets } from '../hooks/useStickyLayer.js';
+import { announcePolite } from '../announce.js';
+import {
+  EMPTY_SELECTION_SCOPE, selectionQueryKey, selectionScopeCount, selectionScopeMatcher, selectAllMatching, setInSelectionScope,
+} from '../selection-scope.js';
+import type { SelectionScope } from '../selection-scope.js';
 import { playArrival } from '../hooks/arrival.js';
 import { useViewTransition } from '../hooks/useViewTransition.js';
 import type { UseVirtualRowsResult } from '../hooks/useVirtualRows.js';
 import { BusyRegion } from './BusyRegion.js';
+import { ColumnResizer } from './ColumnResizer.js';
 import { Button } from './Button.js';
 import { Checkbox } from './Checkbox.js';
 import { Chip } from './Chip.js';
 import { FilterEditor } from './FilterEditor.js';
 import { Menu, MenuItem, MenuItemCheckbox } from './Menu.js';
 import { ToolbarMore } from './ToolbarMore.js';
-import { Columns3Icon } from '../icons/components.js';
+import { Columns3Icon, MoreHorizontalIcon } from '../icons/components.js';
 import { MotionList } from './MotionList.js';
 import { Pagination } from './Pagination.js';
 import type { PaginationLabels } from './Pagination.js';
 import { Popover } from './Popover.js';
 import { SearchBar } from './SearchBar.js';
 import { useShortcut } from './Shortcuts.js';
+import { ACTION_PANEL_SHORTCUT_ID, useActionPanelHost, useActionPanelLabels } from './ActionPanel.js';
+import type { ActionPanelAction } from '../action-panel-model.js';
 import { Select } from './Select.js';
 import { EmptyState, ErrorState, FilteredEmptyState, LoadingState } from './States.js';
-import { BulkBar, RowActions, Table, TableWrap, Td, Th, Tr } from './Table.js';
+import { BulkBar, Table, TableWrap, Td, Th, Tr } from './Table.js';
 import type { TableDensity } from './Table.js';
 import { SavedViewMenu, ViewMenu } from './TableControls.js';
 import type { SavedViewMenuProps, ViewMenuProps } from './TableControls.js';
@@ -71,6 +80,43 @@ export interface DataWorkspaceLabels {
   /** `{count}` selected, in the bulk bar. Takes the plural forms or a function of the count too. */
   selected: UixCountLabel;
   bulkActions: string;
+  /**
+   * Selection scope (roadmap #12). The bulk bar's count under "all matching" with no filter or
+   * search: `{count}`. Every selection-scope label with a `{count}` takes the plural forms or a
+   * function of the count too (the form follows `{count}`).
+   */
+  selectedAll: UixCountLabel;
+  /** The same with a filter or search: `{count}`, `{query}` (the filter in words). */
+  selectedAllMatching: UixCountLabel;
+  /** The scope banner once the whole page is selected: `{count}` (the rows on the page). */
+  selectionPage: UixCountLabel;
+  /** The banner's button that selects every matching record: `{count}` (the matching total). */
+  selectAllMatching: UixCountLabel;
+  /** Every record selected, no filter or search: `{count}`. */
+  selectionAll: UixCountLabel;
+  /** Every matching record selected: `{count}`, `{query}`. */
+  selectionAllMatching: UixCountLabel;
+  /** Every record selected, some unticked since: `{count}` of `{total}`. */
+  selectionExcept: UixCountLabel;
+  /** Every matching record selected, some unticked since: `{count}`, `{total}`, `{query}`. */
+  selectionExceptMatching: UixCountLabel;
+  clearSelection: string;
+  /** The filter or search changed under an "all matching" selection, which was dropped. */
+  selectionCleared: string;
+  /** The same with `onQueryChange: 'confirm'`: `{count}` (the old selection). */
+  selectionStale: UixCountLabel;
+  /** Hides the "Selection cleared" note. */
+  dismiss: string;
+  /** The search, in `{query}`: `{search}`. */
+  querySearch: string;
+  /** Between the filters (and the search) in `{query}`. */
+  querySeparator: string;
+  /** The shortcut sheet: X on a row. */
+  shortcutToggleRow: string;
+  /** Shift + X on a row. */
+  shortcutSelectRange: string;
+  /** Ctrl/⌘ + A in the table. */
+  shortcutSelectPage: string;
   /** The record-id cell's ↗ button. `{label}`. */
   open: string;
   rowActions: string;
@@ -99,6 +145,22 @@ export interface DataWorkspaceLabels {
   expandGroup: string;
   /** A group header's checkbox: `{name}`. */
   selectGroup: string;
+  /** A column's resize grip, a separator (`onColumnWidthsChange`): `{column}`. */
+  resizeColumn: string;
+  /** The grip's description: how to resize by pointer, key and click. */
+  resizeHint: string;
+  /** The width popover a click on the grip opens, and its field: `{column}`. */
+  columnWidth: string;
+  /** The unit after the width field. */
+  columnWidthUnit: string;
+  /** The popover's step to the next narrower stop of the column-width scale. */
+  narrower: string;
+  /** The popover's step to the next wider stop. */
+  wider: string;
+  /** Fit the column to its widest content on screen (also a double-click on the grip). */
+  fitColumn: string;
+  /** Back to the column's own width (its tier or `width`). */
+  defaultColumnWidth: string;
 }
 
 export const DEFAULT_DATA_WORKSPACE_LABELS: DataWorkspaceLabels = {
@@ -116,6 +178,26 @@ export const DEFAULT_DATA_WORKSPACE_LABELS: DataWorkspaceLabels = {
   selectRow: 'Select {label}',
   selected: '{count} selected',
   bulkActions: 'Bulk actions',
+  selectedAll: '{count} selected · all rows',
+  selectedAllMatching: '{count} selected · all matching {query}',
+  selectionPage: { one: '{count} row on this page is selected.', other: 'All {count} rows on this page are selected.' },
+  selectAllMatching: 'Select all {count} matching',
+  selectionAll: { one: '{count} row is selected.', other: 'All {count} rows are selected.' },
+  selectionAllMatching: { one: '{count} row matching {query} is selected.', other: 'All {count} rows matching {query} are selected.' },
+  selectionExcept: { one: '{count} of {total} rows is selected.', other: '{count} of {total} rows are selected.' },
+  selectionExceptMatching: { one: '{count} of {total} rows matching {query} is selected.', other: '{count} of {total} rows matching {query} are selected.' },
+  clearSelection: 'Clear selection',
+  selectionCleared: 'Selection cleared: the filter changed.',
+  selectionStale: {
+    one: 'The filter changed, so the {count} row selected under the previous filter is not selected here.',
+    other: 'The filter changed, so the {count} rows selected under the previous filter are not selected here.',
+  },
+  dismiss: 'Dismiss',
+  querySearch: 'the search “{search}”',
+  querySeparator: '; ',
+  shortcutToggleRow: 'Select or deselect the row',
+  shortcutSelectRange: 'Select from the last row picked to this one',
+  shortcutSelectPage: 'Select every row on this page',
   open: 'Open {label}',
   rowActions: 'Actions',
   range: '{from}–{to} of {total}',
@@ -133,6 +215,14 @@ export const DEFAULT_DATA_WORKSPACE_LABELS: DataWorkspaceLabels = {
   collapseGroup: 'Collapse group {name}',
   expandGroup: 'Expand group {name}',
   selectGroup: 'Select group {name}',
+  resizeColumn: 'Resize {column}',
+  resizeHint: 'Drag or use the arrow keys to resize. Click or press Enter to type a width. Double-click to fit the content.',
+  columnWidth: 'Width of {column}',
+  columnWidthUnit: 'px',
+  narrower: 'Narrower',
+  wider: 'Wider',
+  fitColumn: 'Fit to content',
+  defaultColumnWidth: 'Default width',
 };
 
 export interface DataWorkspaceColumn<T> {
@@ -169,6 +259,13 @@ export interface DataWorkspaceColumn<T> {
   priority?: 'high' | 'mid' | 'low';
   /** The column's name in words: a card's label under `mobile="cards"`. Default: `header` when it is a string. */
   label?: string;
+  /**
+   * With `onColumnWidthsChange`: `false` keeps this column at its own width, without a grip.
+   * Default `true`. The floor a person can narrow it to is its `minWidth` (px, rem or a
+   * `var(--uix-col-*)` tier), else the title floor (340 px) for a `uix-col--flex` column and
+   * the scale's first tier (92 px) for the rest.
+   */
+  resizable?: boolean;
 }
 
 export interface DataWorkspaceSort { columnId: string; direction: 'ascending' | 'descending' }
@@ -201,8 +298,10 @@ export interface DataWorkspaceIdColumn<T> {
   linkId?: boolean;
   /** The column's width in a fixed layout (`fixed`), e.g. `16rem`. */
   width?: string;
-  /** The column's floor in a fixed layout. Default: the `md` column tier. */
+  /** The column's floor in a fixed layout, and the narrowest a resize takes it. Default: the `md` column tier. */
   minWidth?: string;
+  /** With `onColumnWidthsChange`: `false` keeps the id column at its own width, without a grip. Default `true`. */
+  resizable?: boolean;
   /**
    * The sort key the id column answers to in `sort` / `onSortChange` (HAR-2631), e.g. `title`
    * when the id shows the title. Default `'id'`. Keep it distinct from the data columns' ids.
@@ -260,7 +359,56 @@ export type DataWorkspacePagination = (
   | { mode: 'cursor'; hasPrevious: boolean; hasNext: boolean; onFirst?: () => void; onPrevious: () => void; onNext: () => void; summary?: ReactNode; pageSize?: number; pageSizes?: readonly number[]; onPageSizeChange?: (size: number) => void }
 ) & { labels?: Partial<PaginationLabels> };
 
-export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null> extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+/** The query the workspace builds from its own search and filters, for `selectionScope.query`. */
+export interface DataWorkspaceQuery {
+  /** The search, trimmed; `''` without one. */
+  search: string;
+  /** The set filters by field id (the empty ones are left out). */
+  filters: Record<string, FilterValue>;
+}
+
+/**
+ * Selection scope (roadmap #12): the header checkbox selects the page; once it has, a banner
+ * offers "Select all N matching", which turns the selection into "every record matching the
+ * query, except the rows unticked since". The banner and the bulk bar say which scope applies,
+ * with the count and the filter in words. A changed filter or search never carries an "all
+ * matching" selection over silently: it is cleared, or (`onQueryChange: 'confirm'`) held aside
+ * until the person picks the new matching set or clears it. Picks by id are kept by id, as before.
+ */
+export interface DataWorkspaceSelectionScope<Q = DataWorkspaceQuery> {
+  /** The selection: `{ kind: 'ids', ids }` or `{ kind: 'query', query, excludedIds, total }`. */
+  value: SelectionScope<Q>;
+  /** Receives the next scope; send it to the bulk endpoint as it is (it is plain JSON). */
+  onChange: (scope: SelectionScope<Q>) => void;
+  /**
+   * How many records match the query on the server. With more than the rows shown, a selected
+   * page offers "Select all N matching". Default: an offset `pagination`'s `total`. Without it
+   * nothing offers the step (a cursor-paged list that cannot count).
+   */
+  total?: number;
+  /**
+   * The query that selects the records, as the bulk endpoint takes it (filters and search, not
+   * the sort or the page). Default: a `DataWorkspaceQuery` from `search` and `filters`. An "all
+   * matching" scope belongs to the query it was made under; a different query (compared by
+   * `selectionQueryKey`) is a change of filter.
+   */
+  query?: Q;
+  /**
+   * The query in words, for `{query}` in the banner and the bulk bar ("open incidents assigned
+   * to Network"). Default: the filter chips' summaries and the search.
+   */
+  description?: ReactNode;
+  /**
+   * The query changed under an "all matching" selection. `clear` (default): the selection is
+   * dropped and the banner says so. `confirm`: the boxes clear and the bulk bar goes, but the
+   * selection is kept aside; the banner offers to select all matching the new query or to clear
+   * it, and turning the filter back brings the selection back. A new pick under the new query (a
+   * tick, X) starts a selection by id in its place.
+   */
+  onQueryChange?: 'clear' | 'confirm';
+}
+
+export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null, Q = DataWorkspaceQuery> extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
   /** Names the workspace region and the table. */
   label: string;
   rows: readonly T[];
@@ -289,10 +437,29 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
   /** The selected row ids. Kept by id, so a refresh or a new page keeps them. */
   selection?: ReadonlySet<string>;
   onSelectionChange?: (selection: Set<string>) => void;
-  /** At most this many rows can be selected: the unchecked boxes are disabled at the cap (HAR-2622). */
+  /**
+   * At most this many rows can be selected: the unchecked boxes are disabled at the cap (HAR-2622).
+   * With `selectionScope`, "Select all N matching" is offered only for N up to the cap.
+   */
   maxSelection?: number;
-  /** The bulk bar's actions for the selection (a `Menu` for the overflow). */
-  bulkActions?: (selectedIds: string[]) => ReactNode;
+  /**
+   * Select by scope (roadmap #12) in place of `selection` / `onSelectionChange`, which are then
+   * not used: by id, or every record matching the query except some, with the scope banner, the
+   * scope in the bulk bar and the X / Shift + X / Ctrl/⌘ + A keys.
+   */
+  selectionScope?: DataWorkspaceSelectionScope<Q>;
+  /**
+   * The bulk bar's actions for the selection (a `Menu` for the overflow). With `selectionScope`,
+   * the second argument is the scope to send to the bulk endpoint; under "all matching" the ids
+   * are only the selected rows on this page.
+   */
+  bulkActions?: (selectedIds: string[], scope: SelectionScope<Q>) => ReactNode;
+  /**
+   * The rows' own actions are disabled while the bulk bar shows (Carbon's batch mode), so a verb
+   * on one row is never mistaken for a verb on the selection. They always are under "all
+   * matching". Default `false`.
+   */
+  disableRowActionsWhileSelected?: boolean;
   /**
    * A row's actions (a `Menu`, quick buttons), in a column frozen at the right edge and sized to
    * them. Return `null` for a row without actions; with none on the page there is no column.
@@ -326,6 +493,23 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
    * instead of growing. Default: on when a column has `className` or `minWidth`. Not in cards.
    */
   fixed?: boolean;
+  /**
+   * Column widths in px, by column id (the id column by `idColumn.id`, default `'id'`): the
+   * `widths` of a table-engine `ViewState`, so a URL (`serializeView`) and a saved view hold
+   * them. Without it the workspace keeps the widths itself.
+   */
+  columnWidths?: ColumnWidths;
+  /**
+   * Turns on column resize (roadmap #11). Every header gets a grip: drag it; or focus it and use
+   * ← / → (Shift: to the next stop of the column-width scale, Home / End: floor and cap); or click
+   * it (one pointer, no drag: WCAG 2.5.7) for a width field with − / +, Fit to content and Default
+   * width; double-click fits. Called once per resize, when it ends (pointer up, key up, a width
+   * set in the popover), never per move: persist it into the view there. Resize uses the fixed
+   * layout (`fixed`). Without a `uix-col--flex` column to take the slack, the first resize holds
+   * every column at its drawn width, so only the resized one moves; those widths are all passed.
+   * Not in the cards step of `mobile`.
+   */
+  onColumnWidthsChange?: (widths: Record<string, number>) => void;
   /**
    * The responsive ladder, from the workspace's own width (HAR-2622): `priority` drops `low`
    * columns below 900 px and `mid` ones below 600 px; `cards` turns the rows into cards below
@@ -436,7 +620,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
   /**
    * The keyboard row model (HAR-2626): one row in the tab order, ↑ / ↓ / Home / End move between
    * rows, Enter opens the row (`onRowActivate`, else its id: the peek or the link), Space does not
-   * scroll the page. Default: on with `onRowActivate`.
+   * scroll the page. Default: on with `onRowActivate` or `getRowActions`.
    */
   rowNavigation?: boolean;
   /** A row's primary action: Enter on the row, and a click on the row (not on a control in it or its cell). Turns on `rowNavigation`. */
@@ -457,6 +641,21 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
    * Focus moves only when it is in the table or nowhere; nothing moves and the open stays instant.
    */
   peekRowId?: string | null;
+  /**
+   * The per-row action panel (enterprise UX study, roadmap #10; spec
+   * `Docs/specs/2026-11-20-action-panel.md`): a row's actions, asked for when they are needed (the
+   * focused row's keys, its panel, Enter, a mounted row's ⋯ button), never for every row. With focus
+   * on a row, Enter runs its `primary` action (`onRowActivate`, when set, is the primary instead),
+   * and Ctrl/⌘+K opens an `ActionPanel` anchored to the row: every action with the keys it has now,
+   * searchable, grouped, destructive ones last and confirmed unless `undoable`. A second Ctrl/⌘+K,
+   * or one with no row focused, reaches the global `CommandPalette` (first press local, through the
+   * shortcut registry's scopes). Each action's `keys` work only while focus is in the rows: the `?`
+   * sheet lists them under the workspace's `label`, the single-key switch and remaps apply (WCAG
+   * 2.1.4). Turns on `rowNavigation`. Keep it stable (`useCallback`): the rows are memoised on it.
+   */
+  getRowActions?: (row: T) => readonly ActionPanelAction[] | null | undefined;
+  /** With `getRowActions`: a ⋯ button in each row's actions cell opens its panel (the pointer and touch path). Default `true`. */
+  actionPanelTrigger?: boolean;
   labels?: Partial<DataWorkspaceLabels>;
 }
 
@@ -523,14 +722,15 @@ const ladderAttrs = <T,>(on: boolean, column: DataWorkspaceColumn<T>, body: bool
  * rich id cell, multi-column sort, the product's state bodies and `beforeBody`, row groups,
  * windowing (`virtualize`) and a keyboard row model (`onRowActivate`).
  */
-export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null>({
-  label, rows, getRowId, rowLabel, columns, idColumn, sort, onSortChange, selection, onSelectionChange, maxSelection, bulkActions, rowActions, rowActionsColumn,
-  getRowProps, density, zebra, freezeFirstColumn = false, fixed, mobile, search, filters, savedViews, viewMenu, viewChanged = false,
+export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null, Q = DataWorkspaceQuery>({
+  label, rows, getRowId, rowLabel, columns, idColumn, sort, onSortChange, selection, onSelectionChange, maxSelection, selectionScope, bulkActions,
+  disableRowActionsWhileSelected = false, rowActions, rowActionsColumn,
+  getRowProps, density, zebra, freezeFirstColumn = false, fixed, columnWidths, onColumnWidthsChange, mobile, search, filters, savedViews, viewMenu, viewChanged = false,
   onSaveView, onSaveViewAs, saveViewAs = 'changed', maximized = false, onMaximizedChange, toolbarMenu, toolbarEnd, beforeBody, pagination,
   status = 'ready', refreshing = false, rowMotion = false, onRetry, loadingRows = 6, empty, emptyAction, filteredEmpty, filteredEmptyAction,
   error, stateOverride, groups, collapsedGroups, onCollapsedGroupsChange, virtualize, rowNavigation, onRowActivate,
-  activateOnClick = true, activeRowId, onActiveRowChange, peekRowId, multiSort = false, labels: labelOverrides, className, ...props
-}: DataWorkspaceProps<T, S>) {
+  activateOnClick = true, activeRowId, onActiveRowChange, peekRowId, getRowActions, actionPanelTrigger = true, multiSort = false, labels: labelOverrides, className, ...props
+}: DataWorkspaceProps<T, S, Q>) {
   const uixLabels = useUixLabels();
   const labels = { ...DEFAULT_DATA_WORKSPACE_LABELS, ...uixLabels.dataWorkspace, ...labelOverrides };
   const workspaceLocale = useUixLocale();
@@ -605,6 +805,15 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
   }, [mobile]);
   const cards = ladder === 'cards';
 
+  // Column widths (roadmap #11): the product's (a view), else the workspace's own.
+  const [ownWidths, setOwnWidths] = useState<ColumnWidths>({});
+  const widths = columnWidths ?? ownWidths;
+  const resizable = onColumnWidthsChange != null;
+  const commitWidths = (next: Record<string, number>) => {
+    if (columnWidths === undefined) setOwnWidths(next);
+    onColumnWidthsChange?.(next);
+  };
+
   // An empty result belongs to the query that produced it: "Nothing matches" or "Nothing here yet"
   // is decided when the rows arrive, not from the filters on screen. A cleared filter therefore
   // keeps "Nothing matches" until its own rows arrive, also when the product turns `refreshing` on
@@ -650,11 +859,30 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
     for (const group of shownGroups) if (!collapsed.has(group.id)) for (const row of group.rows) out.push(getRowId(row));
     return out;
   }, [shownGroups, collapsed, ids, getRowId]);
-  const selected = selection ?? EMPTY_SET;
-  const selectable = onSelectionChange != null;
+  // ── selection: by id, or (selectionScope) every record matching the query except some ──
+  // An "all matching" scope belongs to the query it was made under. Under another query it is
+  // stale: it selects nothing here, the bulk bar goes, and (`clear`) it is dropped or (`confirm`)
+  // held aside until the person chooses. Never carried over silently (roadmap #12).
+  const legacySelected = selection ?? EMPTY_SET;
+  const scopeValue = selectionScope?.value;
+  const queryNow = selectionScope ? selectionScope.query ?? (defaultQuery(search?.value, filters) as Q) : undefined;
+  const queryKey = selectionScope ? selectionQueryKey(queryNow) : '';
+  const stale = scopeValue?.kind === 'query' && selectionQueryKey(scopeValue.query) !== queryKey;
+  const queryPolicy = selectionScope?.onQueryChange ?? 'clear';
+  const effectiveScope: SelectionScope<Q> | null = selectionScope ? (stale ? EMPTY_SELECTION_SCOPE : scopeValue!) : null;
+  /** The query an "all matching" scope was cleared under (`clear`): the banner says so there, until the next pick. */
+  const [clearedUnder, setClearedUnder] = useState<string | null>(null);
+  // the query moved on (and is not itself about to be cleared): the note belonged to the old one
+  if (clearedUnder !== null && clearedUnder !== queryKey && !stale) setClearedUnder(null);
+  const isSelected = useMemo(
+    () => (effectiveScope ? selectionScopeMatcher(effectiveScope) : (rowId: string) => legacySelected.has(rowId)),
+    [effectiveScope, legacySelected],
+  );
+  const selectable = onSelectionChange != null || selectionScope != null;
   const cap = maxSelection ?? Infinity;
-  const onPage = ids.filter((rowId) => selected.has(rowId)).length;
-  /** Adds or removes these rows; adding stops at `maxSelection`. */
+  const selectedCount = effectiveScope ? selectionScopeCount(effectiveScope) : legacySelected.size;
+  const onPage = ids.filter(isSelected).length;
+  /** Adds or removes these rows; adding stops at `maxSelection` (by id; "all matching" chose its rows). */
   const apply = (next: Set<string>, rowIds: readonly string[], on: boolean) => {
     for (const rowId of rowIds) {
       if (!on) next.delete(rowId);
@@ -662,25 +890,33 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
     }
     return next;
   };
-  const toggleRow = (rowId: string, on: boolean, event: ReactMouseEvent | null) => {
+  const setRows = (rowIds: readonly string[], on: boolean) => {
+    if (selectionScope) {
+      // a stale scope is not built on: a pick under the new query starts a selection by id
+      const base = effectiveScope ?? EMPTY_SELECTION_SCOPE;
+      const next = setInSelectionScope<Q>(base, rowIds, on, cap);
+      if (next !== base || stale) selectionScope.onChange(next);
+      setClearedUnder(null);
+      return;
+    }
     if (!onSelectionChange) return;
-    const next = new Set(selected);
+    onSelectionChange(apply(new Set(legacySelected), rowIds, on));
+  };
+  /** One row, or (`range`: Shift + click, Shift + X) every row from the anchor to it, in visual order. */
+  const toggleRow = (rowId: string, on: boolean, range: boolean) => {
+    if (!selectable) return;
     const from = anchor.current ? visibleIds.indexOf(anchor.current) : -1;
     const to = visibleIds.indexOf(rowId);
-    if (event?.shiftKey && from >= 0 && to >= 0) {
-      // Shift-click: every row between the anchor and this one, in visual order, takes this row's new state.
-      apply(next, visibleIds.slice(Math.min(from, to), Math.max(from, to) + 1), on);
+    if (range && from >= 0 && to >= 0) {
+      // every row between the anchor and this one takes this row's new state
+      setRows(visibleIds.slice(Math.min(from, to), Math.max(from, to) + 1), on);
     } else {
-      apply(next, [rowId], on);
+      setRows([rowId], on);
       anchor.current = rowId;
     }
-    onSelectionChange(next);
   };
-  const toggleMany = (rowIds: readonly string[], on: boolean) => {
-    if (!onSelectionChange) return;
-    onSelectionChange(apply(new Set(selected), rowIds, on));
-  };
-  const atCap = selected.size >= cap;
+  const toggleMany = (rowIds: readonly string[], on: boolean) => setRows(rowIds, on);
+  const atCap = effectiveScope ? effectiveScope.kind === 'ids' && effectiveScope.ids.length >= cap : legacySelected.size >= cap;
 
   // Each row's actions, asked once per render; the column shows only when a row on the page has some.
   // The ladder is in the context (HAR-2634): asked again when the step changes (a resize), not per render.
@@ -690,7 +926,9 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
     const context: DataWorkspaceRowActionsContext = { ladder, compact: ladder === 'priority-mid' };
     return shownRows.map((row) => rowActions(row, context));
   }, [shownRows, rowActions, ladder, lazyRowActions]);
-  const hasActions = !!lazyRowActions || actionsByRow.some((node) => node != null && node !== false);
+  // The action panel's ⋯ button needs the column too; each mounted row decides whether it has one.
+  const panelTrigger = getRowActions != null && actionPanelTrigger;
+  const hasActions = panelTrigger || !!lazyRowActions || actionsByRow.some((node) => node != null && node !== false);
 
   const activeFilters = filters ? filters.fields.filter((field) => !isFilterEmpty(filters.values[field.id])) : [];
   const searching = (search?.value.trim() ?? '') !== '';
@@ -779,6 +1017,79 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
     </div>
   );
 
+  // ── the scope banner and the bulk bar (roadmap #12) ──────────────────────────────────────
+  // `clear`: a stale "all matching" scope is dropped at once; the banner says why until the
+  // person dismisses it, selects again or the query changes again (`clearedUnder`, above).
+  useIsomorphicLayoutEffect(() => {
+    if (!selectionScope || !stale || queryPolicy !== 'clear') return;
+    setClearedUnder(queryKey);
+    selectionScope.onChange(EMPTY_SELECTION_SCOPE);
+  }, [stale, queryPolicy, queryKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  // the workspace's language (UixLabelsProvider locale): its plural forms and its digit grouping
+  const numbers = useMemo(() => { try { return new Intl.NumberFormat(workspaceLocale); } catch { return new Intl.NumberFormat('en'); } }, [workspaceLocale]);
+  const count = (n: number) => numbers.format(n);
+  const plural = (label: UixCountLabel, n: number) => countLabel(label, n, workspaceLocale);
+  const matchingTotal = selectionScope?.total ?? (pagination?.mode === 'offset' ? pagination.total : undefined);
+  // not while a refetch runs: the total may still be the previous query's
+  const canSelectMatching = matchingTotal != null && matchingTotal > 0 && matchingTotal <= cap && !refreshing;
+  const hasQuery = selectionScope?.description != null || activeFilters.length > 0 || searching;
+  const queryWords: ReactNode = selectionScope?.description
+    ?? (hasQuery ? <QueryWords filters={filters} fields={activeFilters} search={search?.value.trim() ?? ''} labels={labels} /> : null);
+  let banner: 'page' | 'all' | 'stale' | 'cleared' | null = null;
+  if (selectionScope && status === 'ready' && stateOverride == null) {
+    if (stale && queryPolicy === 'confirm') banner = 'stale';
+    else if (effectiveScope?.kind === 'query' && selectedCount > 0) banner = 'all';
+    else if (clearedUnder === queryKey && selectedCount === 0) banner = 'cleared';
+    else if (effectiveScope?.kind === 'ids' && ids.length > 0 && onPage === ids.length && canSelectMatching && (matchingTotal ?? 0) > ids.length) banner = 'page';
+  }
+  /** After the banner's last action, focus goes to the header checkbox (the banner leaves). */
+  const focusHeadCheckbox = () => rootRef.current?.querySelector<HTMLInputElement>('thead .uix-table__selcol input')?.focus();
+  const selectMatching = { label: fillLabel(plural(labels.selectAllMatching, matchingTotal ?? 0), { count: count(matchingTotal ?? 0) }), run: () => { selectionScope?.onChange(selectAllMatching(queryNow as Q, matchingTotal ?? 0)); setClearedUnder(null); } };
+  const clearScope = { label: labels.clearSelection, run: () => { selectionScope?.onChange(EMPTY_SELECTION_SCOPE); setClearedUnder(null); focusHeadCheckbox(); } };
+  let bannerText: ReactNode = null;
+  let bannerPrimary: BannerAction | null = null;
+  let bannerSecondary: BannerAction | null = null;
+  if (banner === 'page') {
+    bannerText = fillNodes(plural(labels.selectionPage, onPage), { count: count(onPage) });
+    bannerPrimary = selectMatching;
+  } else if (banner === 'all' && effectiveScope?.kind === 'query') {
+    const except = effectiveScope.excludedIds.length > 0;
+    const template = except ? (hasQuery ? labels.selectionExceptMatching : labels.selectionExcept) : (hasQuery ? labels.selectionAllMatching : labels.selectionAll);
+    bannerText = fillNodes(plural(template, selectedCount), { count: count(selectedCount), total: count(effectiveScope.total), query: queryWords });
+    bannerPrimary = clearScope;
+  } else if (banner === 'stale' && scopeValue) {
+    bannerText = fillNodes(plural(labels.selectionStale, selectionScopeCount(scopeValue)), { count: count(selectionScopeCount(scopeValue)) });
+    bannerPrimary = canSelectMatching ? selectMatching : clearScope;
+    bannerSecondary = canSelectMatching ? clearScope : null;
+  } else if (banner === 'cleared') {
+    bannerText = labels.selectionCleared;
+    bannerPrimary = { label: labels.dismiss, run: () => { setClearedUnder(null); focusHeadCheckbox(); } };
+  }
+  // The banner's words are said when they change (a polite region: the banner holds buttons, so
+  // it is no live region itself); not on the first render, which only shows what was restored.
+  const bannerTextRef = useRef<HTMLParagraphElement>(null);
+  const saidBanner = useRef<string | null>(null);
+  useEffect(() => {
+    // a first load that ends shows what was restored: that is not news either
+    if (saidBanner.current === null && status !== 'ready') return;
+    const text = banner ? bannerTextRef.current?.textContent ?? '' : '';
+    if (saidBanner.current !== null && text !== '' && text !== saidBanner.current) announcePolite(text, rootRef.current);
+    saidBanner.current = text;
+  });
+
+  const showBulk = bulkActions != null && selectedCount > 0;
+  const selectedIds = effectiveScope
+    ? (effectiveScope.kind === 'ids' ? [...effectiveScope.ids] : ids.filter(isSelected))
+    : [...legacySelected];
+  const bulkCountLabel = (n: number): ReactNode => (effectiveScope?.kind === 'query'
+    // the filter in words can be long: this count wraps (the bar keeps a plain count on one line)
+    ? <span className="uix-data-workspace__bulk-scope">{fillNodes(plural(hasQuery ? labels.selectedAllMatching : labels.selectedAll, n), { count: count(n), query: queryWords })}</span>
+    // by id the number is formatted; without selectionScope it reads as it always did
+    : fillLabel(plural(labels.selected, n), { count: effectiveScope ? count(n) : n }));
+  // Carbon's batch mode: a row's own verbs are off while the bulk bar acts on the selection, and
+  // always under "all matching", where a row verb would read as a verb on thousands of rows.
+  const rowActionsOff = effectiveScope?.kind === 'query' && selectedCount > 0 ? true : disableRowActionsWhileSelected && showBulk;
+
   const busy = (node: ReactNode) => <BusyRegion busy={refreshing} className="uix-data-workspace__state">{node}</BusyRegion>;
   let body: ReactNode;
   if (stateOverride != null) body = busy(stateOverride);
@@ -800,18 +1111,19 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
       <WorkspaceGrid<T>
         label={label} rows={shownRows} ids={ids} groups={shownGroups} collapsed={collapsed} onToggleGroup={toggleGroupOpen}
         getRowId={getRowId} rowLabel={rowLabel} columns={columns} idColumn={idColumn} getRowProps={getRowProps} density={density} zebra={zebra}
-        freezeFirstColumn={freezeFirstColumn} fixed={fixed ?? columns.some((column) => column.className != null || column.minWidth != null)}
+        freezeFirstColumn={freezeFirstColumn} fixed={resizable || (fixed ?? columns.some((column) => column.className != null || column.minWidth != null))}
+        resizable={resizable} widths={widths} onWidthsCommit={commitWidths}
         ladderOn={mobile != null} ladder={ladder} refreshing={refreshing} rowMotion={rowMotion}
-        selectable={selectable} selected={selected} onPage={onPage} atCap={atCap} toggleRow={toggleRow} toggleMany={toggleMany}
-        actionsByRow={actionsByRow} lazyRowActions={lazyRowActions} hasActions={hasActions} keys={keys} sortable={onSortChange != null} multi={multi} sortFor={sortFor} cycleSort={cycleSort}
+        selectable={selectable} isSelected={isSelected} onPage={onPage} atCap={atCap} toggleRow={toggleRow} toggleMany={toggleMany}
+        selectionKeys={selectionScope != null} actionsDisabled={rowActionsOff} actionsByRow={actionsByRow} lazyRowActions={lazyRowActions} hasActions={hasActions} keys={keys} sortable={onSortChange != null} multi={multi} sortFor={sortFor} cycleSort={cycleSort}
         virtualize={pagination || shownGroups ? undefined : virtualize}
-        rowNavigation={rowNavigation ?? onRowActivate != null} onRowActivate={onRowActivate} activateOnClick={activateOnClick}
+        rowNavigation={rowNavigation ?? (onRowActivate != null || getRowActions != null)} onRowActivate={onRowActivate} activateOnClick={activateOnClick}
+        getRowActions={getRowActions} actionPanelTrigger={panelTrigger}
         activeRowId={activeRowId} onActiveRowChange={onActiveRowChange} peekRowId={peekRowId} labels={labels} onRowsExited={onRowsExited}
       />
     );
   }
 
-  const selectedIds = [...selected];
   return (
     <section
       ref={rootRef}
@@ -820,10 +1132,23 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
       {...props}
     >
       {toolbar}
-      {bulkActions && selectedIds.length > 0 && (
-        <BulkBar count={selectedIds.length} label={labels.bulkActions} selectedLabel={(n) => fillLabel(countLabel(labels.selected, n, workspaceLocale), { count: n })}>
-          {bulkActions(selectedIds)}
+      {showBulk && (
+        <BulkBar count={selectedCount} label={labels.bulkActions} selectedLabel={bulkCountLabel}>
+          {bulkActions(selectedIds, effectiveScope ?? { kind: 'ids', ids: selectedIds })}
         </BulkBar>
+      )}
+      {banner && (
+        <div className="uix-data-workspace__scope" data-scope={banner}>
+          <p className="uix-data-workspace__scope-text" ref={bannerTextRef}>{bannerText}</p>
+          {(bannerPrimary || bannerSecondary) && (
+            <div className="uix-data-workspace__scope-actions">
+              {/* One element for the first action in every state: "Select all N matching" becomes
+                  "Clear selection" in place, so focus stays on it. */}
+              {bannerPrimary && <Button key="primary" size="sm" variant="link" onClick={bannerPrimary.run}>{bannerPrimary.label}</Button>}
+              {bannerSecondary && <Button key="secondary" size="sm" variant="link" onClick={bannerSecondary.run}>{bannerSecondary.label}</Button>}
+            </div>
+          )}
+        </div>
       )}
       {beforeBody != null && <div className="uix-data-workspace__before">{beforeBody}</div>}
       {body}
@@ -833,6 +1158,38 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
 }
 
 const EMPTY_SET: ReadonlySet<string> = new Set<string>();
+
+/** One of the scope banner's buttons. */
+interface BannerAction { label: string; run: () => void }
+
+/** The default `selectionScope.query`: the trimmed search and the set filters. */
+const defaultQuery = (searchValue: string | undefined, filters: DataWorkspaceProps<unknown>['filters']): DataWorkspaceQuery => {
+  const set: Record<string, FilterValue> = {};
+  if (filters) for (const field of filters.fields) {
+    const value = filters.values[field.id];
+    if (value && !isFilterEmpty(value)) set[field.id] = value;
+  }
+  return { search: searchValue?.trim() ?? '', filters: set };
+};
+
+/** A label's `{placeholders}` filled with nodes (the query in words is a node: its chips' summaries). */
+const fillNodes = (template: string, values: Readonly<Record<string, ReactNode>>): ReactNode => {
+  const parts = template.split(/(\{\w+\})/);
+  if (parts.length === 1) return template;
+  return parts.map((part, index) => {
+    const key = /^\{(\w+)\}$/.exec(part)?.[1];
+    return key != null && Object.prototype.hasOwnProperty.call(values, key) ? <Fragment key={index}>{values[key]}</Fragment> : part;
+  });
+};
+
+/** The query in words, for `{query}`: each set filter as its chip says it, then the search. */
+function QueryWords({ filters, fields, search, labels }: {
+  filters: DataWorkspaceProps<unknown>['filters']; fields: readonly FilterField[]; search: string; labels: DataWorkspaceLabels;
+}) {
+  const parts: ReactNode[] = fields.map((field) => <ChipSummary key={field.id} field={field} value={filters?.values[field.id]} options={filters?.summary} />);
+  if (search !== '') parts.push(<Fragment key="search">{fillLabel(labels.querySearch, { search })}</Fragment>);
+  return <>{parts.map((part, index) => <Fragment key={index}>{index > 0 && labels.querySeparator}{part}</Fragment>)}</>;
+}
 
 interface WorkspaceGridProps<T> {
   label: string;
@@ -850,16 +1207,25 @@ interface WorkspaceGridProps<T> {
   zebra?: boolean;
   freezeFirstColumn: boolean;
   fixed: boolean;
+  /** Column resize is on (`onColumnWidthsChange`). */
+  resizable: boolean;
+  widths: ColumnWidths;
+  onWidthsCommit: (widths: Record<string, number>) => void;
   ladderOn: boolean;
   ladder: Ladder;
   refreshing: boolean;
   rowMotion: boolean;
   selectable: boolean;
-  selected: ReadonlySet<string>;
+  isSelected: (rowId: string) => boolean;
   onPage: number;
   atCap: boolean;
-  toggleRow: (rowId: string, on: boolean, event: ReactMouseEvent | null) => void;
+  /** `range`: from the anchor to this row (Shift + click, Shift + X). */
+  toggleRow: (rowId: string, on: boolean, range: boolean) => void;
   toggleMany: (rowIds: readonly string[], on: boolean) => void;
+  /** X / Shift + X / Ctrl/⌘ + A select by key (with `selectionScope`; a table without it keeps its keys as they were). */
+  selectionKeys: boolean;
+  /** The rows' own actions are off (inert): the bulk bar acts on the selection. */
+  actionsDisabled: boolean;
   actionsByRow: readonly ReactNode[];
   lazyRowActions?: (row: T, context: DataWorkspaceRowActionsContext) => ReactNode;
   hasActions: boolean;
@@ -875,6 +1241,8 @@ interface WorkspaceGridProps<T> {
   activeRowId?: string | null;
   onActiveRowChange?: (rowId: string) => void;
   peekRowId?: string | null;
+  getRowActions?: (row: T) => readonly ActionPanelAction[] | null | undefined;
+  actionPanelTrigger: boolean;
   labels: DataWorkspaceLabels;
   /** The last leaving row has gone: the workspace may now show its empty state. */
   onRowsExited?: () => void;
@@ -882,11 +1250,13 @@ interface WorkspaceGridProps<T> {
 
 /** The handlers every row shares: one object for the table's life, so a memoised row is not re-rendered by them. */
 interface RowHandlers {
-  toggle: (rowId: string, on: boolean, event: ReactMouseEvent) => void;
+  toggle: (rowId: string, on: boolean, range: boolean) => void;
   key: (rowId: string, event: ReactKeyboardEvent<HTMLTableRowElement>) => void;
   click: (rowId: string, event: ReactMouseEvent<HTMLTableRowElement>) => void;
   focus: (rowId: string) => void;
   blur: (rowId: string, event: ReactFocusEvent<HTMLTableRowElement>) => void;
+  /** The row's ⋯ button: open its action panel anchored to the button. */
+  openActions: (rowId: string, anchor: HTMLElement) => void;
 }
 
 /**
@@ -927,6 +1297,60 @@ const columnFloor = (width?: string, minWidth?: string, className?: string) => {
   if (classes.includes('uix-col--flex') || classes.includes('uix-col--primary')) return 'var(--uix-col-title-min)';
   return 'var(--uix-col-w-sm)';
 };
+/** The column-width scale by tier name (table-engine COLUMN_WIDTH_SCALE, tokens/base/size.json). */
+const TIER_PX: Readonly<Record<string, number>> = {
+  'w-xs': COLUMN_WIDTH_SCALE[0], 'w-sm': COLUMN_WIDTH_SCALE[1], 'w-md': COLUMN_WIDTH_SCALE[2], 'w-lg': COLUMN_WIDTH_SCALE[3],
+  'w-lg-plus': COLUMN_WIDTH_SCALE[4], 'w-xl': COLUMN_WIDTH_SCALE[5], 'title-min': COLUMN_WIDTH_SCALE[6],
+};
+const TITLE_MIN = TIER_PX['title-min'];
+/** The id column's floor without `minWidth`: the md tier, as in the fixed layout. */
+const ID_MIN = TIER_PX['w-md'];
+/** A floor written as px, rem (16 px) or a `var(--uix-col-*)` tier, in px; `null` for anything else. */
+const lengthPx = (length?: string): number | null => {
+  const value = length?.trim();
+  if (!value) return null;
+  const unit = /^(\d+(?:\.\d+)?)(px|rem)$/.exec(value);
+  if (unit) return Number(unit[1]) * (unit[2] === 'rem' ? 16 : 1);
+  const tier = /^var\(--uix-col-(w-(?:xs|sm|md|lg|lg-plus|xl)|title-min)\)$/.exec(value);
+  return tier ? TIER_PX[tier[1]] : null;
+};
+const EMPTY_WIDTHS: ColumnWidths = {};
+const sameWidths = (a: ColumnWidths, b: ColumnWidths) => {
+  const keys = Object.keys(a);
+  return keys.length === Object.keys(b).length && keys.every((key) => a[key] === b[key]);
+};
+const paddingOf = (el: HTMLElement) => {
+  if (typeof getComputedStyle !== 'function') return 0;
+  const style = getComputedStyle(el);
+  return (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0);
+};
+/** The width of a node's laid-out content (a text that overflows a clipped cell counts in full). */
+const nodeWidth = (node: Node) => {
+  if (node instanceof HTMLElement) return Math.max(node.scrollWidth || 0, typeof node.getBoundingClientRect === 'function' ? node.getBoundingClientRect().width : 0);
+  if (typeof document.createRange !== 'function') return 0;
+  const range = document.createRange();
+  range.selectNodeContents(node);
+  return typeof range.getBoundingClientRect === 'function' ? range.getBoundingClientRect().width : 0;
+};
+/** A body cell's content width plus its padding. */
+const contentWidth = (td: HTMLElement) => {
+  let inner = 0;
+  for (const node of Array.from(td.childNodes)) inner += nodeWidth(node);
+  return inner + paddingOf(td);
+};
+/** A header's content (its sort button or text, and the sort arrow) plus its padding, without the grip. */
+const headerContentWidth = (th: HTMLElement) => {
+  let inner = 0;
+  for (const node of Array.from(th.childNodes)) {
+    if (node instanceof HTMLElement && node.matches('.uix-table__resize, [popover], [hidden]')) continue;
+    inner += nodeWidth(node);
+  }
+  if (th.hasAttribute('data-sort') && typeof getComputedStyle === 'function') {
+    const arrow = getComputedStyle(th, '::after');
+    inner += (parseFloat(arrow.width) || 0) + (parseFloat(arrow.marginInlineStart) || 0);
+  }
+  return inner + paddingOf(th);
+};
 const isFlex = (className?: string) => /(^|\s)uix-col--(flex|primary)(\s|$)/.test(className ?? '');
 /** The classes of a column that size a `<col>` (a tier, the flex column). */
 const colClasses = (className?: string) => className?.split(/\s+/).filter((cls) => /^uix-col--(w-(xs|sm|md|lg|lg-plus|xl)|flex|primary)$/.test(cls)).join(' ') || undefined;
@@ -946,8 +1370,9 @@ const cellContent = <T,>(column: DataWorkspaceColumn<T>, row: T) => {
 
 function WorkspaceTable<T>({
   label, rows, ids, groups, collapsed, onToggleGroup, getRowId, rowLabel, columns, idColumn, getRowProps, density, zebra, freezeFirstColumn,
-  fixed, ladderOn, ladder, refreshing, rowMotion, selectable, selected, onPage, atCap, toggleRow, toggleMany, actionsByRow, lazyRowActions, hasActions, keys, sortable,
-  multi, sortFor, cycleSort, rowNavigation, onRowActivate, activateOnClick, activeRowId, onActiveRowChange, peekRowId, labels, windowing, virtual, onRowsExited,
+  fixed, resizable, widths, onWidthsCommit, ladderOn, ladder, refreshing, rowMotion, selectable, isSelected, onPage, atCap, toggleRow, toggleMany, selectionKeys, actionsDisabled, actionsByRow, lazyRowActions, hasActions, keys, sortable,
+  multi, sortFor, cycleSort, rowNavigation, onRowActivate, activateOnClick, activeRowId, onActiveRowChange, peekRowId, getRowActions, actionPanelTrigger,
+  labels, windowing, virtual, onRowsExited,
 }: WorkspaceGridProps<T> & { windowing: DataWorkspaceVirtualize | null; virtual: UseVirtualRowsResult<T> | null }) {
   const cards = ladder === 'cards';
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -1111,8 +1536,44 @@ function WorkspaceTable<T>({
     if (el) { pendingCue.current = null; playArrival(el); }
   });
 
+  // ── the per-row action panel (roadmap #10) ───────────────────────────────────────────────
+  // One panel for the whole table, opened on the focused row. Only the tab-stop row's actions are
+  // asked for on render (their keys are registered, so the ? sheet lists them); any other row's
+  // when its keys, its Enter or its ⋯ button need them.
+  // Off while the bulk bar acts on the selection, as the inert actions cell is (disableRowActionsWhileSelected).
+  const actionsOn = getRowActions != null && nav && !actionsDisabled;
+  const rowOf = (el: HTMLElement): T | undefined => {
+    const rowId = el.getAttribute('data-uix-row-id');
+    const at = rowId == null ? -1 : ids.indexOf(rowId);
+    return at >= 0 ? rows[at] : undefined;
+  };
+  const tabStopRow = actionsOn && tabStop != null ? rows[ids.indexOf(tabStop)] : undefined;
+  const verbs = useMemo(() => (tabStopRow !== undefined ? getRowActions?.(tabStopRow) ?? null : null), [tabStopRow, getRowActions]);
+  const panelLabels = useActionPanelLabels();
+  const actionHost = useActionPanelHost({
+    enabled: actionsOn,
+    scope: wrapRef,
+    scopeLabel: label,
+    itemOf: (target) => {
+      const tr = target?.closest?.('tbody > tr[data-uix-row-id]') as HTMLElement | null | undefined;
+      return tr && !tr.hasAttribute('data-uix-exiting') && wrapRef.current?.contains(tr) ? tr : null;
+    },
+    actionsOf: (el) => {
+      const row = rowOf(el);
+      const actions = row === undefined ? null : getRowActions?.(row);
+      // With onRowActivate, Enter runs that: no action is the primary one.
+      return onRowActivate && actions ? actions.map((action) => (action.primary ? { ...action, primary: false } : action)) : actions;
+    },
+    nameOf: (el) => {
+      const row = rowOf(el);
+      return row === undefined ? undefined : idColumn?.text(row) ?? rowLabel?.(row) ?? el.getAttribute('data-uix-row-id') ?? undefined;
+    },
+    verbs,
+    showPrimaryKey: onRowActivate == null,
+  });
+
   const latest = {
-    toggle: (rowId: string, on: boolean, event: ReactMouseEvent) => toggleRow(rowId, on, event),
+    toggle: (rowId: string, on: boolean, range: boolean) => toggleRow(rowId, on, range),
     key: (rowId: string, event: ReactKeyboardEvent<HTMLTableRowElement>) => {
       // A key pressed on a control inside the row is the control's.
       if (event.target !== event.currentTarget || event.altKey || event.ctrlKey || event.metaKey) return;
@@ -1126,7 +1587,9 @@ function WorkspaceTable<T>({
         event.preventDefault();
         const row = rows[ids.indexOf(rowId)];
         if (onRowActivate) { if (row !== undefined) onRowActivate(row); return; }
-        // Without onRowActivate, Enter opens what the row already offers: its id (peek or link).
+        // Else the row's primary action (asking first when it must), from getRowActions.
+        if (actionHost.runPrimary(event.currentTarget)) return;
+        // Without either, Enter opens what the row already offers: its id (peek or link).
         const el = event.currentTarget;
         (el.querySelector<HTMLElement>('.uix-id-cell__btn') ?? el.querySelector<HTMLElement>('a[href]'))?.click();
       } else if (event.key === ' ') {
@@ -1142,6 +1605,13 @@ function WorkspaceTable<T>({
       // cell, a link) is the control's; a drag that selected text is not a click on the row.
       const control = (event.target as Element).closest?.(CONTROLS);
       if (control && control !== event.currentTarget && event.currentTarget.contains(control)) return;
+      // An inert actions cell (the bulk bar acts) is skipped by hit-testing, so a click on its dimmed
+      // verbs lands on the row itself: it is still not a click on the row.
+      if (actionsDisabled && event.target === event.currentTarget) {
+        const cell = event.currentTarget.querySelector<HTMLElement>(':scope > td.uix-table__actions');
+        const box = cell?.getBoundingClientRect();
+        if (box && event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom) return;
+      }
       if (typeof window !== 'undefined' && (window.getSelection?.()?.toString() ?? '') !== '') return;
       const row = rows[ids.indexOf(rowId)];
       if (row !== undefined) onRowActivate?.(row);
@@ -1156,6 +1626,10 @@ function WorkspaceTable<T>({
       const el = event.currentTarget;
       setTimeout(() => { if (el.isConnected && focusedRow.current === rowId) focusedRow.current = null; }, 0);
     },
+    openActions: (rowId: string, anchor: HTMLElement) => {
+      const el = rowElement(rowId);
+      if (el) actionHost.open(el, anchor);
+    },
   };
   const latestRef = useRef(latest);
   latestRef.current = latest;
@@ -1165,7 +1639,42 @@ function WorkspaceTable<T>({
     click: (...args) => latestRef.current.click(...args),
     focus: (...args) => latestRef.current.focus(...args),
     blur: (...args) => latestRef.current.blur(...args),
+    openActions: (...args) => latestRef.current.openActions(...args),
   }), []);
+
+  // ── selection keys (roadmap #12; Linear's X and Shift-range) ────────────────────────────
+  // Registered in the table's own scope: listed in the ? sheet while focus is in the table, and
+  // the single-key switch (WCAG 2.1.4) turns X and Shift + X off. The row is the one holding
+  // focus: the row itself (`rowNavigation`) or a control in it (its checkbox, its id).
+  const focusedRowId = (event: KeyboardEvent | null) => {
+    const from = (event?.target ?? (typeof document !== 'undefined' ? document.activeElement : null)) as Element | null;
+    const tr = from?.closest?.('tbody > tr[data-uix-row-id]');
+    const rowId = tr && wrapRef.current?.contains(tr) ? tr.getAttribute('data-uix-row-id') : null;
+    return rowId != null && navIds.includes(rowId) ? rowId : null;
+  };
+  const toggleFocused = (range: boolean) => (event: KeyboardEvent | null) => {
+    const rowId = focusedRowId(event);
+    if (rowId == null) return false;
+    const on = !isSelected(rowId);
+    // the cap: a box that is disabled cannot be ticked by key either
+    if (on && atCap) return true;
+    toggleRow(rowId, on, range);
+    return true;
+  };
+  useShortcut({
+    id: 'uix.data-workspace.toggle-row', keys: 'X', label: labels.shortcutToggleRow,
+    scope: wrapRef, scopeLabel: label, enabled: selectable && selectionKeys, handler: toggleFocused(false),
+  });
+  useShortcut({
+    id: 'uix.data-workspace.select-range', keys: 'Shift+X', label: labels.shortcutSelectRange,
+    scope: wrapRef, scopeLabel: label, enabled: selectable && selectionKeys, handler: toggleFocused(true),
+  });
+  useShortcut({
+    id: 'uix.data-workspace.select-page', keys: 'Mod+A', label: labels.shortcutSelectPage,
+    scope: wrapRef, scopeLabel: label, enabled: selectable && selectionKeys,
+    // in the table only: a field in it keeps its own select-all
+    handler: () => { if (onPage < ids.length) toggleMany(ids, true); return true; },
+  });
 
   // ── groups: collapsing keeps the header where it was on screen (HAR-2625) ─────────────────
   const groupAnchor = useRef<{ id: string; top: number } | null>(null);
@@ -1282,13 +1791,86 @@ function WorkspaceTable<T>({
   const rowSet = ids.join(' ');
   useIsomorphicLayoutEffect(() => { measureActionsNow.current(); }, [measureActions, fixedOn, ladder, rowSet]);
   const actionsCol = actionsWidth != null ? `${actionsWidth}px` : '5.25rem';
+
+  // ── column resize (roadmap #11) ─────────────────────────────────────────────────────────
+  // A gesture draws a draft (the widths with this column's live width) and commits once, at its
+  // end. `base` is the widths the gesture started from: with no other column to take the slack,
+  // every shown column at its drawn width, so the others do not jump when the table stops filling.
+  const [draft, setDraft] = useState<{ base: ColumnWidths; id: string; width: number } | null>(null);
+  const gestureBase = useRef<ColumnWidths | null>(null);
+  const resizeOn = resizable && fixedOn;
+  const sized: ColumnWidths = resizeOn ? (draft ? { ...draft.base, [draft.id]: draft.width } : widths) : EMPTY_WIDTHS;
+  const idKey = idColumn ? idColumn.id ?? 'id' : null;
+  const setPx = (id: string | null) => (id != null && sized[id] != null ? `${sized[id]}px` : undefined);
+  /** A column that takes the table's slack (no width of its own), other than `except`. */
+  const slackTaker = (of: ColumnWidths, except: string | null) =>
+    (idColumn != null && idKey !== except && !idColumn.width && of[idKey!] == null)
+    || shown.some((column) => column.id !== except && of[column.id] == null && (column.width ? column.width.trim().endsWith('%') : isFlex(column.className)));
+  const resizeHeaders = () => Array.from(wrapRef.current?.querySelectorAll<HTMLTableCellElement>('thead th[data-uix-col-key]') ?? []);
+  const beginResize = (id: string) => {
+    if (gestureBase.current) return;
+    const base: Record<string, number> = { ...widths };
+    if (!slackTaker(widths, id)) {
+      for (const th of resizeHeaders()) {
+        const key = th.getAttribute('data-uix-col-key')!;
+        const w = typeof th.getBoundingClientRect === 'function' ? th.getBoundingClientRect().width : 0;
+        if (base[key] == null && w > 0) base[key] = Math.round(w);
+      }
+    }
+    gestureBase.current = base;
+  };
+  const draftResize = (id: string, width: number | null) => {
+    if (width == null) { gestureBase.current = null; setDraft(null); return; }
+    setDraft({ base: gestureBase.current ?? widths, id, width });
+  };
+  const commitResize = (id: string, width: number | null) => {
+    const base = gestureBase.current ?? widths;
+    gestureBase.current = null;
+    setDraft(null);
+    const next = setColumnWidth(base, id, width);
+    if (!sameWidths(next, widths)) onWidthsCommit(next);
+  };
+  /** The width that fits a column's header and the cells on screen, each with its padding. */
+  const fitResize = (id: string, bounds: { min: number; max: number }) => {
+    const th = resizeHeaders().find((el) => el.getAttribute('data-uix-col-key') === id);
+    if (!th) return bounds.min;
+    const index = th.cellIndex;
+    const cells = Array.from(wrapRef.current?.querySelectorAll<HTMLTableRowElement>('tbody > tr') ?? [])
+      .filter((tr) => !tr.classList.contains('uix-data-workspace__group-head') && !tr.classList.contains('uix-data-workspace__spacer'))
+      .map((tr) => tr.cells[index]).filter((td): td is HTMLTableCellElement => td != null);
+    return fitColumnWidth([headerContentWidth(th), ...cells.map(contentWidth)], bounds);
+  };
+  const resizeBounds = (minWidth: string | undefined, className: string | undefined, fallback: number) => {
+    const min = Math.max(1, Math.round(lengthPx(minWidth) ?? (isFlex(className) ? TITLE_MIN : fallback)));
+    return { min, max: Math.max(min, COLUMN_WIDTH_MAX) };
+  };
+  const resizer = (id: string, name: string, bounds: { min: number; max: number }) => (
+    <ColumnResizer
+      name={name} width={sized[id]} min={bounds.min} max={bounds.max} popoverId={`${baseId}-w-${id.replace(/[^\w-]/g, '_')}`}
+      onBegin={() => beginResize(id)} onDraft={(w) => draftResize(id, w)} onCommit={(w) => commitResize(id, w)}
+      fit={() => fitResize(id, bounds)} labels={labels}
+    />
+  );
+
   const floors = fixedOn ? [
     ...(selectable ? ['var(--uix-selcol-w)'] : []),
-    ...(idColumn ? [columnFloor(idColumn.width, idColumn.minWidth, undefined)] : []),
-    ...shown.map((column) => columnFloor(column.width, column.minWidth, column.className)),
+    ...(idColumn ? [setPx(idKey) ?? columnFloor(idColumn.width, idColumn.minWidth, undefined)] : []),
+    ...shown.map((column) => setPx(column.id) ?? columnFloor(column.width, column.minWidth, column.className)),
     ...(hasActions ? [actionsCol] : []),
   ] : [];
-  const tableStyle = fixedOn && floors.length ? { minWidth: floors.length === 1 ? floors[0] : `calc(${floors.join(' + ')})` } : undefined;
+  const sum = (parts: readonly string[]) => (parts.length === 1 ? parts[0] : `calc(${parts.join(' + ')})`);
+  // Resized, with no column to take the slack: the table is as wide as its columns, so a column a
+  // person narrows gets narrower, instead of the slack spreading over every column again.
+  const exact = resizeOn && Object.keys(sized).length > 0 && !slackTaker(sized, null);
+  const colWidths = exact ? [
+    ...(selectable ? ['var(--uix-selcol-w)'] : []),
+    ...(idColumn ? [setPx(idKey) ?? idColumn.width!] : []),
+    ...shown.map((column) => setPx(column.id) ?? column.width ?? columnFloor(undefined, column.minWidth, column.className)),
+    ...(hasActions ? [actionsCol] : []),
+  ] : [];
+  const tableStyle = fixedOn && floors.length
+    ? { minWidth: sum(floors), ...(exact ? { width: sum(colWidths) } : {}) }
+    : undefined;
 
   /** A header's sort props: the same for a data column and a sortable id column. */
   const sortProps = (column: DataWorkspaceColumn<T>, columnSortable: boolean) => {
@@ -1311,14 +1893,15 @@ function WorkspaceTable<T>({
 
   const renderRow = (row: T, index: number) => {
     const rowId = ids[index];
-    const isSelected = selected.has(rowId);
+    const rowSelected = isSelected(rowId);
     return (
       <WorkspaceRow<T>
         key={rowId} row={row} rowId={rowId} rowLabel={rowLabel} columns={columns} idColumn={idColumn} getRowProps={getRowProps}
-        selectable={selectable} selected={isSelected} selectDisabled={!isSelected && atCap}
-        hasActions={hasActions} actions={actionsByRow[index]} lazyRowActions={lazyRowActions} ladder={ladder} ladderOn={ladderOn}
+        selectable={selectable} selected={rowSelected} selectDisabled={!rowSelected && atCap}
+        hasActions={hasActions} actions={actionsByRow[index]} actionsDisabled={actionsDisabled} lazyRowActions={lazyRowActions} ladder={ladder} ladderOn={ladderOn}
         selectRowLabel={selectRowLabel} openLabel={openLabel}
-        marked={nav || windowing != null || peekRowId !== undefined} ariaRowIndex={windowed ? index + 2 : undefined}
+        getRowActions={actionPanelTrigger ? getRowActions : undefined} panelTitle={panelLabels.title}
+        marked={nav || selectionKeys || windowing != null || peekRowId !== undefined} ariaRowIndex={windowed ? index + 2 : undefined}
         nav={nav} tabStop={tabStop === rowId} handlers={handlers}
       />
     );
@@ -1330,7 +1913,7 @@ function WorkspaceTable<T>({
       <WorkspaceRow<T>
         key={rowId} row={row} rowId={rowId} rowLabel={rowLabel} columns={columns} idColumn={idColumn} getRowProps={getRowProps}
         selectable={selectable} selected={false} selectDisabled
-        hasActions={hasActions} actions={null} ladder={ladder} ladderOn={ladderOn}
+        hasActions={hasActions} actions={null} actionsDisabled={false} ladder={ladder} ladderOn={ladderOn}
         selectRowLabel={selectRowLabel} openLabel={openLabel}
         marked={false} nav={false} tabStop={false} handlers={handlers}
       />
@@ -1359,7 +1942,7 @@ function WorkspaceTable<T>({
       const open = !collapsed.has(group.id);
       const name = group.name ?? textOf(group.label) ?? group.id;
       const groupIds = ids.slice(first, first + group.rows.length);
-      const on = groupIds.filter((rowId) => selected.has(rowId)).length;
+      const on = groupIds.filter(isSelected).length;
       const count = group.count ?? group.rows.length;
       const nameId = `${baseId}-g${groupIndex}-name`;
       const countId = `${baseId}-g${groupIndex}-count`;
@@ -1454,10 +2037,10 @@ function WorkspaceTable<T>({
         {fixedOn && (
           <colgroup>
             {selectable && <col style={{ width: 'var(--uix-selcol-w)' }} />}
-            {idColumn && <col style={idColumn.width ? { width: idColumn.width } : undefined} />}
+            {idColumn && <col style={(setPx(idKey) ?? idColumn.width) ? { width: setPx(idKey) ?? idColumn.width } : undefined} />}
             {/* A flex column (uix-col--flex) takes the slack; every other column holds its width or its floor. */}
             {shown.map((column) => {
-              const width = column.width ?? (isFlex(column.className) ? undefined : columnFloor(undefined, column.minWidth, column.className));
+              const width = setPx(column.id) ?? column.width ?? (isFlex(column.className) ? undefined : columnFloor(undefined, column.minWidth, column.className));
               return <col key={column.id} className={colClasses(column.className)} style={width ? { width } : undefined} />;
             })}
             {hasActions && <col style={{ width: actionsCol }} />}
@@ -1473,18 +2056,31 @@ function WorkspaceTable<T>({
                 />
               </th>
             )}
-            {idColumn && (idColumn.sortable && idSortColumn
+            {idColumn && (() => {
+              const grip = resizeOn && idColumn.resizable !== false && idKey != null
+                ? resizer(idKey, textOf(idColumn.header) ?? idKey, resizeBounds(idColumn.minWidth, undefined, ID_MIN))
+                : undefined;
+              const keyAttrs = resizeOn && idKey != null ? { 'data-uix-col-key': idKey } : {};
               // a sortable id header is a sortable data column's header (HAR-2631)
-              ? <Th scope="col" data-col={ladderOn ? 'id' : undefined} {...sortProps(idSortColumn, true)}>{idColumn.header}</Th>
-              : <Th scope="col" data-col={ladderOn ? 'id' : undefined}>{idColumn.header}</Th>)}
+              return idColumn.sortable && idSortColumn
+                ? <Th scope="col" data-col={ladderOn ? 'id' : undefined} {...keyAttrs} {...sortProps(idSortColumn, true)} resizeHandle={grip}>{idColumn.header}</Th>
+                : <Th scope="col" data-col={ladderOn ? 'id' : undefined} {...keyAttrs} resizeHandle={grip}>{idColumn.header}</Th>;
+            })()}
             {columns.map((column) => {
               // fixed layout: the <col> holds the width and the table the floors
               const style = !fixedOn && (column.width || column.minWidth) ? { width: column.width, minWidth: column.minWidth } : undefined;
+              // a column the ladder hides has no grip, and a resize does not hold its width
+              const shownNow = !hiddenBy(ladder, column.priority);
+              const grip = resizeOn && shownNow && column.resizable !== false
+                ? resizer(column.id, column.label ?? textOf(column.header) ?? column.id, resizeBounds(column.minWidth, column.className, COLUMN_WIDTH_MIN))
+                : undefined;
               return (
                 <Th
                   key={column.id} scope="col" className={cellClasses(column)} style={style}
+                  {...(resizeOn && shownNow ? { 'data-uix-col-key': column.id } : {})}
                   {...sortProps(column, column.sortable === true)}
                   {...ladderAttrs(ladderOn, column, false)}
+                  resizeHandle={grip}
                 >
                   {column.header}
                 </Th>
@@ -1495,6 +2091,8 @@ function WorkspaceTable<T>({
         </thead>
         {tbody}
       </Table>
+      {/* Only with getRowActions: a workspace without it renders as before (no dialog in its markup). */}
+      {getRowActions != null && actionHost.element}
     </TableWrap>
   );
 }
@@ -1511,11 +2109,17 @@ interface WorkspaceRowProps<T> {
   selectDisabled: boolean;
   hasActions: boolean;
   actions: ReactNode;
+  /** The actions cell is inert: the bulk bar acts on the selection. */
+  actionsDisabled: boolean;
   lazyRowActions?: (row: T, context: DataWorkspaceRowActionsContext) => ReactNode;
   ladder: DataWorkspaceRowActionsContext['ladder'];
   ladderOn: boolean;
   selectRowLabel: string;
   openLabel: string;
+  /** The action panel's ⋯ button, for a row with an enabled action (`getRowActions`, with `actionPanelTrigger`). */
+  getRowActions?: (row: T) => readonly ActionPanelAction[] | null | undefined;
+  /** The ⋯ button's name: the panel's title, "Actions for {name}". */
+  panelTitle?: string;
   /** `data-uix-row-id` on the row: for the keyboard model, the windowing's measurement and the way back from a Peek. */
   marked: boolean;
   ariaRowIndex?: number;
@@ -1534,8 +2138,8 @@ interface WorkspaceRowProps<T> {
  * (`useMemo` / `useCallback`).
  */
 function WorkspaceRowInner<T>({
-  row, rowId, rowLabel, columns, idColumn, getRowProps, selectable, selected, selectDisabled, hasActions, actions, lazyRowActions, ladder, ladderOn,
-  selectRowLabel, openLabel, marked, ariaRowIndex, nav, tabStop, handlers,
+  row, rowId, rowLabel, columns, idColumn, getRowProps, selectable, selected, selectDisabled, hasActions, actions, actionsDisabled, lazyRowActions, ladder, ladderOn,
+  selectRowLabel, openLabel, getRowActions, panelTitle, marked, ariaRowIndex, nav, tabStop, handlers,
   'data-uix-key': motionKey, 'data-uix-exiting': motionExiting, 'aria-hidden': motionHidden,
 }: WorkspaceRowProps<T>) {
   const renderedActions = useMemo(() => lazyRowActions ? lazyRowActions(row, { ladder, compact: ladder === 'priority-mid' }) : actions,
@@ -1543,6 +2147,8 @@ function WorkspaceRowInner<T>({
   // the row's name: its id as shown, else the product's words for it, else (last) its key
   const text = idColumn?.text(row) ?? rowLabel?.(row) ?? rowId;
   const extra = getRowProps?.(row);
+  // The ⋯ button only where the row has something to run.
+  const panelTrigger = useMemo(() => getRowActions != null && (getRowActions(row) ?? []).some((action) => !action.disabled), [getRowActions, row]);
   const navProps = nav ? {
     tabIndex: tabStop ? 0 : -1,
     onKeyDown: (event: ReactKeyboardEvent<HTMLTableRowElement>) => { extra?.onKeyDown?.(event); if (!event.defaultPrevented) handlers.key(rowId, event); },
@@ -1559,7 +2165,7 @@ function WorkspaceRowInner<T>({
         <td className="uix-table__selcell" data-col={ladderOn ? 'select' : undefined}>
           <Checkbox
             aria-label={fillLabel(selectRowLabel, { label: text })} checked={selected} disabled={selectDisabled}
-            onClick={(event) => handlers.toggle(rowId, (event.currentTarget as HTMLInputElement).checked, event)}
+            onClick={(event) => handlers.toggle(rowId, (event.currentTarget as HTMLInputElement).checked, event.shiftKey)}
             onChange={() => {}}
           />
         </td>
@@ -1574,11 +2180,43 @@ function WorkspaceRowInner<T>({
           {cellContent(column, row)}
         </Td>
       ))}
-      {hasActions && <RowActions data-col={ladderOn ? 'actions' : undefined}>{renderedActions}</RowActions>}
+      {hasActions && (
+        <ActionsCell disabled={actionsDisabled} data-col={ladderOn ? 'actions' : undefined}>
+          {renderedActions}
+          {panelTrigger && (
+            <Button
+              size="sm" variant="ghost" icon className="uix-data-workspace__panel-trigger" aria-haspopup="dialog"
+              aria-label={fillLabel(panelTitle ?? 'Actions for {name}', { name: text })} shortcutId={ACTION_PANEL_SHORTCUT_ID}
+              onClick={(event) => handlers.openActions(rowId, event.currentTarget)}
+            >
+              <MoreHorizontalIcon size="sm" aria-hidden="true" />
+            </Button>
+          )}
+        </ActionsCell>
+      )}
     </Tr>
   );
 }
 const WorkspaceRow = memo(WorkspaceRowInner) as typeof WorkspaceRowInner;
+
+/**
+ * A row's actions cell; `disabled` makes it inert while the bulk bar acts on the selection
+ * (Carbon's batch mode). `inert` is set on the element directly: React 18 drops a boolean
+ * `inert` prop and React 19 reads `""` as false. Focus inside it moves to the row's checkbox
+ * first, so it is not dropped on the page.
+ */
+function ActionsCell({ disabled, children, ...props }: { disabled: boolean; children?: ReactNode; 'data-col'?: string }) {
+  const ref = useRef<HTMLTableCellElement>(null);
+  useIsomorphicLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (!disabled) { el.removeAttribute('inert'); return; }
+    if (el.contains(document.activeElement)) el.closest('tr')?.querySelector<HTMLElement>('td.uix-table__selcell input')?.focus({ preventScroll: true });
+    el.setAttribute('inert', '');
+  }, [disabled]);
+  // RowActions' own cell (`uix-table__actions`), with a ref
+  return <td ref={ref} className="uix-table__actions" data-uix-disabled={disabled ? '' : undefined} {...props}>{children}</td>;
+}
 
 /** The record-id cell: the id opens a peek and ↗ the record; or the whole id is the record's link. */
 function IdCell<T>({ row, text, idColumn, openLabel }: { row: T; text: string; idColumn: DataWorkspaceIdColumn<T>; openLabel: string }) {

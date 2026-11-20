@@ -60,8 +60,9 @@ export const DRAG_ALTERNATIVES = [
     keyboard: 'Arrow keys pan the focused map and move between nodes.', status: 'gap',
   },
   {
-    component: 'Table column resize', drag: 'Drag a column edge.',
-    pointer: 'Built with the column resize work (roadmap #11), which owns its single-pointer path.', keyboard: 'The same work.', status: 'other',
+    component: 'DataWorkspace column resize', drag: 'Drag the grip at a header\'s end edge.',
+    pointer: 'Click the grip without dragging: a width popover with a number field, − and + (the next stop of the column-width scale), Fit to content and Default width. A double-click fits too. Focus returns to the grip (roadmap #11, <code>onColumnWidthsChange</code>).',
+    keyboard: '← / → on the focused grip (a separator), Shift for the scale, Home / End; Enter opens the popover.', status: 'added',
   },
 ];
 

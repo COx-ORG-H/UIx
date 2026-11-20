@@ -2,6 +2,11 @@
 
 <!-- lesson-skip: 37c6e9e2 same trap as the b6d558eb entry (scroll-padding adds no scroll range; the end of a scroller needs room), now for the page and the shell main; pinned by the sticky-focus spec -->
 <!-- lesson-skip: ea12d0c2 routine: the contract gate named two 0px fallbacks; a hit-test grid sampled a rounded button's corners (calibration of this PR's own new spec) -->
+<!-- lesson-skip: 8a8a97d6 routine review fixes on unreleased selection scope (a note state not reset by later picks, new keys leaking into the legacy selection path, a click on an inert cell landing on its row, a total offered mid-refetch), found by a fresh-context review; the first three pinned by jsdom tests -->
+<!-- lesson-skip: 81265f2c routine: a nowrap bulk count grew a restated filter and ran past the bar in Linux fonts only; the 8f4970d reflow lesson (write in the longest real label before measuring) again, pinned by the 320 px selection-scope spec -->
+<!-- lesson-skip: 7a6f1333 routine: axe target-size (wcag22aa) counts an element's own box, not a ::before hit area; the a11y job named the crumb -->
+<!-- lesson-skip: 4e3f75a0 routine: the glyph guard named a text separator and a hand-drawn mask (icon set now), and a stray apostrophe broke a docs string; both named by CI gates -->
+<!-- lesson-skip: dd03ff1a routine: a source that answered with nothing kept its group heading; found by looking at the live demo, pinned by a jsdom test -->
 <!-- lesson-skip: 7589b7cb routine: the new label-in-name and forced-colors lanes named each case on first run; the gate is tests/a11y/label-in-name.spec.mjs and forced-colors.lane.spec.mjs -->
 <!-- lesson-skip: ddba5324 routine: a scripted edit without an assertion did not apply, and the merge resolution assumed it had; the dts build named it -->
 <!-- lesson-skip: 9f537ee4 routine: an empty flex item centred in a box a parent stretched; found by looking at the harness shot, the mark now sits on the text baseline -->
@@ -126,6 +131,9 @@
 
 ### 2026-11-20 · focus not obscured at the end of a scroller · `b6d558eb`
 - **Rule:** `scroll-padding` (WCAG technique C43) only moves where a scroll stops inside the existing range; it never adds room. The last item of a scroller already at its end stays under a fixed layer (toasts, a tray) unless the scroller gets trailing space as tall as the layer's reach. Check it with a hit-test that wants every point of a full-width row, not "partly visible": a row is wider than any toast and always passes that.  **Why:** the windowed DataWorkspace's End row sat under the tray in all three engines while every other row was clear.  **Gate:** `tests/a11y/sticky-focus.spec.mjs` virtual case (End, C43 check; select-cross-browser).  **Tag:** a11y, wcag-2.4.11, scroll-padding, virtualization
+
+### 2026-11-20 · focusing content of a popover opened from a timer · `c5ded32c`
+- **Rule:** focus a popover's field in that content's own mount effect, not in the popover's `toggle` listener. Opened from a `setTimeout` (a click that waits out a double-click), `setOpen(true)` + `showPopover()` fires `toggle` before React has rendered the content, so the listener finds nothing; from a React key or click handler it works, which hides the bug in keyboard tests.  **Why:** updates outside a React event are not flushed synchronously, while `toggle` is the next task.  **Gate:** tests/a11y/column-resize.spec.mjs (the field is focused after a pointer click on the grip).  **Tag:** react, popover, focus
 
 ### 2026-11-20 · screenshots of scroll-driven effects · `86b3f381`
 - **Rule:** never pass `animations: 'disabled'` to a Playwright screenshot of anything drawn by a scroll-timeline animation (a revealed divider, a scroll fade); it resets the animation to its start, so the pixels show the unscrolled state. Scroll, wait two frames, shoot without it.  **Why:** Playwright finishes or cancels every CSS animation for the shot, scroll-driven ones included; the forced-colours lane read a drawn divider as missing.  **Gate:** `tests/a11y/forced-colors.lane.spec.mjs` (pinned header) shoots without it; ⚠ TODO no lint for the option on scroll-timeline subjects.  **Tag:** false-red, motion, test-double-fidelity

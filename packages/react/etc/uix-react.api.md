@@ -81,6 +81,94 @@ export interface AccountMenuUser {
     sub?: ReactNode;
 }
 
+// @public
+export const ACTION_PANEL_SHORTCUT_ID = "uix.action-panel";
+
+// @public
+export function ActionPanel(input: ActionPanelProps): react.JSX.Element;
+
+// @public
+export interface ActionPanelAction {
+    confirm?: boolean | ActionPanelConfirm;
+    description?: string;
+    destructive?: boolean;
+    disabled?: boolean;
+    group?: string;
+    icon?: ReactNode;
+    id: string;
+    keys?: ShortcutBinding;
+    keywords?: readonly string[];
+    // (undocumented)
+    label: string;
+    onSelect: () => void;
+    primary?: boolean;
+    undoable?: boolean;
+}
+
+// @public
+export interface ActionPanelConfirm {
+    confirmLabel?: string;
+    description?: string;
+    title?: string;
+}
+
+// @public
+export interface ActionPanelGroup {
+    // (undocumented)
+    actions: ActionPanelAction[];
+    destructive: boolean;
+    label: string | undefined;
+}
+
+// @public
+export interface ActionPanelLabels {
+    cancel: string;
+    confirmBody: string;
+    confirmTitle: string;
+    destructiveGroup: string;
+    empty: string;
+    open: string;
+    // (undocumented)
+    resultsMany: UixCountLabel;
+    resultsOne: string;
+    search: string;
+    title: string;
+    titleUnnamed: string;
+}
+
+// @public (undocumented)
+export interface ActionPanelProps {
+    actions: readonly ActionPanelAction[];
+    anchor?: HTMLElement | RefObject<HTMLElement | null> | null;
+    // (undocumented)
+    className?: string;
+    confirmId?: string | null;
+    // (undocumented)
+    labels?: Partial<ActionPanelLabels>;
+    name?: string;
+    onOpenChange: (open: boolean) => void;
+    onReturnFocusLost?: () => void;
+    open: boolean;
+    placement?: Placement;
+    returnFocus?: HTMLElement | null;
+    showPrimaryKey?: boolean;
+}
+
+// @public
+export const ActionPanelScope: react.ForwardRefExoticComponent<ActionPanelScopeProps & react.RefAttributes<HTMLDivElement>>;
+
+// @public (undocumented)
+export interface ActionPanelScopeProps extends HTMLAttributes<HTMLDivElement> {
+    actions: readonly ActionPanelAction[];
+    // (undocumented)
+    children?: ReactNode;
+    enabled?: boolean;
+    // (undocumented)
+    labels?: Partial<ActionPanelLabels>;
+    name: string;
+    scopeLabel?: string;
+}
+
 // @public (undocumented)
 export function addCalendarDays(value: string, amount: number): string;
 
@@ -1336,6 +1424,18 @@ export interface ColorPickerProps {
     value: string;
 }
 
+// @public
+export const COLUMN_WIDTH_MAX = 960;
+
+// @public
+export const COLUMN_WIDTH_MIN = 92;
+
+// @public
+export const COLUMN_WIDTH_SCALE: readonly number[];
+
+// @public
+export const COLUMN_WIDTH_STEP = 8;
+
 // @public (undocumented)
 export interface ColumnFilter {
     // (undocumented)
@@ -1346,6 +1446,23 @@ export interface ColumnFilter {
     op: FilterOp;
     value: Primitive | Primitive[];
 }
+
+// @public
+export interface ColumnWidthBounds {
+    max?: number;
+    min?: number;
+}
+
+// @public
+export function columnWidthForKey(width: number, event: {
+    key: string;
+    shiftKey?: boolean;
+}, options?: ColumnWidthBounds & {
+    rtl?: boolean;
+}): number | null;
+
+// @public
+export type ColumnWidths = Readonly<Record<string, number>>;
 
 // @public
 export function Combobox(input: ComboboxProps): react.JSX.Element;
@@ -1397,7 +1514,53 @@ export interface ComboboxProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onC
 }
 
 // @public
+export const COMMAND_FRECENCY_HALF_LIFE: number;
+
+// @public
+export const COMMAND_FRECENCY_MAX_ENTRIES = 200;
+
+// @public
+export const COMMAND_FRECENCY_STORAGE_KEY = "uix-command-frecency";
+
+// @public
 export const COMMAND_PALETTE_SHORTCUT_ID = "uix.command-palette";
+
+// @public
+export type CommandFold = (text: string) => readonly string[];
+
+// @public
+export function commandFoldFor(locale?: string): CommandFold;
+
+// @public
+export interface CommandFrecency {
+    entries: CommandFrecencyEntries;
+    recent: <T extends {
+        id: string;
+    }>(items: readonly T[], limit?: number) => T[];
+    record: (id: string) => void;
+    reset: (id?: string) => void;
+    score: (id: string) => number;
+}
+
+// @public
+export type CommandFrecencyEntries = Readonly<Record<string, CommandFrecencyEntry>>;
+
+// @public
+export interface CommandFrecencyEntry {
+    count: number;
+    last: number;
+    value: number;
+}
+
+// @public
+export function commandFrecencyScore(entry: CommandFrecencyEntry | undefined, now: number, halfLife?: number): number;
+
+// @public
+export interface CommandFrecencyStorage {
+    read: () => CommandFrecencyEntries | null;
+    subscribe?: (onChange: () => void) => () => void;
+    write: (entries: CommandFrecencyEntries) => void;
+}
 
 // @public
 export function CommandGroup(input: CommandGroupProps): react.JSX.Element;
@@ -1436,6 +1599,8 @@ export interface CommandPaletteGroup {
 
 // @public
 export interface CommandPaletteItem {
+    aliases?: readonly string[];
+    contextBoost?: number;
     description?: string;
     disabled?: boolean;
     group?: string;
@@ -1446,8 +1611,18 @@ export interface CommandPaletteItem {
     // (undocumented)
     label: string;
     onSelect?: () => void;
+    page?: CommandPalettePage;
     shortcut?: readonly string[];
     shortcutId?: string;
+}
+
+// @public
+export interface CommandPalettePage {
+    id: string;
+    items?: readonly CommandPaletteItem[];
+    label: string;
+    placeholder?: string;
+    sources?: readonly CommandPaletteSource[];
 }
 
 // @public (undocumented)
@@ -1455,11 +1630,14 @@ export interface CommandPaletteProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     children?: ReactNode;
     emptyLabel?: ReactNode;
+    failedLabel?: string;
     filter?: (items: readonly CommandPaletteItem[], query: string) => CommandPaletteItem[];
+    frecency?: Pick<CommandFrecency, 'score'> & Partial<Pick<CommandFrecency, 'record'>>;
     inputLabel?: string;
     inputProps?: InputHTMLAttributes<HTMLInputElement>;
     items?: readonly CommandPaletteItem[];
     limit?: number;
+    loadingLabel?: string;
     onItemSelect?: (item: CommandPaletteItem) => void;
     onNavigate?: (href: string, item: CommandPaletteItem) => void;
     // (undocumented)
@@ -1471,8 +1649,20 @@ export interface CommandPaletteProps extends HTMLAttributes<HTMLDivElement> {
     recent?: readonly CommandPaletteItem[];
     recentLabel?: string;
     resultsLabel?: (count: number) => string;
+    retryLabel?: string;
     shortcut?: ShortcutBinding;
     shortcutLabel?: string;
+    sources?: readonly CommandPaletteSource[];
+}
+
+// @public
+export interface CommandPaletteSource {
+    contextBoost?: number;
+    debounce?: number;
+    id: string;
+    label: string;
+    load: (query: string, signal: AbortSignal) => Promise<readonly CommandPaletteItem[]>;
+    minQueryLength?: number;
 }
 
 // @public
@@ -1883,7 +2073,7 @@ export interface DashboardGridProps extends HTMLAttributes<HTMLDivElement> {
 export type DashboardGridSpan = 1 | 2 | 'full';
 
 // @public
-export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null>(input: DataWorkspaceProps<T, S>): react.JSX.Element;
+export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null, Q = DataWorkspaceQuery>(input: DataWorkspaceProps<T, S, Q>): react.JSX.Element;
 
 // @public (undocumented)
 export interface DataWorkspaceColumn<T> {
@@ -1899,6 +2089,7 @@ export interface DataWorkspaceColumn<T> {
     lineClamp?: number;
     minWidth?: string;
     priority?: 'high' | 'mid' | 'low';
+    resizable?: boolean;
     // (undocumented)
     sortable?: boolean;
     textWrap?: 'wrap' | 'nowrap' | 'truncate';
@@ -1929,6 +2120,7 @@ export interface DataWorkspaceIdColumn<T> {
     render?: (row: T) => ReactNode;
     // (undocumented)
     renderLink?: UixRenderLink;
+    resizable?: boolean;
     sortable?: boolean;
     text: (row: T) => string;
     width?: string;
@@ -1942,7 +2134,13 @@ export interface DataWorkspaceLabels {
     bulkActions: string;
     // (undocumented)
     clearFilters: string;
+    // (undocumented)
+    clearSelection: string;
     collapseGroup: string;
+    columnWidth: string;
+    columnWidthUnit: string;
+    defaultColumnWidth: string;
+    dismiss: string;
     // (undocumented)
     empty: string;
     // (undocumented)
@@ -1954,6 +2152,7 @@ export interface DataWorkspaceLabels {
     filteredEmpty: string;
     // (undocumented)
     filteredEmptyDetail: string;
+    fitColumn: string;
     groupCount: UixCountLabel;
     groupCountOne: string;
     // (undocumented)
@@ -1961,8 +2160,13 @@ export interface DataWorkspaceLabels {
     // (undocumented)
     maximize: string;
     more?: string;
+    narrower: string;
     open: string;
+    querySearch: string;
+    querySeparator: string;
     range: string;
+    resizeColumn: string;
+    resizeHint: string;
     restore: string;
     // (undocumented)
     retry: string;
@@ -1981,12 +2185,26 @@ export interface DataWorkspaceLabels {
     searchPlaceholder: string;
     // (undocumented)
     selectAll: string;
+    selectAllMatching: UixCountLabel;
     selected: UixCountLabel;
+    selectedAll: UixCountLabel;
+    selectedAllMatching: UixCountLabel;
     selectGroup: string;
+    selectionAll: UixCountLabel;
+    selectionAllMatching: UixCountLabel;
+    selectionCleared: string;
+    selectionExcept: UixCountLabel;
+    selectionExceptMatching: UixCountLabel;
+    selectionPage: UixCountLabel;
+    selectionStale: UixCountLabel;
     selectRow: string;
+    shortcutSelectPage: string;
+    shortcutSelectRange: string;
+    shortcutToggleRow: string;
     sortPriority: string;
     // (undocumented)
     view: string;
+    wider: string;
 }
 
 // @public
@@ -2014,16 +2232,19 @@ export type DataWorkspacePagination = ({
 };
 
 // @public (undocumented)
-export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null> extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null, Q = DataWorkspaceQuery> extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+    actionPanelTrigger?: boolean;
     activateOnClick?: boolean;
     activeRowId?: string | null;
     beforeBody?: ReactNode;
-    bulkActions?: (selectedIds: string[]) => ReactNode;
+    bulkActions?: (selectedIds: string[], scope: SelectionScope<Q>) => ReactNode;
     collapsedGroups?: ReadonlySet<string>;
     // (undocumented)
     columns: readonly DataWorkspaceColumn<T>[];
+    columnWidths?: ColumnWidths;
     // (undocumented)
     density?: TableDensity;
+    disableRowActionsWhileSelected?: boolean;
     empty?: ReactNode;
     emptyAction?: ReactNode;
     error?: ReactNode;
@@ -2041,6 +2262,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
     };
     fixed?: boolean;
     freezeFirstColumn?: boolean;
+    getRowActions?: (row: T) => readonly ActionPanelAction[] | null | undefined;
     // (undocumented)
     getRowId: (row: T) => string;
     getRowProps?: (row: T) => HTMLAttributes<HTMLTableRowElement> & Record<`data-${string}`, string | undefined>;
@@ -2057,6 +2279,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
     multiSort?: boolean;
     onActiveRowChange?: (rowId: string) => void;
     onCollapsedGroupsChange?: (collapsed: Set<string>) => void;
+    onColumnWidthsChange?: (widths: Record<string, number>) => void;
     // (undocumented)
     onMaximizedChange?: (maximized: boolean) => void;
     // (undocumented)
@@ -2096,6 +2319,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
         maxLength?: number;
     };
     selection?: ReadonlySet<string>;
+    selectionScope?: DataWorkspaceSelectionScope<Q>;
     sort?: S;
     stateOverride?: ReactNode;
     status?: 'ready' | 'loading' | 'error';
@@ -2108,9 +2332,25 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
 }
 
 // @public
+export interface DataWorkspaceQuery {
+    filters: Record<string, FilterValue>;
+    search: string;
+}
+
+// @public
 export interface DataWorkspaceRowActionsContext {
     compact: boolean;
     ladder: 'cards' | 'priority' | 'priority-mid' | null;
+}
+
+// @public
+export interface DataWorkspaceSelectionScope<Q = DataWorkspaceQuery> {
+    description?: ReactNode;
+    onChange: (scope: SelectionScope<Q>) => void;
+    onQueryChange?: 'clear' | 'confirm';
+    query?: Q;
+    total?: number;
+    value: SelectionScope<Q>;
 }
 
 // @public (undocumented)
@@ -2374,8 +2614,14 @@ export interface DaySpanLayout {
     placed: PlacedDaySpan[];
 }
 
+// @public
+export function decayedFrecency(entry: CommandFrecencyEntry | undefined, now: number, halfLife?: number): number;
+
 // @public (undocumented)
 export const DEFAULT_ACCOUNT_MENU_LABELS: AccountMenuLabels;
+
+// @public (undocumented)
+export const DEFAULT_ACTION_PANEL_LABELS: ActionPanelLabels;
 
 // @public (undocumented)
 export const DEFAULT_AI_LABELS: AiLabels;
@@ -2562,6 +2808,9 @@ export const DEFAULT_TREE_LABELS: TreeLabels;
 
 // @public (undocumented)
 export const DEFAULT_USE_TABLE_LABELS: UseTableLabels;
+
+// @public
+export const defaultCommandFold: CommandFold;
 
 // @public
 export const defaultTimelineStep: (scale: TimelineScale) => number;
@@ -2991,6 +3240,9 @@ export function effectiveShortcut(id: string, defaultKeys: ShortcutBinding | nul
 
 // @public
 export function emitProposalEvent(input: ProposalEventInput, target?: EventTarget | null): boolean;
+
+// @public
+export const EMPTY_SELECTION_SCOPE: SelectionScopeIds;
 
 // @public
 export function emptyFilterValue(kind: FilterValueKind): FilterValue;
@@ -3748,6 +4000,9 @@ export function findShortcutConflicts(entries: readonly ShortcutConflictEntry[],
 }): ShortcutConflict[];
 
 // @public
+export function fitColumnWidth(contentWidths: readonly number[], bounds?: ColumnWidthBounds): number;
+
+// @public
 export function flashChanged(el: HTMLElement): void;
 
 // @public (undocumented)
@@ -3882,10 +4137,16 @@ export type FormFieldErrors<V> = {
 };
 
 // @public
+export const FRECENCY_WEIGHT = 0.5;
+
+// @public
 export function getStickyInsets(): {
     readonly top: number;
     readonly bottom: number;
 };
+
+// @public
+export function groupActionPanelActions(actions: readonly ActionPanelAction[], query?: string): ActionPanelGroup[];
 
 // @public
 export function groupCommandItems(items: readonly CommandPaletteItem[]): CommandPaletteGroup[];
@@ -4238,6 +4499,9 @@ export function isDateUnavailable(date: string, options: {
 export function isFilterEmpty(value: FilterValue | undefined): boolean;
 
 // @public
+export function isInSelectionScope(scope: SelectionScope<unknown>, id: string): boolean;
+
+// @public
 export const isOvernightRange: (min?: string, max?: string) => boolean;
 
 // @public
@@ -4248,6 +4512,9 @@ export function isProposalType(value: unknown): value is string;
 
 // @public (undocumented)
 export function isRuleGroup(node: RuleCondition | RuleGroup): node is RuleGroup;
+
+// @public
+export function isSelectionScopeEmpty(scope: SelectionScope<unknown>): boolean;
 
 // @public
 export function isTimeOutOfRange(value: string, min?: string, max?: string): boolean;
@@ -4776,6 +5043,9 @@ export interface LoadingStateProps extends HTMLAttributes<HTMLDivElement> {
     label?: string;
     rows?: number;
 }
+
+// @public
+export function localCommandFrecencyStorage(key?: string): CommandFrecencyStorage;
 
 // @public
 export function LocaleSwitcher(input: LocaleSwitcherProps): react.JSX.Element;
@@ -5342,56 +5612,13 @@ export function MotionList<T>(input: MotionListProps<T>): react.DetailedReactHTM
     ref: react.RefObject<HTMLElement>;
     className: string;
     onTransitionEnd: (event: TransitionEvent_2<HTMLElement>) => void;
-    slot?: string | undefined | undefined;
-    style?: react.CSSProperties | undefined;
-    title?: string | undefined | undefined;
-    rel?: string | undefined | undefined;
-    rev?: string | undefined | undefined;
-    dir?: string | undefined | undefined;
-    role?: react.AriaRole | undefined;
+    suppressHydrationWarning?: boolean | undefined | undefined;
     color?: string | undefined | undefined;
     id?: string | undefined | undefined;
-    defaultChecked?: boolean | undefined | undefined;
-    defaultValue?: string | number | readonly string[] | undefined;
-    suppressContentEditableWarning?: boolean | undefined | undefined;
-    suppressHydrationWarning?: boolean | undefined | undefined;
-    accessKey?: string | undefined | undefined;
-    autoCapitalize?: "off" | "none" | "on" | "sentences" | "words" | "characters" | undefined | (string & {}) | undefined;
-    autoFocus?: boolean | undefined | undefined;
-    contentEditable?: (boolean | "true" | "false") | "inherit" | "plaintext-only" | undefined;
-    contextMenu?: string | undefined | undefined;
-    draggable?: (boolean | "true" | "false") | undefined;
-    enterKeyHint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send" | undefined | undefined;
-    hidden?: boolean | undefined | undefined;
     lang?: string | undefined | undefined;
-    nonce?: string | undefined | undefined;
-    spellCheck?: (boolean | "true" | "false") | undefined;
+    style?: react.CSSProperties | undefined;
+    role?: react.AriaRole | undefined;
     tabIndex?: number | undefined | undefined;
-    translate?: "yes" | "no" | undefined | undefined;
-    radioGroup?: string | undefined | undefined;
-    about?: string | undefined | undefined;
-    content?: string | undefined | undefined;
-    datatype?: string | undefined | undefined;
-    inlist?: any;
-    prefix?: string | undefined | undefined;
-    property?: string | undefined | undefined;
-    resource?: string | undefined | undefined;
-    typeof?: string | undefined | undefined;
-    vocab?: string | undefined | undefined;
-    autoCorrect?: string | undefined | undefined;
-    autoSave?: string | undefined | undefined;
-    itemProp?: string | undefined | undefined;
-    itemScope?: boolean | undefined | undefined;
-    itemType?: string | undefined | undefined;
-    itemID?: string | undefined | undefined;
-    itemRef?: string | undefined | undefined;
-    results?: number | undefined | undefined;
-    security?: string | undefined | undefined;
-    unselectable?: "on" | "off" | undefined | undefined;
-    inputMode?: "none" | "text" | "tel" | "url" | "email" | "numeric" | "decimal" | "search" | undefined | undefined;
-    is?: string | undefined | undefined;
-    exportparts?: string | undefined | undefined;
-    part?: string | undefined | undefined;
     "aria-activedescendant"?: string | undefined | undefined;
     "aria-atomic"?: (boolean | "true" | "false") | undefined;
     "aria-autocomplete"?: "none" | "inline" | "list" | "both" | undefined | undefined;
@@ -5605,6 +5832,49 @@ export function MotionList<T>(input: MotionListProps<T>): react.DetailedReactHTM
     onAnimationIteration?: react.AnimationEventHandler<HTMLElement> | undefined;
     onAnimationIterationCapture?: react.AnimationEventHandler<HTMLElement> | undefined;
     onTransitionEndCapture?: react.TransitionEventHandler<HTMLElement> | undefined;
+    title?: string | undefined | undefined;
+    slot?: string | undefined | undefined;
+    hidden?: boolean | undefined | undefined;
+    content?: string | undefined | undefined;
+    defaultChecked?: boolean | undefined | undefined;
+    defaultValue?: string | number | readonly string[] | undefined;
+    suppressContentEditableWarning?: boolean | undefined | undefined;
+    accessKey?: string | undefined | undefined;
+    autoCapitalize?: "off" | "none" | "on" | "sentences" | "words" | "characters" | undefined | (string & {}) | undefined;
+    autoFocus?: boolean | undefined | undefined;
+    contentEditable?: (boolean | "true" | "false") | "inherit" | "plaintext-only" | undefined;
+    contextMenu?: string | undefined | undefined;
+    dir?: string | undefined | undefined;
+    draggable?: (boolean | "true" | "false") | undefined;
+    enterKeyHint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send" | undefined | undefined;
+    nonce?: string | undefined | undefined;
+    spellCheck?: (boolean | "true" | "false") | undefined;
+    translate?: "yes" | "no" | undefined | undefined;
+    radioGroup?: string | undefined | undefined;
+    about?: string | undefined | undefined;
+    datatype?: string | undefined | undefined;
+    inlist?: any;
+    prefix?: string | undefined | undefined;
+    property?: string | undefined | undefined;
+    rel?: string | undefined | undefined;
+    resource?: string | undefined | undefined;
+    rev?: string | undefined | undefined;
+    typeof?: string | undefined | undefined;
+    vocab?: string | undefined | undefined;
+    autoCorrect?: string | undefined | undefined;
+    autoSave?: string | undefined | undefined;
+    itemProp?: string | undefined | undefined;
+    itemScope?: boolean | undefined | undefined;
+    itemType?: string | undefined | undefined;
+    itemID?: string | undefined | undefined;
+    itemRef?: string | undefined | undefined;
+    results?: number | undefined | undefined;
+    security?: string | undefined | undefined;
+    unselectable?: "on" | "off" | undefined | undefined;
+    inputMode?: "none" | "text" | "tel" | "url" | "email" | "numeric" | "decimal" | "search" | undefined | undefined;
+    is?: string | undefined | undefined;
+    exportparts?: string | undefined | undefined;
+    part?: string | undefined | undefined;
 }, HTMLElement>;
 
 // @public (undocumented)
@@ -5987,6 +6257,9 @@ export interface PaginationProps extends Omit<HTMLAttributes<HTMLDivElement>, 'o
     renderLink?: UixRenderLink;
     summary?: ReactNode;
 }
+
+// @public
+export function parseCommandFrecency(raw: unknown): CommandFrecencyEntries;
 
 // @public
 export function parseDateInput(text: string, locale?: string | readonly string[]): string | null;
@@ -6662,6 +6935,23 @@ export interface RadioProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
 }
 
 // @public
+export function rankCommandItems(items: readonly CommandPaletteItem[], query: string, options?: RankCommandOptions): RankedCommand[];
+
+// @public
+export interface RankCommandOptions {
+    fold?: CommandFold;
+    frecency?: (id: string) => number;
+    locale?: string;
+}
+
+// @public
+export interface RankedCommand {
+    alias?: string;
+    item: CommandPaletteItem;
+    score: number;
+}
+
+// @public
 export function rankOverflow<T>(items: readonly T[], compare: (a: T, b: T) => number, n: number): {
     visible: T[];
     hidden: number;
@@ -6669,6 +6959,12 @@ export function rankOverflow<T>(items: readonly T[], compare: (a: T, b: T) => nu
 
 // @public
 export function readSystemDisplayPreferences(): SystemDisplayPreferences;
+
+// @public
+export function recordCommandUse(entries: CommandFrecencyEntries, id: string, now: number, input?: {
+    halfLife?: number | undefined;
+    max?: number | undefined;
+}): CommandFrecencyEntries;
 
 // @public
 export interface RecordConflictChange {
@@ -8136,6 +8432,9 @@ export interface SegmentedProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
 // @public
 export const Select: react.ForwardRefExoticComponent<SelectProps & react.RefAttributes<HTMLSelectElement>>;
 
+// @public
+export function selectAllMatching<Q>(query: Q, total: number): SelectionScopeQuery<Q>;
+
 // @public (undocumented)
 export type SelectAllState = 'none' | 'some' | 'all';
 
@@ -8149,6 +8448,35 @@ export interface SelectGroup {
     label: string;
     // (undocumented)
     options: readonly SelectOption[];
+}
+
+// @public
+export function selectionQueryKey(query: unknown): string;
+
+// @public
+export type SelectionScope<Q = unknown> = SelectionScopeIds | SelectionScopeQuery<Q>;
+
+// @public
+export function selectionScopeCount(scope: SelectionScope<unknown>): number;
+
+// @public
+export interface SelectionScopeIds {
+    // (undocumented)
+    ids: readonly string[];
+    // (undocumented)
+    kind: 'ids';
+}
+
+// @public
+export function selectionScopeMatcher(scope: SelectionScope<unknown>): (id: string) => boolean;
+
+// @public
+export interface SelectionScopeQuery<Q = unknown> {
+    excludedIds: readonly string[];
+    // (undocumented)
+    kind: 'query';
+    query: Q;
+    total: number;
 }
 
 // @public
@@ -8273,6 +8601,12 @@ export interface SessionTimeoutState {
     remaining: number;
     touch: () => void;
 }
+
+// @public
+export function setColumnWidth(widths: ColumnWidths | undefined, id: string, width: number | null): Record<string, number>;
+
+// @public
+export function setInSelectionScope<Q>(scope: SelectionScope<Q>, ids: readonly string[], on: boolean, cap?: number): SelectionScope<Q>;
 
 // @public
 export function setRuleCombinator(group: RuleGroup, combinator: 'and' | 'or'): RuleGroup;
@@ -8958,6 +9292,11 @@ export type StatusStripTone = 'ok' | 'warning' | 'critical' | 'unknown';
 // @public (undocumented)
 export function Step(input: StepProps): react.JSX.Element;
 
+// @public
+export function stepColumnWidth(width: number, direction: 1 | -1, options?: ColumnWidthBounds & {
+    coarse?: boolean;
+}): number;
+
 // @public (undocumented)
 export function stepMetricValue(value: number | null, direction: -1 | 1, options?: {
     min?: number;
@@ -9561,6 +9900,7 @@ export interface ThemeSwitcherProps extends Omit<HTMLAttributes<HTMLDivElement>,
 export interface ThProps extends ThHTMLAttributes<HTMLTableCellElement> {
     // (undocumented)
     onSort?: () => void;
+    resizeHandle?: ReactNode;
     // (undocumented)
     sortable?: boolean;
     // (undocumented)
@@ -9984,6 +10324,9 @@ export function toDateKey(date: Date): string;
 export function toggleId(set: ReadonlySet<string>, id: string): Set<string>;
 
 // @public
+export function toggleInSelectionScope<Q>(scope: SelectionScope<Q>, id: string, cap?: number): SelectionScope<Q>;
+
+// @public
 export function togglePage(selected: ReadonlySet<string>, pageIds: readonly string[]): Set<string>;
 
 // @public (undocumented)
@@ -10173,6 +10516,7 @@ export type UixLabelPack = {
 // @public
 export interface UixLabels {
     accountMenu?: Partial<AccountMenuLabels>;
+    actionPanel?: Partial<ActionPanelLabels>;
     ai?: Partial<AiLabels>;
     alert?: {
         dismiss?: string;
@@ -10200,6 +10544,10 @@ export interface UixLabels {
         resultsMany?: UixCountLabel;
         empty?: string;
         recent?: string;
+        loading?: string;
+        failed?: string;
+        retry?: string;
+        breadcrumb?: string;
     };
     confirmDialog?: {
         typeToConfirm?: string;
@@ -10400,6 +10748,17 @@ export function useArrive(): ArriveState;
 
 // @public
 export function useChangeHighlight<T extends HTMLElement = HTMLElement>(value: unknown, input?: ChangeHighlightOptions): RefObject<T | null>;
+
+// @public
+export function useCommandFrecency(input?: UseCommandFrecencyOptions): CommandFrecency;
+
+// @public
+export interface UseCommandFrecencyOptions {
+    halfLife?: number;
+    max?: number;
+    storage?: CommandFrecencyStorage | null;
+    storageKey?: string;
+}
 
 // Warning: (ae-forgotten-export) The symbol "Key" needs to be exported by the entry point index.d.ts
 //
@@ -10816,6 +11175,7 @@ export interface ViewState {
     q?: string;
     // (undocumented)
     sort?: SortKey[];
+    widths?: Record<string, number>;
 }
 
 // @public (undocumented)
