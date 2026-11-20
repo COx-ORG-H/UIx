@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 81265f2c routine: a nowrap bulk count grew a restated filter and ran past the bar in Linux fonts only; the 8f4970d reflow lesson (write in the longest real label before measuring) again, pinned by the 320 px selection-scope spec -->
 <!-- lesson-skip: fba14325 routine: a baseline left stale by two PRs merging in the wrong order (#308 then #303); the entry-size gate named it -->
 <!-- lesson-skip: 526b38f1 routine review fix from Qodo on #303 (a US-only physical-key fallback gated on the browser's layout map), pinned by matcher tests; the size gate named the baseline -->
 <!-- lesson-skip: 4a8bdc29 routine review fix from Qodo on #303 (shifted punctuation in the Alt physical-key fallback), pinned by matcher tests -->
