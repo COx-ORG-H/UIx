@@ -2,7 +2,7 @@
  * make the same three from a catalog). No dependency, no catalog: the transform runs over a labels
  * object and returns one of the same shape.
  *
- *   en-XA  accented and padded: "Clear filters" → "[Çļéàŕ ƒíļţéŕš ·ŵàɱ]". Every letter has a diacritic
+ *   en-XA  accented and padded: "Clear filters" → "[Çļéàŕ ƒíļţéŕš ·ŵàɱƀü]". Every letter has a diacritic
  *          (so a cut-off accent or a font without the glyph shows), the text runs about 35 % longer
  *          (W3C/IBM: German runs about 30 % longer, short strings up to two or three times), and the
  *          brackets show at a glance whether either end was clipped.
@@ -29,7 +29,7 @@ const PLACEHOLDER = /(\{[^{}]+\})/;
 const RLO = '‮';
 const PDF = '‬';
 
-/** "Clear filters" → "[Çļéàŕ ƒíļţéŕš ·ŵàɱ]": accents, ~35 % padding, brackets; {placeholders} kept. */
+/** "Clear filters" → "[Çļéàŕ ƒíļţéŕš ·ŵàɱƀü]": accents, ~35 % padding, brackets; {placeholders} kept. */
 export function accent(text) {
   if (!text) return text;
   const body = text.split(PLACEHOLDER).map((part) => (PLACEHOLDER.test(part) ? part : [...part].map((c) => ACCENTS[c] ?? c).join(''))).join('');

@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: d097584f routine: a Card and a horizontal Step title had no overflow-wrap, so a long compound pushed the header action out and painted over the next step; same rule as the page-header title (overflow-wrap: anywhere; hyphens: auto), now held by the pseudo-locale lane -->
 <!-- lesson-skip: 3a34e535 routine: Qodo's low finding (makeRoom switched off mid-drag left rows shifted); one cleanup branch, pinned by a jsdom test -->
 <!-- lesson-skip: 30e903de routine review fixes on unreleased makeRoom (late consumer, removed row, second pointer, resize, order change mid-drag), each named by Qodo and pinned by jsdom or Chromium tests; the jsdom getComputedStyle gap is the 727ea02 family -->
 <!-- lesson-skip: cc6f28ba routine third-round review fix on the opt-in experiment (label-forwarded click), pinned by a spec -->

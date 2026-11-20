@@ -9,7 +9,7 @@ import { test, expect } from '@playwright/test';
  *
  * EXPECTED pins what the kit fonts do, letter by letter ('sr' = a Serbian form, 'ru' = the Russian
  * shape for both), so a font update that adds or drops a form shows up here. The finding and the
- * fallback are in the docs: Foundations → Writing → Localisation.
+ * fallback are in the docs: Foundations → Localisation checks.
  *
  * The kit ships no @font-face, so the fonts come from Google Fonts, as a product loads them. With no
  * network the spec skips and says so. Chromium only: shaping differs per engine, and the claim is about
@@ -17,12 +17,18 @@ import { test, expect } from '@playwright/test';
 
 const PAGE = '/tests/serbian-italic/page.html';
 
-/** Per face, per letter: 'sr' (Serbian form shown) or 'ru' (same as Russian). null = not pinned yet: reported only. */
+/**
+ * Per face, per letter: 'sr' (Serbian form shown) or 'ru' (same as Russian). Measured in CI on 2026-11-20
+ * (PR #311): neither kit font, as Google Fonts serves it, has a Serbian form for any of the five. The
+ * runner's system-ui italic did show Serbian б, д and п, so Chromium does apply `locl` from `lang`;
+ * that face depends on the runner image, so it is reported, not pinned.
+ */
+const RUSSIAN = { б: 'ru', г: 'ru', д: 'ru', п: 'ru', т: 'ru' };
 const EXPECTED = {
-  'inter-italic': null,
-  'inter-italic-600': null,
-  'plex-italic': null,
-  'plex-italic-600': null,
+  'inter-italic': RUSSIAN,
+  'inter-italic-600': RUSSIAN,
+  'plex-italic': RUSSIAN,
+  'plex-italic-600': RUSSIAN,
 };
 
 test.beforeEach(async ({}, testInfo) => {
@@ -67,6 +73,6 @@ test('Serbian italic б г д п т: which kit faces carry the locl forms', asyn
 ${summary}`);
 
   for (const [face, expected] of Object.entries(EXPECTED)) {
-    if (expected) expect(result[face], `${face}: the Serbian forms changed; update EXPECTED and the Localisation docs`).toEqual(expected);
+    expect(result[face], `${face}: the Serbian forms changed; update EXPECTED and docs → Foundations → Localisation checks`).toEqual(expected);
   }
 });
