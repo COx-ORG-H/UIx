@@ -2,6 +2,7 @@
 
 <!-- lesson-skip: 37c6e9e2 same trap as the b6d558eb entry (scroll-padding adds no scroll range; the end of a scroller needs room), now for the page and the shell main; pinned by the sticky-focus spec -->
 <!-- lesson-skip: ea12d0c2 routine: the contract gate named two 0px fallbacks; a hit-test grid sampled a rounded button's corners (calibration of this PR's own new spec) -->
+<!-- lesson-skip: ed13fa22 routine: two PRs merged back to back without seeing each other (#321 widened ToastLabels, #309's packs typed against the old one); the type build named it -->
 <!-- lesson-skip: d097584f routine: a Card and a horizontal Step title had no overflow-wrap, so a long compound pushed the header action out and painted over the next step; same rule as the page-header title (overflow-wrap: anywhere; hyphens: auto), now held by the pseudo-locale lane -->
 <!-- lesson-skip: fba14325 routine: a baseline left stale by two PRs merging in the wrong order (#308 then #303); the entry-size gate named it -->
 <!-- lesson-skip: 526b38f1 routine review fix from Qodo on #303 (a US-only physical-key fallback gated on the browser's layout map), pinned by matcher tests; the size gate named the baseline -->
@@ -112,6 +113,8 @@
 <!-- lesson-skip: 948fcc9d routine review fixes (update order when a newer start supersedes a pending one; a failed second lookup ends the morph); pinned by jsdom tests -->
 <!-- lesson-skip: 0dd4e899 routine review fixes from Qodo on #291 (release a running morph before an instant change, guard the parts lookup, unlayered reduced-motion end, a spec wait for the deferred commit); each pinned by a jsdom test or spec; the deferred-commit wait is the 5805c3f4 entry -->
 <!-- lesson-skip: 4b192a18 routine: a fallback could run an update twice if the engine threw after calling it; Qodo's risk note named it, pinned by a jsdom test -->
+<!-- lesson-skip: abbc94c1 routine: the spec named the missing namespace and the file to add it to -->
+<!-- lesson-skip: c532f344 routine: tsc named the namespaces #310 added that the complete-by-type packs lacked; Escape key name added to the transliterator keep-Latin list -->
 <!-- lesson-skip: 38dc8ac3 routine: compare() escapes its text, so <code> showed literally; found by looking at the 390 px shot -->
 
 ### 2026-11-20 · focus not obscured at the end of a scroller · `b6d558eb`
@@ -119,6 +122,9 @@
 
 ### 2026-11-20 · a timing budget taken on one hosted runner · `f509fa08`
 - **Rule:** never gate a browser benchmark on raw milliseconds from one GitHub-hosted runner; time a fixed calibration (script and DOM work, no code under test) in the same throttled page and divide by the runner's speed before comparing.  **Why:** two `ubuntu-latest` runs of the same commit read 1.4× apart on every metric (sort 168 vs 256 ms) with a tight spread inside each run, so a +50% budget failed on hardware.  **Gate:** `tests/perf/stats.test.mjs` (judge scales by calibration; a normalized lane with no calibration baseline fails).  **Tag:** perf, ci, hosted-runner, false-red
+
+### 2026-11-20 · API reports of a new subpath entry · `069c7450`
+- **Rule:** after adding an entry point, run `npm run test:api` (what CI runs), not only `test:api:update`: the `--local` update prints API Extractor warnings and exits 0, CI fails on them. A `{@link X}` in a doc comment that the new entry reaches must name something that entry exports, or it is `ae-unresolved-link`.  **Why:** `--local` downgrades warnings; a link that resolves from the root entry does not from a subpath.  **Gate:** CI `gates` → `test:api`.  **Tag:** api-extractor, entry-points, tsdoc
 
 ### 2026-11-20 · more than one mask layer, and waiting on scroll-driven animations · `5923df5a`
 - **Rule:** give an element one `mask-image` layer only; WebKit 26.5's renderer crashes on two or more (even two solid layers composited with `add`), and it parses `mask-clip: no-clip` but ignores it. A mask fades everything in its box, so put it on a scroller with no border or shadow.  **Why:** WebKit renderer bug, found by bisecting a page that died under axe.  **Gate:** ⚠ TODO a contract rule that rejects a comma-separated `mask-image`; meanwhile the WebKit project runs axe on overlays.  **Tag:** webkit, mask, crash
@@ -392,3 +398,5 @@ missing or blank.
 <!-- lesson-skip: e3de79c7 the contract gate named the values; allowlist + missed-default case, routine -->
 <!-- lesson-skip: 9f4490fb pseudo-element margin missed the border-box reset; the 1 px visual diff pointed at it -->
 <!-- lesson-skip: 6a8ed528 routine: two table variants (card mode, bottom caption) missed by the edge exceptions; found in review -->
+
+<!-- lesson-skip: 488ac745 routine: out-of-scope docs helper (the ReferenceError named it) plus a spec repair; docs.test.js now renders the Toast page -->

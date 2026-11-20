@@ -61,7 +61,7 @@ export interface TimePickerProps {
   max?: string;
   /**
    * The locale that writes the time: 14:30 in `de`, 2:30 PM in `en-US`. Default: `UixLabelsProvider`
-   * `dateFormat.locale`, then the viewer's.
+   * `dateFormat.locale`, then its `locale`, then the viewer's.
    */
   locale?: string;
   /** `true` writes 2:30 PM, `false` 14:30, whatever the locale. */
@@ -115,7 +115,7 @@ export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function
   const uixLabels = useUixLabels();
   const labels: TimePickerLabels = { ...DEFAULT_TIME_PICKER_LABELS, ...uixLabels.timePicker, ...labelOverrides };
   // the app-wide locale of the date fields (UixLabelsProvider `dateFormat`); a prop still wins
-  const locale = localeProp ?? uixLabels.dateFormat?.locale;
+  const locale = localeProp ?? uixLabels.dateFormat?.locale ?? uixLabels.locale;
   const anchorRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);

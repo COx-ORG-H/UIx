@@ -1,11 +1,11 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { ReactNode, HTMLAttributes, KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from 'react';
 import { cx } from '../cx.js';
 import { useStickyLayer } from '../hooks/useStickyLayer.js';
 import { useUixLabels } from '../labels-context.js';
-import { prefersReducedMotion } from '../hooks/useReducedMotion.js';
+import { prefersReducedMotion, useReducedMotion } from '../hooks/useReducedMotion.js';
 import { tokenMs } from '../motion.js';
 import { feedback } from '../feedback.js';
 import { SWIPE_SLOP, SWIPE_VELOCITY, SWIPE_WINDOW, releaseVelocity } from '../swipe-gesture.js';
@@ -14,6 +14,7 @@ import { XIcon } from '../icons/components.js';
 import { toast as defaultToast } from '../toast-store.js';
 import { createPortal } from 'react-dom';
 import { subscribeModalLayer, topModalDialog } from '../hooks/dialog-layer.js';
+import { useShortcut } from './Shortcuts.js';
 import type { ToastKind, ToastRecord, ToastStore } from '../toast-store.js';
 
 export type ToastTone = 'success' | 'danger' | 'info' | 'warning';
@@ -23,7 +24,41 @@ export type ToastTone = 'success' | 'danger' | 'info' | 'warning';
  * changes to an already-mounted region. The Toaster owns a persistent polite region instead;
  * polite toasts push their text into it on mount. Null outside a Toaster → the toast falls back
  * to being its own live region, exactly as before. */
-const ToasterContext = createContext<{ announce: (text: string) => void } | null>(null);
+const ToasterContext = createContext<{ announce: (text: string, key?: string) => void } | null>(null);
+
+/** The registry id of the Toaster's Ctrl/⌘+Z (undo the latest undoable toast), for hints and remaps. */
+export const TOAST_UNDO_SHORTCUT_ID = 'toast.undo';
+
+/** The words a `Toaster` and its toasts use. Translate through `UixLabelsProvider` (`toast`) or `Toaster labels`. */
+export interface ToastLabels {
+  /** The × of a toast. Default "Dismiss". */
+  dismiss: string;
+  /** Ctrl/⌘+Z in the shortcut sheet. Default "Undo the last action". */
+  undoShortcut: string;
+  /** Announced after Ctrl/⌘+Z undid something: `(message) => 'Undone: …'`, `message` absent when it has no text. */
+  undone: (message?: string) => string;
+  /** The time left on a countdown under reduced motion: `(seconds) => '8 s'`. */
+  remaining: (seconds: number) => string;
+  /** The count on a merged toast that has no `groupMessage`: `(count) => '×3'`. */
+  count: (count: number) => string;
+  /** The summary of held toasts (quiet mode, rate limit): `(count) => '3 notifications waiting'`. */
+  held: (count: number) => string;
+  /** The summary's action. Default "Show". */
+  showHeld: string;
+}
+
+const DEFAULT_TOAST_LABELS: ToastLabels = {
+  dismiss: 'Dismiss',
+  undoShortcut: 'Undo the last action',
+  undone: (message) => (message ? `Undone: ${message}` : 'Undone'),
+  remaining: (seconds) => `${seconds} s`,
+  count: (count) => `×${count}`,
+  held: (count) => (count === 1 ? '1 notification waiting' : `${count} notifications waiting`),
+  showHeld: 'Show',
+};
+
+/** The text of a message, when it is text. */
+const textOf = (node: ReactNode): string | null => (typeof node === 'string' || typeof node === 'number' ? String(node) : null);
 
 // useLayoutEffect warns during SSR; fall back to useEffect on the server.
 const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
@@ -99,10 +134,14 @@ export interface ToastProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'
   action?: ReactNode;
   onClose?: () => void;
   leaving?: boolean;
+  /** Drawn at the toast's foot: the `Toaster`'s countdown for a timed toast. */
+  countdown?: ReactNode;
+  /** Change it to speak the toast again inside a `Toaster` (a merged repeat: "Resolved 3 tickets"). */
+  announceKey?: string | number;
 }
 
 export function Toast({
-  title, message, tone, icon, action, onClose, leaving, dismissLabel: dismissLabelProp, className,
+  title, message, tone, icon, action, onClose, leaving, dismissLabel: dismissLabelProp, className, countdown, announceKey,
   onPointerDown, onPointerMove, onPointerUp, onPointerCancel, ...props
 }: ToastProps) {
   const uixLabels = useUixLabels();
@@ -116,15 +155,20 @@ export function Toast({
   // StrictMode runs this effect twice on one instance, which spoke the toast twice ("Saved Saved").
   // A ref survives that re-run; a toast that really remounts (moved into the Toaster's portal,
   // HAR-2754) is a new instance and announces once there.
-  const announcedRef = useRef(false);
+  const announcedRef = useRef<{ key: string | number | undefined } | null>(null);
+  const instance = useId();
 
   useEffect(() => {
-    if (assertive || !toaster || announcedRef.current) return;
+    if (assertive || !toaster) return;
+    if (announcedRef.current && announcedRef.current.key === announceKey) return;
     const text = bodyRef.current?.textContent?.trim();
-    if (text) { announcedRef.current = true; toaster.announce(text); }
-    // announce once, when the toast appears
+    if (!text) return;
+    announcedRef.current = { key: announceKey };
+    // A repeat replaces the toast's earlier words in the region instead of queueing behind them.
+    toaster.announce(text, instance);
+    // announce when the toast appears, and again when `announceKey` changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [announceKey]);
 
   // Dismissing the focused toast moves focus to the next toast's close button (else the
   // previous), so keyboard focus isn't dropped on <body> mid-stack (UIX-A11Y-1).
@@ -164,8 +208,14 @@ export function Toast({
           <XIcon />
         </button>
       )}
+      {countdown}
     </div>
   );
+}
+
+/** Whether a toast store is in quiet mode (`toast.setQuiet`), re-rendering when it changes: for a "Do not disturb" switch. */
+export function useToastQuiet(store: ToastStore = defaultToast.store): boolean {
+  return useSyncExternalStore(store.subscribe, store.isQuiet, () => false);
 }
 
 export interface ToasterProps extends HTMLAttributes<HTMLDivElement> {
@@ -180,6 +230,15 @@ export interface ToasterProps extends HTMLAttributes<HTMLDivElement> {
   limit?: number;
   /** Corner of the viewport. Default `bottom-end`. */
   position?: 'bottom-end' | 'bottom-start' | 'bottom-center' | 'top-end' | 'top-start' | 'top-center';
+  /**
+   * Ctrl/⌘+Z undoes the newest undoable toast and announces it (`TOAST_UNDO_SHORTCUT_ID`, in the
+   * registry's global scope, listed in the shortcut sheet, remappable). It never fires while typing
+   * in a field or a contenteditable, where the browser's own undo applies, and leaves the key to the
+   * page when nothing is waiting to be undone. Default `true`; `false` for a second Toaster.
+   */
+  undoShortcut?: boolean;
+  /** This Toaster's words, over `UixLabelsProvider`'s `toast`. */
+  labels?: Partial<ToastLabels>;
   children?: ReactNode;
 }
 
@@ -199,28 +258,86 @@ const KIND_GLYPH: Partial<Record<ToastKind, ReactNode>> = {
   loading: <span className="uix-spinner uix-toast__spinner" />,
 };
 
+/**
+ * The time left on a timed toast (undo deltas, roadmap #23): a thin bar that shrinks on `transform`
+ * over the toast's duration and stops whenever its timer does (`data-paused` on the toast, from the
+ * same hover, focus and hidden-tab state). Under reduced motion it is the seconds left as text.
+ */
+function ToastCountdown({ duration, paused, remaining, label, reduced }: {
+  duration: number; paused: boolean; remaining: () => number | null; label: (seconds: number) => string; reduced: boolean;
+}) {
+  const [, tick] = useState(0);
+  useEffect(() => {
+    if (!reduced || paused) return undefined;
+    // before the Toaster's timer starts (child effects run first) the whole duration is left
+    const left = remaining() ?? duration;
+    if (left <= 0) return undefined;
+    // wake at the next whole second, when the figure changes
+    const handle = window.setTimeout(() => tick((n) => n + 1), (left % 1000) || 1000);
+    return () => clearTimeout(handle);
+  });
+  if (reduced) {
+    const seconds = Math.max(0, Math.ceil((remaining() ?? duration) / 1000));
+    return <span className="uix-toast__remaining">{label(seconds)}</span>;
+  }
+  // the duration is data, not a motion literal: the stylesheet's animation reads it
+  return <span className="uix-toast__countdown" aria-hidden="true" style={{ ['--uix-toast-countdown' as string]: `${duration}ms` }} />;
+}
+
 /** Renders one store record, with the action and close wired to the store. */
-function StoreToast({ record, store }: { record: ToastRecord; store: ToastStore }) {
+function StoreToast({ record, store, labels, paused, remaining, undoKeys }: {
+  record: ToastRecord; store: ToastStore; labels: ToastLabels; paused: boolean;
+  remaining: (id: string) => number | null; undoKeys?: string;
+}) {
+  const held = record.held != null;
+  const reduced = useReducedMotion();
+  const timed = record.countdown && record.duration != null && !record.leaving;
+  const fixed = record.pauseOnHover === false;
+  const countdown = timed ? (
+    <ToastCountdown
+      key={record.version}
+      duration={record.duration!}
+      paused={paused && !fixed}
+      remaining={() => remaining(record.id)}
+      label={labels.remaining}
+      reduced={reduced}
+    />
+  ) : undefined;
+  // Under reduced motion the time left is words, beside the action it is the time for ("6 s  Undo").
+  const inSlot = reduced && !!record.action;
   const action = record.action && (
-    <button
-      type="button"
-      className="uix-toast__action"
-      onClick={() => { record.action!.onClick(); store.dismiss(record.id, 'action'); }}
-    >
-      {record.action.label}
-    </button>
+    <>
+      {inSlot && countdown}
+      <button
+        type="button"
+        className="uix-toast__action"
+        aria-keyshortcuts={undoKeys}
+        onClick={() => { if (record.action!.onClick() !== false) store.dismiss(record.id, 'action'); }}
+      >
+        {held ? labels.showHeld : record.action.label}
+      </button>
+    </>
+  );
+  const count = record.count ?? 1;
+  const title = held ? labels.held(record.held!) : (
+    count > 1 && !record.groupMessage
+      ? <>{record.message} <span className="uix-toast__count">{labels.count(count)}</span></>
+      : record.message
   );
   return (
     <Toast
       data-toast-id={record.id}
+      data-paused={timed && paused && !fixed ? '' : undefined}
       tone={KIND_TONE[record.kind]}
       icon={record.icon ?? KIND_GLYPH[record.kind]}
-      title={record.message}
+      title={title}
       message={record.description}
       action={action}
       leaving={record.leaving}
       aria-busy={record.kind === 'loading' || undefined}
+      announceKey={count > 1 ? count : undefined}
       onClose={() => store.dismiss(record.id, 'close')}
+      countdown={inSlot ? undefined : countdown}
     />
   );
 }
@@ -261,24 +378,36 @@ function useToastTimers(store: ToastStore, visible: readonly ToastRecord[], paus
     for (const timer of timers.current.values()) if (timer.handle != null) clearTimeout(timer.handle);
     timers.current.clear();
   }, []);
+  /** Milliseconds left on a toast's timer, `null` before it starts. */
+  return useCallback((id: string): number | null => {
+    const timer = timers.current.get(id);
+    if (!timer) return null;
+    return Math.max(0, timer.handle != null ? timer.remaining - (Date.now() - timer.start) : timer.remaining);
+  }, []);
 }
 
-export function Toaster({ children, regionLabel: regionLabelProp, store = defaultToast.store, limit = 3, position = 'bottom-end', className, onMouseEnter, onMouseLeave, onFocus, onBlur, onKeyDown, ...props }: ToasterProps) {
+export function Toaster({
+  children, regionLabel: regionLabelProp, store = defaultToast.store, limit = 3, position = 'bottom-end', undoShortcut = true, labels: labelsProp,
+  className, onMouseEnter, onMouseLeave, onFocus, onBlur, onKeyDown, ...props
+}: ToasterProps) {
   const uixLabels = useUixLabels();
   const regionLabel = regionLabelProp ?? uixLabels.toaster?.region ?? 'Notifications';
+  const labels: ToastLabels = { ...DEFAULT_TOAST_LABELS, ...uixLabels.toast, ...labelsProp };
   const [portalHost, setPortalHost] = useState<HTMLDivElement | null>(null);
   // Positioning container + notifications landmark. The always-mounted visually-hidden region
   // below does the polite announcing for child toasts (see ToasterContext); it is cleared after
   // ~3s so an identical follow-up toast re-announces. aria-label is overridable via props spread.
-  const [announced, setAnnounced] = useState('');
+  const [announcements, setAnnouncements] = useState<readonly { key?: string; text: string }[]>([]);
   const clearTimer = useRef<number | null>(null);
 
-  const announce = useCallback((text: string) => {
-    // join with any still-visible announcement so near-simultaneous toasts aren't lost
-    setAnnounced((cur) => (cur ? `${cur} ${text}` : text));
+  const announce = useCallback((text: string, key?: string) => {
+    // join with any still-visible announcement so near-simultaneous toasts aren't lost; a keyed
+    // one (a merged repeat) replaces its own earlier words instead of queueing behind them
+    setAnnouncements((cur) => [...cur.filter((a) => key === undefined || a.key !== key), { key, text }]);
     if (clearTimer.current != null) clearTimeout(clearTimer.current);
-    clearTimer.current = window.setTimeout(() => setAnnounced(''), 3000);
+    clearTimer.current = window.setTimeout(() => setAnnouncements([]), 3000);
   }, []);
+  const announced = announcements.map((a) => a.text).join(' ');
 
   useEffect(() => () => {
     if (clearTimer.current != null) clearTimeout(clearTimer.current);
@@ -288,6 +417,8 @@ export function Toaster({ children, regionLabel: regionLabelProp, store = defaul
   // markup moves to the portal before paint; announce only from that mounted portal so a
   // pre-existing polite toast is not spoken twice during hydration.
   const ctx = useMemo(() => ({ announce: portalHost ? announce : () => {} }), [announce, portalHost]);
+  const ctxAnnounce = useRef(ctx.announce);
+  ctxAnnounce.current = ctx.announce;
 
   const records = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
   const visible = useMemo(() => records.slice(-Math.max(1, limit)), [records, limit]);
@@ -300,17 +431,41 @@ export function Toaster({ children, regionLabel: regionLabelProp, store = defaul
     document.addEventListener('visibilitychange', sync);
     return () => document.removeEventListener('visibilitychange', sync);
   }, []);
-  useToastTimers(store, visible, hovered || focused || hidden);
+  const paused = hovered || focused || hidden;
+  const remaining = useToastTimers(store, visible, paused);
+
+  // Ctrl/⌘+Z: undo the newest undoable toast (roadmap #23). Global, listed in the sheet; never while
+  // typing (the registry's default), where the browser's own undo applies. With nothing to undo the
+  // handler declines, so the key goes on to the page.
+  const regionRef = useRef<HTMLDivElement>(null);
+  // The stack stays over the page while it scrolls: its height is a sticky offset, so a focused
+  // row stops clear of it (WCAG 2.2 SC 2.4.11; sticky-layers.ts). An empty stack is 0 px tall.
+  useStickyLayer(regionRef, { edge: position.startsWith('top') ? 'top' : 'bottom' });
+  const undoLatest = useShortcut({
+    id: TOAST_UNDO_SHORTCUT_ID,
+    keys: 'Mod+Z',
+    label: labels.undoShortcut,
+    scope: 'global',
+    enabled: undoShortcut,
+    allowInModal: true,
+    handler: () => {
+      const latest = store.latestUndoable();
+      if (!latest) return false;
+      const el = Array.from(regionRef.current?.querySelectorAll<HTMLElement>('[data-toast-id]') ?? []).find((node) => node.dataset.toastId === latest.id);
+      const shown = el?.querySelector('.uix-toast__title')?.textContent?.trim();
+      const result = store.undoLatest();
+      if (!result) return false;
+      ctxAnnounce.current(labels.undone(textOf(result.message) ?? (shown || undefined)));
+      return true;
+    },
+  });
+  const latestUndoId = useMemo(() => [...records].reverse().find((r) => r.undoable && !r.leaving)?.id, [records]);
 
   // The stack reflows with a glide (HAR-2578): when a toast arrives or leaves, the others move from
   // where they were to where they are now (FLIP), on transform, instead of jumping. --uix-ease-out
   // rather than in-out: the toast that makes room clears the arriving one early instead of
   // overlapping it for most of the glide. Positions are layout positions (the toaster's box plus offsetTop), so a toast's own
   // enter or exit transform does not count as movement.
-  const regionRef = useRef<HTMLDivElement>(null);
-  // The stack stays over the page while it scrolls: its height is a sticky offset, so a focused
-  // row stops clear of it (WCAG 2.2 SC 2.4.11; sticky-layers.ts). An empty stack is 0 px tall.
-  useStickyLayer(regionRef, { edge: position.startsWith('top') ? 'top' : 'bottom' });
   const homeRef = useRef<HTMLSpanElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
   // One stable portal target: moving its DOM host preserves the queue's React identity,
@@ -409,7 +564,17 @@ export function Toaster({ children, regionLabel: regionLabelProp, store = defaul
         <span className="uix-visually-hidden" role="status" aria-live="polite">{announced}</span>
         {children}
         {/* keyed by kind too: a loading toast that turns into success/error remounts, so it is announced again */}
-        {visible.map((record) => <StoreToast key={`${record.id}:${record.kind}`} record={record} store={store} />)}
+        {visible.map((record) => (
+          <StoreToast
+            key={`${record.id}:${record.kind}`}
+            record={record}
+            store={store}
+            labels={labels}
+            paused={paused}
+            remaining={remaining}
+            undoKeys={record.id === latestUndoId ? undoLatest.ariaKeyShortcuts : undefined}
+          />
+        ))}
       </div>
     </ToasterContext.Provider>
   );
