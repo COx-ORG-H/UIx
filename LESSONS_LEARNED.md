@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 37c6e9e2 same trap as the b6d558eb entry (scroll-padding adds no scroll range; the end of a scroller needs room), now for the page and the shell main; pinned by the sticky-focus spec -->
 <!-- lesson-skip: ea12d0c2 routine: the contract gate named two 0px fallbacks; a hit-test grid sampled a rounded button's corners (calibration of this PR's own new spec) -->
 <!-- lesson-skip: d097584f routine: a Card and a horizontal Step title had no overflow-wrap, so a long compound pushed the header action out and painted over the next step; same rule as the page-header title (overflow-wrap: anywhere; hyphens: auto), now held by the pseudo-locale lane -->
 <!-- lesson-skip: fba14325 routine: a baseline left stale by two PRs merging in the wrong order (#308 then #303); the entry-size gate named it -->
