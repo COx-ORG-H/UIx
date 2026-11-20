@@ -67,9 +67,9 @@
       "brotli": 1103
     },
     "styles/components/button.css": {
-      "raw": 10111,
-      "gzip": 3054,
-      "brotli": 2565
+      "raw": 11100,
+      "gzip": 3262,
+      "brotli": 2724
     },
     "styles/components/calendar.css": {
       "raw": 3635,
@@ -507,9 +507,9 @@
       "brotli": 1099
     },
     "styles/components/switch.css": {
-      "raw": 1510,
-      "gzip": 643,
-      "brotli": 523
+      "raw": 2484,
+      "gzip": 991,
+      "brotli": 804
     },
     "styles/components/table-toolbar.css": {
       "raw": 7335,
