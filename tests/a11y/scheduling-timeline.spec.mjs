@@ -19,7 +19,7 @@
  * and at 375 px the timeline scrolls inside itself while the page does not.
  * The harness is tests/scheduling-timeline/; logic is in packages/react/src/scheduling-timeline-lanes-dom.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { settleAnimations } from './settle.mjs';
 
 const HARNESS = '../../tests/scheduling-timeline/harness.html';
@@ -1052,7 +1052,9 @@ for (const count of [60, 200]) {
       const row = rows.find((el) => el.getBoundingClientRect().bottom > 1);
       return row ? { id: row.getAttribute('data-lane-id'), top: Math.round(row.getBoundingClientRect().top), subRows: Number(row.style.getPropertyValue('--uix-timeline-rows')) } : { id: null, top: 0, subRows: 0 };
     }, P);
-    await expect.poll(async () => (await first()).id).not.toBe('lane-0');
+    // Wait for a lane past the first: `null` (the virtual rows have not caught up with the scroll
+    // yet) is not "past lane 0", and taking it as the before-state fails the test on a slow runner.
+    await expect.poll(async () => (await first()).id).toMatch(/^lane-[1-9]/);
     const before = await first();
     await page.setViewportSize({ width: 800, height: 900 });
     await expect.poll(async () => (await first()).subRows, 'the packing changed').toBeGreaterThan(before.subRows);

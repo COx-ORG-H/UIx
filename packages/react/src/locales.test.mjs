@@ -145,11 +145,12 @@ for (const [tag, pack] of Object.entries(PACKS)) {
 }
 
 test('packs: the completeness check fails a pack with a missing key, a lost placeholder or a missing form', () => {
-  const broken = structuredClone({ ...bs, taskTray: undefined });
+  // the namespaces whose words are functions cannot be cloned: set aside, then put back
+  const broken = structuredClone({ ...bs, taskTray: undefined, toast: undefined });
   delete broken.modal.close;
   broken.dataWorkspace.selectRow = 'Odaberi';
   broken.dataWorkspace.groupCount = { one: '{count} red', other: '{count} redova' };
-  const problems = packProblems({ ...broken, taskTray: bs.taskTray });
+  const problems = packProblems({ ...broken, taskTray: bs.taskTray, toast: bs.toast });
   assert.ok(problems.includes('modal.close: missing'), problems.join('\n'));
   assert.ok(problems.some((p) => p.startsWith('dataWorkspace.selectRow:')));
   assert.ok(problems.includes('dataWorkspace.groupCount: no "few" form'));
@@ -202,7 +203,7 @@ const PACK_DEFAULTS = {
   fileUpload: 'DEFAULT_FILE_UPLOAD_LABELS', fileRow: 'FILE_ROW_LABELS_EN', fileDrop: 'FILE_DROP_LABELS_EN', fileKinds: 'FILE_KIND_LABELS_EN',
   attachment: 'DEFAULT_ATTACHMENT_LABELS', tagInput: 'DEFAULT_TAG_INPUT_LABELS', passwordInput: 'DEFAULT_PASSWORD_INPUT_LABELS',
   pagination: 'DEFAULT_PAGINATION_LABELS', table: 'DEFAULT_USE_TABLE_LABELS', shortcuts: 'DEFAULT_SHORTCUT_LABELS',
-  kanban: 'DEFAULT_KANBAN_LABELS', dashboardCanvas: 'DEFAULT_DASHBOARD_CANVAS_LABELS',
+  kanban: 'DEFAULT_KANBAN_LABELS', dashboardCanvas: 'DEFAULT_DASHBOARD_CANVAS_LABELS', ai: 'DEFAULT_AI_LABELS',
 };
 
 test('the en pack is the kit\'s English: equal to every exported default it covers', () => {

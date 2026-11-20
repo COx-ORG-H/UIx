@@ -7,7 +7,7 @@
  * theme projects.
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/drawer/harness.html';
 const GATED = new Set(['serious', 'critical']);

@@ -11,7 +11,7 @@
  *     start-side drawer, Escape closes it and returns focus, following a link closes it;
  *   - axe is clean in each state. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { settleOverlay } from './settle.mjs';
 
 const HARNESS = '/tests/staff-shell/harness.html';

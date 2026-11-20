@@ -4,7 +4,7 @@
  * German harness: tests/sortable-list/harness.tsx. Behaviour details: sortable-list-dom.test.mjs.
  * The `makeRoom` experiment (neighbours move aside) is at the end. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/sortable-list/harness.html';
 const GATED = new Set(['serious', 'critical']);

@@ -10,7 +10,7 @@
  * Runs in both theme projects, at desktop width and at 320 px.
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const ROUTE = 'docs/explorer.html#filter-popover';
 

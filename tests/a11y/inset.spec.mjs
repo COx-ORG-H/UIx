@@ -3,7 +3,7 @@
  * that differs from the card's surface, the space-4 / space-3 padding, no shadow, and it stays
  * inside the card body at 320 px with a long Bosnian header in it. Axe is clean on the page. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 async function open(page, theme, width = 1280) {
   await page.setViewportSize({ width, height: 900 });

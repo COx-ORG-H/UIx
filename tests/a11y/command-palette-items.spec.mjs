@@ -4,7 +4,7 @@
  * opener, the cap on a long list, 320 px and axe. German harness:
  * tests/command-palette-items/harness.tsx. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/command-palette-items/harness.html';
 const GATED = new Set(['serious', 'critical']);
