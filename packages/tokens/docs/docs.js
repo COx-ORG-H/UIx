@@ -110,7 +110,7 @@ export const COMPONENT_GROUPS = {
   'Form controls': ['Button', 'Input', 'Textarea', 'Select', 'Checkbox', 'Radio', 'Switch', 'Slider', 'Segmented', 'Display preferences', 'Combobox', 'Search bar', 'Search suggest', 'Tag input', 'File upload', 'Date range picker', 'Date picker', 'Color picker', 'Metric input', 'Inline edit', 'Sortable list', 'QR scanner', 'Form'],
   'Navigation': ['App shell', 'Sidebar', 'Breadcrumbs', 'Tabs', 'Pagination', 'Steps', 'Stepper', 'Page header', 'Command palette', 'Menu', 'Nav favourites'],
   'Data display': ['Card', 'Table', 'Table toolbar', 'Data workspace', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'List summary', 'Status pill', 'Overflow row', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Org chart', 'Calendar', 'Chart', 'Insight card', 'Dashboard grid', 'Dashboard canvas', 'Tooltip', 'Info tip', 'States', 'Relative time', 'QR code', 'Code display', 'Chart card', 'Matrix'],
-  'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Save status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Busy region', 'Lightbox', 'Arrival', 'Arrive', 'Change highlight', 'Count', 'List motion', 'Drag'],
+  'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Save status', 'Task tray', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Busy region', 'Lightbox', 'Arrival', 'Arrive', 'Change highlight', 'Count', 'List motion', 'Drag'],
   'Enterprise patterns': ['Inbox', 'Kanban', 'Detail layout', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Comments', 'Composer', 'Contact card', 'Attachment', 'File kit', 'Audit log', 'Notification center', 'Pipeline', 'SLA', 'Heartbeat'],
   'Advanced workflows': ['Rule builder', 'Builder canvas', 'Relationship graph', 'Scheduling calendar', 'Scheduling timeline', 'Diff viewer', 'Text diff', 'Match review', 'License position bar', 'Brand profiles', 'Flow'],
   'Content & utilities': ['Typography', 'Prose', 'Rich text', 'Markdown', 'Editorial home', 'Labels', 'Reactions', 'Media', 'Icon', 'Kbd', 'Link', 'Copy button', 'Print layout', 'Utility bits'],
@@ -167,6 +167,8 @@ export const REACT_COMPONENT_SLUGS = [
   'file-kit',
   // a row of badges that shows the ones that fit whole and counts the rest (HAR-3072)
   'overflow-row',
+  // background work that keeps running: the pill, the panel and the `tasks` store
+  'task-tray',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS
@@ -290,6 +292,7 @@ const renderComponentReference = (item) => {
     ${componentPreview(item)}
     ${section('availability', 'Availability', availability)}
     ${section('behavior-contract', 'Behavior and expected result', `<p>${esc(COMPONENT_DETAILS[item.slug]?.[1] || COMPONENT_INTENT[item.slug][1])}</p><p>${REACT_COMPONENT_SLUGS.includes(item.slug) ? 'A React adapter is available. See the <a href="#react">React integration guide</a> and the <a data-api-report href="../../react/etc/uix-react.api.md">exported API</a> for its exact props. The preview here demonstrates HTML/CSS with docs behavior; it does not mount React.' : 'This is a CSS contract. Your application owns events, state, validation and persistence; importing CSS does not install those behaviors.'}</p><p>Start with <code>@import "@tensor_1/tokens/bundle";</code> to include tokens, base styles, components and layout utilities. A component-only import requires those shared layers separately. <a href="#installation">Installation</a> · <a href="#build-with-uix">Composition and styling</a></p>`)}
+    ${item.slug === 'task-tray' ? section('try-task-tray', 'Try it: the real TaskTray', `<p>This demo mounts the real <code>@tensor_1/react</code> <code>TaskTray</code> with its own <code>createTaskStore()</code>. Start a job: the pill appears at the bottom of the window, counts the running jobs and opens into the list. Start several, cancel one, let the bulk update fail and retry it. Escape collapses the panel onto the pill.</p><div class="uix-docs__live" data-live-demo="task-tray-demo"><p class="uix-docs__live-status" data-live-demo-status role="status">Loading the live demo…</p></div><p>In an app, mount <code>&lt;TaskTray /&gt;</code> once in the shell beside <code>&lt;Toaster /&gt;</code> and start work from anywhere with <code>tasks.start(title, options)</code> or <code>tasks.run(title, work, options)</code>. The store outlives every page, so a route change keeps the tasks.</p>`) : ''}
     ${STATUS_COLOUR_SLUGS.has(item.slug) ? statusColourSection() : ''}
     ${section('usage-guidance', 'Usage guidance', `<p>${esc(usage)}</p>${compare(`Reuse the shared ${item.name} contract and verify it in the context where people complete the task.`, `Fork the visual language locally or infer unsupported behavior from the stylesheet alone.`)}`)}
     ${section('accessibility-notes', 'Accessibility notes', `<p>${esc(accessibility)}</p><p>Verify keyboard access, focus visibility, forced colors, 200% zoom, and both UIx themes in the consuming workflow.</p>`)}
@@ -1100,6 +1103,24 @@ const mountMotionPlayground = (host) => {
     });
 };
 
+/* Live demos on component pages ([data-live-demo="<bundle>"]): same build and lifecycle as the
+   playground above, one bundle per demo in docs/live/dist/. */
+let unmountLiveDemos = [];
+const mountLiveDemos = (host) => {
+  host.querySelectorAll('[data-live-demo]').forEach((el) => {
+    import(`./live/dist/${el.dataset.liveDemo}.js`)
+      .then(({ mount }) => {
+        if (!el.isConnected) return;
+        el.textContent = '';
+        unmountLiveDemos.push(mount(el));
+      })
+      .catch(() => {
+        const status = el.querySelector('[data-live-demo-status]');
+        if (status) status.innerHTML = 'The live demo is not built in this preview. Run <code>node packages/tokens/docs/live/build.mjs</code>, then reload.';
+      });
+  });
+};
+
 const renderPage = () => {
   codeCounter = 0;
   const requested = normalizeHash(location.hash);
@@ -1112,6 +1133,8 @@ const renderPage = () => {
   disposeShowcase();
   unmountPlayground?.();
   unmountPlayground = null;
+  for (const unmount of unmountLiveDemos) unmount();
+  unmountLiveDemos = [];
   host.innerHTML = `${content}${component && !content.includes('data-component-preview=') ? componentPreview(component) : ''}${renderPager(slug)}`;
   document.querySelectorAll('[data-api-report]').forEach((link) => {
     link.href = location.pathname.includes('/packages/tokens/docs/') ? '../../react/etc/uix-react.api.md' : '../react/etc/uix-react.api.md';
@@ -1125,6 +1148,7 @@ const renderPage = () => {
   initFormSpecimens(host);
   initFeedbackDemos(host);
   mountMotionPlayground(host);
+  mountLiveDemos(host);
   const item = NAV_ITEMS.find((entry) => entry.slug === slug) || component || example;
   document.title = `${item?.name || item?.title || 'UIx'} · UIx Docs`;
   if (requested !== slug) history.replaceState(null, '', `#${slug}`);
