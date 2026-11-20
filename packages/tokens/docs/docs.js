@@ -178,6 +178,8 @@ export const REACT_COMPONENT_SLUGS = [
   'ai-assistance',
   // the shortcut registry: ShortcutProvider, useShortcut, ShortcutScope and the ? sheet
   'shortcut-sheet',
+  // an SLA's clock in a queue cell or a record header (roadmap #17)
+  'sla',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS
@@ -354,6 +356,7 @@ const renderComponentReference = (item) => {
     ])}<p>Keep confirmation for what cannot be undone or reaches far (a <code>ConfirmDialog</code>); undo is for frequent, reversible actions.</p>`) : ''}
     ${item.slug === 'task-tray' ? section('try-task-tray', 'Try it: the real TaskTray', `<p>This demo mounts the real <code>@tensor_1/react</code> <code>TaskTray</code> with its own <code>createTaskStore()</code>. Start a job: the pill appears at the bottom of the window, counts the running jobs and opens into the list. Start several, cancel one, let the bulk update fail and retry it. Escape collapses the panel onto the pill.</p><div class="uix-docs__live" data-live-demo="task-tray-demo"><p class="uix-docs__live-status" data-live-demo-status role="status">Loading the live demo…</p></div><p>In an app, mount <code>&lt;TaskTray /&gt;</code> once in the shell beside <code>&lt;Toaster /&gt;</code> and start work from anywhere with <code>tasks.start(title, options)</code> or <code>tasks.run(title, work, options)</code>. The store outlives every page, so a route change keeps the tasks.</p>`) : ''}
     ${item.slug === 'ai-assistance' ? aiAssistanceSections() : ''}
+    ${item.slug === 'sla' ? section('try-sla-timer', 'Try it: the real SlaTimer', `<p>This demo mounts the real <code>@tensor_1/react</code> <code>SlaTimer</code> on your clock: a queue sorted by <code>slaSortValue</code> (most urgent first) and the open ticket's record header. <strong>Skip 10 minutes</strong> moves every deadline closer, so the warning, the urgent diamond and the breach show up without waiting; <strong>Request info</strong> pauses the open ticket's clock with its reason, and the reply resumes it with the deadline moved on by the pause. The header's timer has <code>announce</code>: a crossing is said once through the polite region; the queue's timers stay silent.</p><div class="uix-docs__live" data-live-demo="sla-timer-demo"><p class="uix-docs__live-status" data-live-demo-status role="status">Loading the live demo…</p></div><p>The server owns the clock: pass the instants it computed through its business calendar (<code>dueAt</code>, <code>startedAt</code>, <code>breachedAt</code>, <code>pausedAt</code>, <code>completedAt</code>). Each timer re-renders when its minute or state changes, never on a fixed tick, and not while the tab is hidden.</p>`) : ''}
     ${STATUS_COLOUR_SLUGS.has(item.slug) ? statusColourSection() : ''}
     ${section('usage-guidance', 'Usage guidance', `<p>${esc(usage)}</p>${compare(`Reuse the shared ${item.name} contract and verify it in the context where people complete the task.`, `Fork the visual language locally or infer unsupported behavior from the stylesheet alone.`)}`)}
     ${section('accessibility-notes', 'Accessibility notes', `<p>${esc(accessibility)}</p><p>Verify keyboard access, focus visibility, forced colors, 200% zoom, and both UIx themes in the consuming workflow.</p>`)}

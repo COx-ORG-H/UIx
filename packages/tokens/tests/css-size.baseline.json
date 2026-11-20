@@ -472,9 +472,9 @@
       "brotli": 4952
     },
     "styles/components/sla.css": {
-      "raw": 516,
-      "gzip": 293,
-      "brotli": 240
+      "raw": 3252,
+      "gzip": 1134,
+      "brotli": 957
     },
     "styles/components/slider.css": {
       "raw": 1371,
