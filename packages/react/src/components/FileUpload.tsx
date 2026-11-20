@@ -6,7 +6,8 @@ import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
 import { formatFileSize, partitionFiles } from '../file-model.js';
 import type { FileRejection, FileSizeFormatter } from '../file-model.js';
-import { useUixLabels } from '../labels-context.js';
+import { usePluralLabel, useUixLabels } from '../labels-context.js';
+import type { UixCountLabel } from '../plural.js';
 import { Button } from './Button.js';
 import { Input } from './Input.js';
 import { Progress } from './Progress.js';
@@ -50,14 +51,14 @@ export interface FileUploadLabels {
   failed: string;
   /** `{name}` — set `alt` for images. */
   alt: string;
-  /** `{count}` files added. */
-  added: string;
+  /** `{count}` files added. Takes the plural forms or a function of the count too. */
+  added: UixCountLabel;
   /** `{name}`, `{accept}`. */
   wrongType: string;
   /** `{name}`, `{max}`. */
   tooLarge: string;
-  /** `{name}`, `{max}`. */
-  tooMany: string;
+  /** `{name}`, `{max}` (a number of files: the plural forms pick by it). */
+  tooMany: UixCountLabel;
 }
 
 export const DEFAULT_FILE_UPLOAD_LABELS: FileUploadLabels = {
@@ -127,6 +128,7 @@ export function FileUpload({
   disabled, hint, locale, sizeBase, formatSize, labels: labelOverrides, className,
 }: FileUploadProps) {
   const labels = { ...DEFAULT_FILE_UPLOAD_LABELS, ...useUixLabels().fileUpload, ...labelOverrides };
+  const plural = usePluralLabel();
   const sizeText = (bytes: number) => (formatSize ? formatSize(bytes, locale) : formatFileSize(bytes, locale, { base: sizeBase }));
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -140,10 +142,10 @@ export function FileUpload({
     const { accepted, rejected } = partitionFiles(files, { accept, maxSize, maxFiles, existing: items.length });
     const max = maxSize !== undefined ? sizeText(maxSize) : '';
     setMessages(rejected.map(({ file, reason }) => fillLabel(
-      reason === 'type' ? labels.wrongType : reason === 'size' ? labels.tooLarge : labels.tooMany,
+      reason === 'type' ? labels.wrongType : reason === 'size' ? labels.tooLarge : plural(labels.tooMany, maxFiles ?? 0),
       { name: file.name, accept: accept ?? '', max: reason === 'count' ? String(maxFiles) : max },
     )));
-    setAnnounce(accepted.length ? fillLabel(labels.added, { count: accepted.length }) : '');
+    setAnnounce(accepted.length ? fillLabel(plural(labels.added, accepted.length), { count: accepted.length }) : '');
     onFilesAdded(accepted, rejected);
   };
   const onDrop = (event: DragEvent<HTMLDivElement>) => {

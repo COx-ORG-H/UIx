@@ -69,7 +69,7 @@ export interface DateRangePickerProps {
   min?: string;
   max?: string;
   isDateDisabled?: (date: string) => boolean;
-  /** Default: `UixLabelsProvider` `dateFormat.locale`, then the viewer's. */
+  /** Default: `UixLabelsProvider` `dateFormat.locale`, then its `locale`, then the viewer's. */
   locale?: string;
   /** Default: `labels.label` ("Choose date range"). */
   label?: string;
@@ -226,7 +226,7 @@ export function DateRangePicker({ labels: labelOverrides, ...rest }: DateRangePi
   const uixLabels = useUixLabels();
   const words: DateRangePickerLabels = { ...DEFAULT_DATE_RANGE_PICKER_LABELS, ...uixLabels.dateRangePicker, ...labelOverrides };
   // The app-wide date format (HAR-2432): UixLabelsProvider `dateFormat`; a prop still wins.
-  const props = { ...rest, locale: rest.locale ?? uixLabels.dateFormat?.locale, formatDate: rest.formatDate ?? uixLabels.dateFormat?.formatDate };
+  const props = { ...rest, locale: rest.locale ?? uixLabels.dateFormat?.locale ?? uixLabels.locale, formatDate: rest.formatDate ?? uixLabels.dateFormat?.formatDate };
   if (props.mode === 'field') return <DateRangeField {...props} words={words} />;
   return <RangeCalendar {...props} words={words} />;
 }
