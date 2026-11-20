@@ -52,6 +52,8 @@ test('documentation links and metadata follow the current package and catalogue'
     assert.ok(tokenMs && demoMs, `${constant} / ${token} not found`);
     assert.equal(demoMs, tokenMs, `feedback-demos.js ${constant} drifted from --uix-${token}`);
   }
+  // Undo deltas (roadmap #23): the Toast page renders (a helper out of scope once broke it) with its live demo and the window token
+  assert.match(pageContent('toast'), /id="try-undo"[\s\S]*data-live-demo="toast-undo-demo"[\s\S]*--uix-hold-undo/);
   assert.match(source, /data-api-report/);
   assert.match(html, /data-api-report/);
 });

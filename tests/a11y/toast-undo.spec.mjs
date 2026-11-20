@@ -25,8 +25,10 @@ const toaster = (page) => page.getByRole('region', { name: 'Notifications' });
 const toasts = (page) => toaster(page).locator('.uix-toast');
 const resolve = (page, id) => page.getByRole('button', { name: `Resolve ${id}` }).click();
 /** The countdown bar's animation: its play state and how far it has run. */
-const bar = (page) => toasts(page).first().locator('.uix-toast__countdown').evaluate((el) => {
+const bar = (page) => toasts(page).first().locator('.uix-toast__countdown').evaluate(async (el) => {
   const [animation] = el.getAnimations();
+  // a pause is pending until the next frame: read the time once it has taken effect
+  await animation?.ready;
   return { playState: animation?.playState, time: Number(animation?.currentTime ?? 0), transform: getComputedStyle(el).transform };
 });
 const park = (page) => page.mouse.move(5, 5);
