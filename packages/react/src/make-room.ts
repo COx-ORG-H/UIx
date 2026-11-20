@@ -58,6 +58,11 @@ export function releaseRows(list: HTMLElement, rowSelector: string): void {
   }
 }
 
+/** Every row back in its place at once, no glide (makeRoom switched off, reduced motion turned on). */
+export function clearRows(list: HTMLElement, rowSelector: string): void {
+  for (const row of rowsOf(list, rowSelector)) { row.removeAttribute(ROOM_ATTRIBUTE); row.style.translate = ''; }
+}
+
 /** The list's `onTransitionEnd`: a finished glide drops its marker, so a later change is instant. */
 export function endRoomGlide(list: HTMLElement | null, target: EventTarget, propertyName: string): void {
   const row = target as HTMLElement;

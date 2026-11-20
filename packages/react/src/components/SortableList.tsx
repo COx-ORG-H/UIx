@@ -9,7 +9,7 @@ import { placeId, sameOrder, useRowDrag } from '../reorder.js';
 import { EditorIcon } from './EditorIcons.js';
 import { settleDrop } from '../hooks/useKeyboardGrab.js';
 import { useReducedMotion } from '../hooks/useReducedMotion.js';
-import { endRoomGlide, flipRows, measureRows, releaseRows, useMakeRoomDrag } from '../make-room.js';
+import { clearRows, endRoomGlide, flipRows, measureRows, releaseRows, useMakeRoomDrag } from '../make-room.js';
 
 // useLayoutEffect warns during SSR; fall back to useEffect on the server.
 const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
@@ -190,6 +190,7 @@ export function SortableList<T>({
   // Where every row was drawn before an order change, read while rendering (the DOM still shows
   // the old order), so the layout effect can let each row glide from there.
   const shownKey = useRef<string | null>(null);
+  const roomWasOn = useRef(false);
   const drawnBefore = useRef<Map<string, number> | null>(null);
   const renderKey = order.join('\u0000');
   if (room && listRef.current && shownKey.current !== null && shownKey.current !== renderKey && !drawnBefore.current) {
@@ -201,7 +202,15 @@ export function SortableList<T>({
     drawnBefore.current = null;
     shownKey.current = renderKey;
     const list = listRef.current;
-    if (!list || !room) return;
+    const wasOn = roomWasOn.current;
+    roomWasOn.current = room;
+    if (!list) return;
+    if (!room) {
+      // makeRoom stopped applying (reduced motion turned on, the prop switched off): a drag in
+      // progress ends, a held drop lets go, and every row is back in its place at once.
+      if (wasOn) { if (roomDrag.dragging) roomDrag.cancel(); endHold(); clearRows(list, ROW); }
+      return;
+    }
     if (changed && before) {
       endHold();
       // The order changed under a drag (a live update, the dragged row removed): the drag's places
