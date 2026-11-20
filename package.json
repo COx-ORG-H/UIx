@@ -27,7 +27,8 @@
     "serve:styleguide": "serve -l 4178 .",
     "test:visual": "playwright test tests/visual",
     "test:visual:update": "playwright test tests/visual --update-snapshots",
-    "test:a11y": "node --test tests/a11y-results.test.mjs tests/display-preferences-inline.test.mjs tests/field-combobox.test.mjs tests/workspace-actions.test.mjs tests/theme-contrast.test.mjs tests/smoke-consumer/cleanup.test.mjs && playwright test tests/a11y",
+    "test:a11y": "node --test tests/a11y-results.test.mjs tests/display-preferences-inline.test.mjs tests/field-combobox.test.mjs tests/workspace-actions.test.mjs tests/theme-contrast.test.mjs tests/smoke-consumer/cleanup.test.mjs && playwright test tests/a11y --project=light --project=dark",
+    "test:a11y:lanes": "playwright test tests/a11y --project=forced-colors --project=text-spacing --project=font-20 --project=font-24",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "changeset publish"

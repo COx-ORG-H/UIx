@@ -57,6 +57,29 @@
     .uix-input:focus-visible, .uix-textarea:focus-visible, .uix-select:focus-visible {
       outline: 2px solid Highlight; outline-offset: 1px;
     }
+    /* field shells: their focus-within ring is a border colour and a shadow (forced-colors lane) */
+    :is(.uix-taginput, .uix-composer, .uix-rich-text, .uix-stepper):focus-within { outline: 2px solid Highlight; outline-offset: 1px; }
+    .uix-cmdk__input:focus-visible { outline: 2px solid Highlight; outline-offset: -2px; }
+
+    /* chosen states that were only a tint or a shadow; a focused one keeps its focus ring */
+    .uix-table tbody tr:is([data-selected], [aria-selected="true"]):not(:focus-visible),
+    .uix-navitem[aria-current="page"]:not(:focus-visible),
+    .uix-inbox__item[aria-selected="true"]:not(:focus-visible),
+    .uix-relationship-graph__item:is([data-selected], [data-highlighted]):not(:focus-visible),
+    .uix-chip[data-on]:not(:focus-visible),
+    .uix-input-group__action[aria-pressed="true"]:not(:focus-visible),
+    .uix-flow .uix-node[data-selected]:not(:focus-visible) {
+      outline: 2px solid SelectedItem; outline-offset: -2px;
+    }
+    .uix-reaction[data-mine]:not(:focus-visible) { outline: 2px solid SelectedItem; outline-offset: -1px; }
+    /* the pager's current page is a solid fill: keep it, in the selection colours */
+    .uix-pagination__btn[aria-current="page"] {
+      forced-color-adjust: none; background: SelectedItem; border-color: SelectedItem; color: SelectedItemText;
+    }
+    /* the pipeline's current stage: a tint and a halo shadow */
+    .uix-pipeline__stage:is([data-state="active"], [data-state="current"], [data-state="running"], [aria-current="step"]) .uix-pipeline__content {
+      outline: 2px solid Highlight; outline-offset: 2px;
+    }
 
     /* scheduling calendar — the high band is a fill and the marker shapes are backgrounds, both
        stripped here: the band becomes a heavy border and the shapes are redrawn in a system
