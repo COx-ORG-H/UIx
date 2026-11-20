@@ -91,6 +91,10 @@
 <!-- lesson-skip: 04d0a48 not the CI cause (85526af was); kept: a constant backdrop blur and no per-row blur are cheaper without a GPU -->
 <!-- lesson-skip: 9d095c8 not the CI cause (85526af was); kept: a transform-only glide layer and settleOverlay waiting for the subtree -->
 <!-- lesson-skip: 5ebab16 not the CI cause (85526af was); kept: named isolation hosts instead of a subject-less :has() -->
+<!-- lesson-skip: 38dc8ac3 routine: compare() escapes its text, so <code> showed literally; found by looking at the 390 px shot -->
+
+### 2026-11-20 · reading a CSS animation and clicking under a view transition · `5805c3f4`
+- **Rule:** in a browser test, read a CSS animation's timing function from `animation.effect.getKeyframes()[0].easing`; `getComputedTiming().easing` is the effect easing and reads `linear` in every engine. While a view transition runs, a named part is drawn from its snapshot and is not hit-testable: a click on a control inside it lands on the part's container (clicks elsewhere reach the live page if `::view-transition` has `pointer-events: none`), and the update commits a frame after the call, so read the new state only once `[data-uix-view-transition]` is gone.  **Why:** the first view-transition spec failed in Chromium, Firefox and WebKit on both (easing "linear", a Back click mid-morph lost), and the canvas drag specs read the layout before the drop's deferred commit.  **Gate:** `tests/a11y/view-transition.spec.mjs` (select-cross-browser), the wait in `dashboard-canvas.spec.mjs` `dragHandle`.  **Tag:** test, motion, view-transition, playwright, cross-browser
 
 
 ### 2026-11-08 · sizing from a box an ancestor is still scaling · `a3cf190c`
