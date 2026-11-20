@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 60f840c5 routine review fix from Qodo on #303 (a scoped command's hint resolved against focus or its own control), pinned by a jsdom test -->
 <!-- lesson-skip: b6fa2273 routine review fixes from Qodo on #303 (palette key without a callback, trailing +, Shift on punctuation, exact modifiers on chords, scope rank across sequences, platform notice) each pinned by a jsdom test; the sheet's root class was named by the react-classes-defined gate -->
 <!-- lesson-skip: 3a34e535 routine: Qodo's low finding (makeRoom switched off mid-drag left rows shifted); one cleanup branch, pinned by a jsdom test -->
 <!-- lesson-skip: 30e903de routine review fixes on unreleased makeRoom (late consumer, removed row, second pointer, resize, order change mid-drag), each named by Qodo and pinned by jsdom or Chromium tests; the jsdom getComputedStyle gap is the 727ea02 family -->
