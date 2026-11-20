@@ -179,8 +179,8 @@ export function useVirtualRows<T>(
     else if (align === 'center') next = toStart - (room - pitch) / 2;
     else if (toStart < next) next = toStart;
     else if (toEnd > next) next = toEnd;
-    const max = Math.max(0, element.scrollHeight - element.clientHeight);
-    element.scrollTop = Math.min(max, Math.max(0, next));
+    // the browser clamps to the scroll range (an unmeasured scroller reports no range at all)
+    element.scrollTop = Math.max(0, next);
   }, []);
 
   return {

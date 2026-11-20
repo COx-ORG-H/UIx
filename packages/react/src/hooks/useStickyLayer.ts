@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useSyncExternalStore } from 'react';
 import type { RefObject } from 'react';
-import { registerStickyLayer } from '../sticky-layers.js';
+import { getStickyInsets, registerStickyLayer, subscribeStickyInsets } from '../sticky-layers.js';
 import type { StickyEdge } from '../sticky-layers.js';
 
 const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect;
@@ -35,4 +35,15 @@ export function useStickyLayer(ref: RefObject<HTMLElement | null>, { edge, enabl
     registered.current?.release();
     registered.current = null;
   }, []);
+}
+
+const NO_INSETS = { top: 0, bottom: 0 } as const;
+
+/**
+ * How far the registered fixed layers reach in from the viewport's top and bottom edges, live
+ * (`--uix-sticky-top` / `--uix-sticky-bottom` as numbers). A windowed list adds the bottom reach as
+ * room after its last row, so that row can scroll clear of the layers.
+ */
+export function useStickyInsets(): { readonly top: number; readonly bottom: number } {
+  return useSyncExternalStore(subscribeStickyInsets, getStickyInsets, () => NO_INSETS);
 }

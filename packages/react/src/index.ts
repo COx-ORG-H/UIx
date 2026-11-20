@@ -8,9 +8,9 @@ export type { UseTableOptions, UseTableResult } from './hooks/useTable.js';
 export { useVirtualRows } from './hooks/useVirtualRows.js';
 export type { UseVirtualRowsOptions, UseVirtualRowsResult, ScrollToIndexOptions } from './hooks/useVirtualRows.js';
 // Sticky-layer focus offsets (WCAG 2.2 SC 2.4.11, technique C43)
-export { useStickyLayer } from './hooks/useStickyLayer.js';
+export { useStickyLayer, useStickyInsets } from './hooks/useStickyLayer.js';
 export type { UseStickyLayerOptions } from './hooks/useStickyLayer.js';
-export { registerStickyLayer, stickyInsets, STICKY_TOP_PROPERTY, STICKY_BOTTOM_PROPERTY } from './sticky-layers.js';
+export { registerStickyLayer, stickyInsets, getStickyInsets, subscribeStickyInsets, STICKY_TOP_PROPERTY, STICKY_BOTTOM_PROPERTY } from './sticky-layers.js';
 export type { StickyEdge } from './sticky-layers.js';
 export { useAnchoredPosition } from './hooks/useAnchoredPosition.js';
 export type { UseAnchoredPositionOptions } from './hooks/useAnchoredPosition.js';

@@ -22,7 +22,7 @@ const themeOf = (testInfo) => (testInfo.project.name === 'dark' ? 'dark' : 'ligh
 async function open(page, testInfo, query) {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto(`${HARNESS}?${query}&theme=${themeOf(testInfo)}`, { waitUntil: 'networkidle' });
-  await expect(page.locator('#tickets tbody tr[data-uix-row-id]').first()).toBeVisible();
+  await expect(page.locator('#tickets tbody tr:not(.uix-data-workspace__spacer)').first()).toBeVisible();
 }
 
 /** The layers are up and tall enough to cover rows: three toasts, the tray open with its tasks. */

@@ -131,7 +131,8 @@ function scroller({ count = 2000, height = 640, top = 160 } = {}) {
         if (el) {
           Object.defineProperty(el, 'clientHeight', { configurable: true, get: () => height });
           Object.defineProperty(el, 'scrollHeight', { configurable: true, get: () => 44 + count * 44 });
-          Object.defineProperty(el, 'scrollTop', { configurable: true, get: () => layout.scrollTop, set: (y) => { layout.scrollTop = y; } });
+          // clamped to the scroll range, as a browser does
+          Object.defineProperty(el, 'scrollTop', { configurable: true, get: () => layout.scrollTop, set: (y) => { layout.scrollTop = Math.min(Math.max(0, y), 44 + count * 44 - height); } });
           el.getBoundingClientRect = () => ({ top, bottom: top + height, left: 0, right: 1280, width: 1280, height, x: 0, y: top });
           el.style.scrollPaddingTop = '44px';
         }

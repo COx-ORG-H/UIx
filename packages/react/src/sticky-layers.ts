@@ -27,14 +27,17 @@ interface Registry {
   frame: number;
   listening: boolean;
   written: { top: number; bottom: number };
+  listeners?: Set<() => void>;
 }
 
 const KEY = Symbol.for('@tensor_1/react/sticky-layers');
 const host = globalThis as typeof globalThis & { [KEY]?: Registry };
 const registry: Registry = (host[KEY] ??= { layers: new Set(), observer: null, frame: 0, listening: false, written: { top: 0, bottom: 0 } });
+const listeners = (registry.listeners ??= new Set());
 
-/** The CSS custom properties the registry writes on `<html>`. */
+/** The CSS custom property for how far fixed top layers reach down, written on `<html>`. */
 export const STICKY_TOP_PROPERTY = '--uix-sticky-top';
+/** The CSS custom property for how far fixed bottom layers reach up, written on `<html>`. */
 export const STICKY_BOTTOM_PROPERTY = '--uix-sticky-bottom';
 
 const viewportHeight = (doc: Document) => doc.documentElement.clientHeight || doc.defaultView?.innerHeight || 0;
@@ -81,7 +84,23 @@ function write() {
   if (next.bottom !== registry.written.bottom) {
     if (next.bottom) root.setProperty(STICKY_BOTTOM_PROPERTY, `${next.bottom}px`); else root.removeProperty(STICKY_BOTTOM_PROPERTY);
   }
+  if (next.top === registry.written.top && next.bottom === registry.written.bottom) return;
   registry.written = next;
+  for (const listener of [...listeners]) listener();
+}
+
+/**
+ * The offsets last written to `<html>` (the same object until they change), for
+ * `useSyncExternalStore`. `{ top: 0, bottom: 0 }` with no layer.
+ */
+export function getStickyInsets(): { readonly top: number; readonly bottom: number } {
+  return registry.written;
+}
+
+/** Calls `listener` whenever the written offsets change. Returns the unsubscribe function. */
+export function subscribeStickyInsets(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => { listeners.delete(listener); };
 }
 
 /** Measures now (a registration, a removal) and writes the properties. */

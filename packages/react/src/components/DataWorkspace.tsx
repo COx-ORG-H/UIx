@@ -16,6 +16,7 @@ import type { FilterField, FilterSummaryLabels, FilterValue, SummarizeFilterOpti
 import { useResolvedFilterLabels } from '../hooks/useResolvedFilterLabels.js';
 import { useVirtualRows } from '../hooks/useVirtualRows.js';
 import { keepClearOfStickyLayers } from '../sticky-layers.js';
+import { useStickyInsets } from '../hooks/useStickyLayer.js';
 import { playArrival } from '../hooks/arrival.js';
 import { useViewTransition } from '../hooks/useViewTransition.js';
 import type { UseVirtualRowsResult } from '../hooks/useVirtualRows.js';
@@ -954,6 +955,9 @@ function WorkspaceTable<T>({
     if (containerRef) (containerRef as { current: HTMLDivElement | null }).current = node;
   }, [containerRef]);
   const windowed = virtual?.virtualized ?? false;
+  // Room after the last windowed row as tall as the fixed layers' reach (toasts, the task tray):
+  // the body scrolls far enough for that row to stop clear of them (WCAG 2.2 SC 2.4.11). 0 with none.
+  const stickyRoom = useStickyInsets().bottom;
   const start = virtual && windowed ? virtual.startIndex : 0;
   const mountedRows = virtual && windowed ? virtual.rows : rows;
 
@@ -1405,7 +1409,7 @@ function WorkspaceTable<T>({
         {virtual && start > 0 && spacer(virtual.padTop, 'pad-top')}
         {start > 0 && start % 2 === 0 && spacer(0, 'pad-zebra')}
         {mountedRows.map((row, at) => renderRow(row, start + at))}
-        {virtual && virtual.padBottom > 0 && spacer(virtual.padBottom, 'pad-bottom')}
+        {virtual && virtual.padBottom + (windowed ? stickyRoom : 0) > 0 && spacer(virtual.padBottom + (windowed ? stickyRoom : 0), 'pad-bottom')}
       </tbody>
     ) : (
       // Row motion (HAR-2755): a row a live update adds rises in, a row a bulk action removes fades
