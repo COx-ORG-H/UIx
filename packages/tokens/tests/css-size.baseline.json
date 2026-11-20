@@ -531,6 +531,11 @@
       "gzip": 1669,
       "brotli": 1406
     },
+    "styles/components/task-tray.css": {
+      "raw": 10192,
+      "gzip": 2679,
+      "brotli": 2273
+    },
     "styles/components/text-diff.css": {
       "raw": 5267,
       "gzip": 1267,
