@@ -582,9 +582,9 @@
       "brotli": 2109
     },
     "styles/motion.css": {
-      "raw": 13894,
-      "gzip": 4279,
-      "brotli": 3614
+      "raw": 13588,
+      "gzip": 4215,
+      "brotli": 3559
     },
     "styles/utilities.css": {
       "raw": 1310,
