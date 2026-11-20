@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: da85d925 routine: two PRs crossed (#311's namespace list landed while this PR added a namespace); the lane's own test named the missing key -->
 <!-- lesson-skip: 33e42718 routine: the target-size ratchet named the undersized mark and the catalogue link; the contrast flake is the known settle-before-axe pattern (task-tray.spec waits 400 ms) -->
 <!-- lesson-skip: ac833023 routine review fixes on unreleased AI primitives (URL scheme allow-list reuses url-policy, prototype-key fallback, effect order, stale state), each named by Qodo and pinned by jsdom or Chromium tests -->
 <!-- lesson-skip: d097584f routine: a Card and a horizontal Step title had no overflow-wrap, so a long compound pushed the header action out and painted over the next step; same rule as the page-header title (overflow-wrap: anywhere; hyphens: auto), now held by the pseudo-locale lane -->
