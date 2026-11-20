@@ -9,10 +9,10 @@
   .uix-prose h4 { font-size: var(--uix-text-h3); font-weight: 600; margin-top: var(--uix-space-5); }
   .uix-prose p { line-height: var(--uix-leading-body); color: var(--uix-text-hushed); }
   .uix-prose a { color: var(--uix-link); }
-  .uix-prose ul, .uix-prose ol { padding-left: var(--uix-space-5); }
+  .uix-prose ul, .uix-prose ol { padding-inline-start: var(--uix-space-5); }
   .uix-prose li + li { margin-top: var(--uix-space-1); }
   .uix-prose code { font-family: var(--uix-font-mono); font-size: .9em; background: var(--uix-bg-subtle); padding: 1px var(--uix-space-2); border-radius: var(--uix-radius-xs); }
-  .uix-prose blockquote { border-left: 3px solid var(--uix-border-strong); padding-left: var(--uix-space-3); color: var(--uix-text-muted); }
+  .uix-prose blockquote { border-inline-start: 3px solid var(--uix-border-strong); padding-inline-start: var(--uix-space-3); color: var(--uix-text-muted); }
   /* markdown constructs written by the rich-text editor (RTE-01) */
   .uix-prose h5, .uix-prose h6 { font-size: var(--uix-text-body); font-weight: 600; }
   /* A document's sections (HAR-3096): each h2 and h3 has a section's room above it, so "Ursache" and
@@ -30,12 +30,12 @@
   .uix-prose hr { border: 0; border-top: 1px solid var(--uix-border); }
   .uix-prose img { max-width: 100%; height: auto; border-radius: var(--uix-radius-sm); vertical-align: middle; }
   .uix-prose table { border-collapse: collapse; font-size: var(--uix-text-body); }
-  .uix-prose th, .uix-prose td { padding: var(--uix-space-2) var(--uix-space-3); border: 1px solid var(--uix-border); text-align: left; vertical-align: top; }
+  .uix-prose th, .uix-prose td { padding: var(--uix-space-2) var(--uix-space-3); border: 1px solid var(--uix-border); text-align: start; vertical-align: top; }
   .uix-prose th { background: var(--uix-bg-subtle); color: var(--uix-text); font-weight: 600; }
   .uix-prose :where(th, td) > p { margin: 0; color: inherit; }
   .uix-markdown__table { max-width: 100%; overflow-x: auto; border-radius: var(--uix-radius-xs); }
   .uix-markdown__table:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
-  .uix-prose .uix-markdown__tasks { list-style: none; padding-left: 0; }
+  .uix-prose .uix-markdown__tasks { list-style: none; padding-inline-start: 0; }
   .uix-markdown__task { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: var(--uix-space-2); align-items: baseline; }
   .uix-markdown__task > input { margin: 0; accent-color: var(--uix-accent); }
   .uix-markdown__task > input:disabled { opacity: 1; }

@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react';
 import { cx } from '../cx.js';
+import { useUixLabels } from '../labels-context.js';
 import { placeId, sameOrder, useRowDrag } from '../reorder.js';
 import { Button } from './Button.js';
 import { Checkbox } from './Checkbox.js';
@@ -71,10 +72,12 @@ export interface ViewMenuProps {
   onColumnVisibilityChange?: (id: string, visible: boolean) => void;
   /**
    * Turns on reordering: every column row gets a drag grip (pointer; ArrowUp / ArrowDown once
-   * focused) and a ⋯ menu with Move up · Move down · Hide / Show, which is the keyboard path.
+   * focused) and a ⋯ menu with Move up · Move down · Hide / Show, which is the keyboard path and
+   * the single-pointer one (a column moves with clicks, never only by a drag; WCAG 2.5.7).
    * Receives every column id, first to last. The order is the application's to persist.
    */
   onReorder?: (orderedIds: string[]) => void;
+  /** Each word defaults to `UixLabelsProvider` `viewMenu`, then to English. */
   columnLabels?: Partial<ViewMenuColumnLabels>;
   /** Pinned under the columns, e.g. a Reset sort `.uix-menu__item` button. */
   footer?: ReactNode;
@@ -202,7 +205,7 @@ export function ViewMenu({
   const zebraLabelId = `${baseId}-zebra`;
   const freezeLabelId = `${baseId}-freeze`;
   const columnsLabelId = `${baseId}-columns`;
-  const labels = { ...VIEW_MENU_COLUMN_LABELS, ...columnLabels };
+  const labels = { ...VIEW_MENU_COLUMN_LABELS, ...useUixLabels().viewMenu, ...columnLabels };
   const list = columns ?? [];
 
   // The order being dragged (or just moved) until the consumer's new order arrives.
