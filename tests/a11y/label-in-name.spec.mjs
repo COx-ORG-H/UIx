@@ -52,8 +52,8 @@ test('the check flags a name that leaves out the shown words, and only that', as
     <button id="good-order" aria-label="09:00 Certificate renewal, Scheduled"><span>09:00</span> <span>Certificate renewal</span></button>
     <button id="abbrev" aria-label="Sunday 25.10.2026">Sun 25.10.</button>
     <button id="blocks" aria-label="Hold, Quarter close"><span style="display:block">Hold</span><span style="display:block">Quarter close</span></button>
-    <div role="option" id="described" aria-label="Time zone" aria-describedby="d1" tabindex="-1"><span>Time zone</span><span id="d1">Used for due dates</span></div>
-    <div role="option" id="undescribed" aria-label="Time zone" tabindex="-1"><span>Time zone</span><span>Used for due dates</span></div>
+    <div role="option" id="described" aria-label="Time zone" aria-describedby="d1" tabindex="-1"><span>Time zone</span> <span id="d1">Used for due dates</span></div>
+    <div role="option" id="undescribed" aria-label="Time zone" tabindex="-1"><span>Time zone</span> <span>Used for due dates</span></div>
     <button id="icon" aria-label="Close">×</button>
     <button id="hidden-extra" aria-label="Assign"><span>Assign</span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">to me</span></button>
     <label for="f1">Owner</label><input id="f1" aria-label="Assignee">

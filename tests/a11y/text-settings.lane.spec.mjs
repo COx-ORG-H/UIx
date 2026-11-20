@@ -11,7 +11,8 @@
  *
  * Each key component's specimens are measured twice, at the browser defaults and with the
  * setting, and the lane fails on what the setting broke:
- *   - clipped: text cut by a box with overflow hidden or clip (truncation included);
+ *   - clipped: text cut by a box with overflow hidden or clip, with no ellipsis or line clamp to
+ *     say so (a chosen truncation shows "…" and keeps the full value elsewhere);
  *   - escaped: text drawn outside the bordered or filled box it sits in (a fixed-height button);
  *   - overlapping: two pieces of text drawn over each other.
  * Text that was already cut at the defaults (a deliberate one-line truncation with its full
@@ -55,9 +56,25 @@ function measureText() {
       if (skip) continue;
       const range = document.createRange();
       range.selectNodeContents(node);
-      const rects = [...range.getClientRects()].filter((r) => r.width > 1 && r.height > 1);
+      const raw = [...range.getClientRects()].filter((r) => r.width > 1 && r.height > 1);
+      if (!raw.length) continue;
+      // What a reader sees of the text: each line box cut to every scroller or clipping box around it
+      // (a range reports the whole line, even the part a truncating cell hides).
+      const rects = raw.map((r) => {
+        let v = { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+        for (let a = el; a && a !== stage.parentElement; a = a.parentElement) {
+          const c = getComputedStyle(a);
+          const b = a.getBoundingClientRect();
+          if (c.overflowX !== 'visible') v = { ...v, left: Math.max(v.left, b.left), right: Math.min(v.right, b.right) };
+          if (c.overflowY !== 'visible') v = { ...v, top: Math.max(v.top, b.top), bottom: Math.min(v.bottom, b.bottom) };
+          if (a === stage) break;
+        }
+        return v;
+      }).filter((v) => v.right - v.left > 1 && v.bottom - v.top > 1);
       if (!rects.length) continue;
-      const box = rects.reduce((u, r) => ({ left: Math.min(u.left, r.left), top: Math.min(u.top, r.top), right: Math.max(u.right, r.right), bottom: Math.max(u.bottom, r.bottom) }),
+      const box = raw.reduce((u, r) => ({ left: Math.min(u.left, r.left), top: Math.min(u.top, r.top), right: Math.max(u.right, r.right), bottom: Math.max(u.bottom, r.bottom) }),
+        { left: Infinity, top: Infinity, right: -Infinity, bottom: -Infinity });
+      const seen = rects.reduce((u, r) => ({ left: Math.min(u.left, r.left), top: Math.min(u.top, r.top), right: Math.max(u.right, r.right), bottom: Math.max(u.bottom, r.bottom) }),
         { left: Infinity, top: Infinity, right: -Infinity, bottom: -Infinity });
       let clipped = '';
       let escaped = '';
@@ -66,11 +83,12 @@ function measureText() {
         const r = a.getBoundingClientRect();
         const cutX = /hidden|clip/.test(s.overflowX) && (box.left < r.left - TOL || box.right > r.right + TOL);
         const cutY = /hidden|clip/.test(s.overflowY) && (box.top < r.top - TOL || box.bottom > r.bottom + TOL);
-        const ellipsis = a === el && s.textOverflow === 'ellipsis' && a.scrollWidth > a.clientWidth + 1;
-        const clamp = a === el && s.webkitLineClamp !== 'none' && a.scrollHeight > a.clientHeight + 1;
-        if (!clipped && (cutX || cutY || ellipsis || clamp)) clipped = a.className || a.tagName;
+        // An ellipsis or a line clamp is a truncation the component chose and shows ("…"), with the
+        // full value elsewhere (a title, the record); a cut with no sign of it is lost text.
+        const truncates = s.textOverflow === 'ellipsis' || s.webkitLineClamp !== 'none';
+        if (!clipped && !truncates && (cutX || cutY)) clipped = a.className || a.tagName;
         if (!escaped && a !== el && boxed(s) && /visible/.test(s.overflowY)
-          && (box.top < r.top - TOL || box.bottom > r.bottom + TOL || box.left < r.left - TOL || box.right > r.right + TOL)) escaped = a.className || a.tagName;
+          && (seen.top < r.top - TOL || seen.bottom > r.bottom + TOL || seen.left < r.left - TOL || seen.right > r.right + TOL)) escaped = a.className || a.tagName;
         if (a === stage) break;
       }
       const id = `${si}:${pieces.length}`;
@@ -123,20 +141,24 @@ async function openExplorer(page) {
   await page.evaluate(() => document.fonts.ready);
 }
 
-test('key components keep every word readable with the setting', async ({ page, context }, testInfo) => {
+test('key components keep every word readable with the setting', async ({ page, browser }, testInfo) => {
   test.setTimeout(300_000);
   const { textSpacing, defaultFontSize } = testInfo.project.metadata ?? {};
   test.skip(!textSpacing && !defaultFontSize, 'a text-settings lane only');
 
   await openExplorer(page);
   let scaled = null;
+  let scaledContext = null;
+  const rootSize = (p) => p.evaluate(() => parseFloat(getComputedStyle(document.documentElement).fontSize));
   if (defaultFontSize) {
-    scaled = await context.newPage();
-    const cdp = await context.newCDPSession(scaled);
+    // Its own context: with the baseline page in the same one, Chromium dropped the setting
+    // after a few routes (the two pages share a renderer).
+    scaledContext = await browser.newContext({ baseURL: testInfo.project.use.baseURL, viewport: testInfo.project.use.viewport, colorScheme: 'light' });
+    scaled = await scaledContext.newPage();
+    const cdp = await scaledContext.newCDPSession(scaled);
     await cdp.send('Page.setFontSizes', { fontSizes: { standard: defaultFontSize, fixed: Math.round(defaultFontSize * 13 / 16) } });
     await openExplorer(scaled);
-    const root = await scaled.evaluate(() => parseFloat(getComputedStyle(document.documentElement).fontSize));
-    expect(root, `the root follows a ${defaultFontSize} px default font size (a px root size would pin it)`).toBe(defaultFontSize);
+    expect(await rootSize(scaled), `the root follows a ${defaultFontSize} px default font size (a px root size would pin it)`).toBe(defaultFontSize);
   }
 
   const problems = [];
@@ -154,6 +176,7 @@ test('key components keep every word readable with the setting', async ({ page, 
       await style.evaluate((el) => el.remove());
     } else {
       await showRoute(scaled, slug);
+      expect(await rootSize(scaled), `#${slug}: the setting still holds`).toBe(defaultFontSize);
       now = await scaled.evaluate(measureText);
       await attachShot(testInfo, scaled, slug);
       // type the kit sizes in px would not follow the setting
@@ -167,6 +190,7 @@ test('key components keep every word readable with the setting', async ({ page, 
     measured += now.texts.length;
     for (const p of broken(base, now)) problems.push(`#${slug}: ${p}`);
   }
+  await scaledContext?.close();
   expect(measured, 'the lane measured the specimens').toBeGreaterThan(500);
   const lane = textSpacing ? 'WCAG 1.4.12 text spacing' : `a ${defaultFontSize} px default font size`;
   expect(problems, `${problems.length} piece(s) of text lost with ${lane}:\n${problems.join('\n')}`).toEqual([]);

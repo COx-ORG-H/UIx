@@ -107,6 +107,9 @@ function switchState(el, [off, STATE_ATTRS]) {
 for (const scheme of ['dark', 'light']) {
   test.describe(`${scheme} contrast theme`, () => {
     test.use({ colorScheme: scheme, reducedMotion: 'reduce' });
+    // The project's `forcedColors` option did not reach the page in Playwright 1.61: switch it on
+    // per page, and every walk asserts it is on.
+    test.beforeEach(async ({ page }) => { await page.emulateMedia({ forcedColors: 'active' }); });
 
     test('every control in the explorer draws an outline when it takes keyboard focus', async ({ page }) => {
       test.setTimeout(300_000);
@@ -124,6 +127,7 @@ for (const scheme of ['dark', 'light']) {
     test('every chosen, current or pressed state is still visible', async ({ page }) => {
       test.setTimeout(420_000);
       const routes = await explorerRoutes(page, scheme);
+      expect(await page.evaluate(() => matchMedia('(forced-colors: active)').matches), 'forced colours are on').toBe(true);
       const seen = {};
       const lost = [];
       const shot = (locator) => locator.screenshot({ animations: 'disabled', timeout: 5_000 }).catch(() => null);
@@ -156,6 +160,7 @@ for (const scheme of ['dark', 'light']) {
 
     test('the TaskTray ring still shows progress, and its pill draws a focus outline', async ({ page }) => {
       await page.goto(`/tests/task-tray/harness.html?scene=one&theme=${scheme}`, { waitUntil: 'networkidle' });
+      expect(await page.evaluate(() => matchMedia('(forced-colors: active)').matches), 'forced colours are on').toBe(true);
       const pill = page.getByRole('button', { name: /^Background tasks: / });
       await expect(pill).toBeVisible();
       await page.keyboard.press('Shift');
@@ -176,6 +181,7 @@ for (const scheme of ['dark', 'light']) {
       // With motion allowed: under reduced motion every edge is static anyway, and the divider is off.
       await page.emulateMedia({ reducedMotion: 'no-preference' });
       await page.goto(`/tests/scroll-edge/fixture.html?theme=${scheme}`, { waitUntil: 'networkidle' });
+      expect(await page.evaluate(() => matchMedia('(forced-colors: active)').matches), 'forced colours are on').toBe(true);
       const list = page.locator('.uix-scroll-edge.fx-list').first();
       await list.evaluate((el) => { el.scrollTop = 40; });
       // a fade is a mask: switching every mask off must change nothing a reader sees
