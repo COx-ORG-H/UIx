@@ -254,8 +254,9 @@ indicator that stays at least 500 ms; an in-place result for 1.5 s. The waits ar
   never flashes one. `loadingDelay={0}` shows it at once. Pass `loading`, never only
   `disabled={isPending}`: a greyed-out button says nothing about work.
 - **`Button result`** (`'success' | 'error' | null`): when it changes, or an action ends with one,
-  the label crossfades to a check and `resultLabels.success` ("Done") or an alert mark and
-  `resultLabels.error` ("Failed") for 1.5 s, announced politely, then returns. Never on the first
+  the label fades out, then a check and `resultLabels.success` ("Done") or an alert mark and
+  `resultLabels.error` ("Failed") shows for 1.5 s (the two texts never overlap), announced politely,
+  then returns. Never on the first
   render. The button is always as wide as its widest wording, so nothing beside it moves. Keep the
   prop defined (`null` while there is no result). Say what failed and how to recover somewhere that
   stays (a field error, a toast). Words also come from `UixLabelsProvider` `buttonResult`.
@@ -329,6 +330,14 @@ const star = useOptimisticValue(view.starred, (next) => api.star(view.id, next),
   option on a click (160 ms); a keyboard change and reduced motion jump. Server HTML, forced
   colours and Segmented's link mode keep each option's own mark. `useSlidingIndicator` is the
   hook behind it.
+- **`useViewTransition()`**: an occasional surface morphs between two states with the browser's
+  View Transitions API. `start(update, { parts, scope, className })` runs `update` in `flushSync`
+  while the old picture is held; `parts` (read before and after) pairs elements by key, so a row
+  can open into its detail. The box glides on the glide spring (280 ms); the pictures swap in
+  160 ms and never scale. The keyboard, reduced motion and a browser without the API get the
+  change at once; a second start ends the running one. DataWorkspace's Maximize (from the
+  pointer) and a DashboardCanvas pointer drop use it. Never on a 100×-a-day path: a queue row
+  opening its Peek, a tab. A record opened now and then (a touch-first list → detail) may morph.
 - **CollapsibleSection** opening fades the body in and settles it 4 px (on `::details-content`,
   where supported); an already open section, a keyboard open and closing are instant.
 

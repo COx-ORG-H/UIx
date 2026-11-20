@@ -8,12 +8,12 @@
  * Built into docs/live/dist/ (not committed) by `node packages/tokens/docs/live/build.mjs`; the docs
  * site workflow builds it before assembling the site. docs.js imports it when the Motion page opens
  * and calls `mount`, which returns the unmount it calls when the page changes. */
-import { StrictMode, useState } from 'react';
+import { StrictMode, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   Button, Checkbox, DashboardCanvas, DataWorkspace, DialogClose, Drawer, Menu, MenuItem, Modal, NavGroup, NavItem, Radio, RadioGroup, Select,
-  Sidebar, SidebarSection, SubNavItem, Toaster, Tooltip, createToastApi, createToastStore,
+  Sidebar, SidebarSection, SubNavItem, Toaster, Tooltip, createToastApi, createToastStore, useViewTransition,
 } from '../../../react/src/index.js';
 import type { DashboardCanvasItem, DataWorkspaceColumn } from '../../../react/src/index.js';
 import {
@@ -252,6 +252,45 @@ function CanvasDemo() {
   );
 }
 
+// A row that opens into its detail, and a workspace that takes the window (useViewTransition): both
+// travel from the pointer; Enter, Escape and reduced motion change them at once.
+function MorphDemo() {
+  const morph = useViewTransition();
+  const [open, setOpen] = useState<string | null>(null);
+  const [maximized, setMaximized] = useState(false);
+  const list = useRef<HTMLUListElement>(null);
+  const detail = useRef<HTMLDivElement>(null);
+  const go = (next: string | null) => {
+    const key = next ?? open;
+    morph(() => setOpen(next), { parts: () => [['record', detail.current ?? list.current?.querySelector(`[data-id="${key}"]`)]] });
+  };
+  const ticket = QUEUE.find((t) => t.id === open);
+  return (
+    <div className="uix-stack">
+      <div style={{ minHeight: '11rem' }}>
+        {ticket ? (
+          <div ref={detail} className="uix-card" style={{ display: 'grid', gap: 'var(--uix-space-3)', padding: 'var(--uix-space-5)' }}>
+            <strong>{ticket.id} · {ticket.title}</strong>
+            <span>Priorität P{ticket.priority}. Gemeldet heute 08:10, Service Desk.</span>
+            <div><Button variant="secondary" onClick={() => go(null)}>Zurück zur Liste</Button></div>
+          </div>
+        ) : (
+          <ul ref={list} className="uix-stack uix-stack--compact" style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+            {QUEUE.slice(0, 3).map((t) => (
+              <li key={t.id} data-id={t.id} className="uix-card" style={{ display: 'flex', alignItems: 'center', gap: 'var(--uix-space-3)', padding: 'var(--uix-space-2) var(--uix-space-3)' }}>
+                <span style={{ flex: 1, minWidth: 0 }}>{t.id} · {t.title}</span>
+                <Button size="sm" variant="secondary" onClick={() => go(t.id)}>Öffnen</Button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <DataWorkspace<Ticket> label="Störungen" rows={QUEUE} getRowId={(t) => t.id} columns={QUEUE_COLUMNS}
+        maximized={maximized} onMaximizedChange={setMaximized} />
+    </div>
+  );
+}
+
 function Playground() {
   return (
     <div className="uix-docs__live-grid">
@@ -291,8 +330,11 @@ function Playground() {
       <Demo title="Rows that move (DataWorkspace rowMotion)" hint="Add a ticket: it rises in at the top. Erledigen: the row fades and the rows below glide up. Umsortieren glides every row to its new place. Alle erledigen: the empty state waits until the last rows have gone.">
         <RowsDemo />
       </Demo>
-      <Demo title="Card lift (DashboardCanvas)" hint="Drag a card by its move handle: it lifts and stays solid while the dashed outline shows where it lands, then it settles. Drag the resize corner: the card only dims.">
+      <Demo title="Card lift (DashboardCanvas)" hint="Drag a card by its move handle: it lifts and stays solid while the dashed outline shows where it lands; on the drop it settles and the cards it pushed glide to their new places. Drag the resize corner: the card only dims.">
         <CanvasDemo />
+      </Demo>
+      <Demo title="Surfaces that morph (useViewTransition)" hint="Öffnen: the row opens into its detail; Zurück folds it back. More → Maximize: the workspace grows into the window; Escape puts it back at once. A click elsewhere on the page mid-morph lands. From the keyboard or with reduced motion, every change is instant.">
+        <MorphDemo />
       </Demo>
     </div>
   );

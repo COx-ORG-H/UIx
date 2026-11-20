@@ -40,6 +40,8 @@ test('documentation links and metadata follow the current package and catalogue'
   assert.match(pageContent('theming'), /--uix-brand-fg: #000000/);
   // The Motion page and the roadmap state the same result hold as --uix-hold-result.
   assert.match(pageContent('motion'), /held 1\.5 s/);
+  // View transitions (useViewTransition): documented with their frequency budget and the live demo
+  assert.match(pageContent('motion'), /id="view-transitions"[\s\S]*useViewTransition[\s\S]*Never the work queue[\s\S]*a queue row opening its Peek/);
   assert.match(readFileSync(resolve(docsDirectory, '../../../Docs/component-roadmap.md'), 'utf8'), /held 1\.5 s/);
   // The plain-JS state-feedback demo copies the latency ladder; it must match the tokens.
   const effect = readFileSync(resolve(docsDirectory, '../tokens/base/effect.json'), 'utf8');
@@ -307,6 +309,14 @@ test('React availability mappings point to the shipped component inventory or an
       assert.ok(aliases[entry] ? names.has(aliases[entry]) : slugs.has(entry), `No public React export for ${entry}`);
     }
   }
+});
+
+test('the Motion page states the text-swap rule in tokens: out, then in, no overlap', () => {
+  const motion = pageContent('motion');
+  assert.match(motion, /Text swaps go out, then in/);
+  for (const token of ['--uix-dur-exit-fast', '--uix-dur-swap-out', 'transition-delay', 'calc(var(--uix-dur) - var(--uix-dur-exit-fast))']) assert.ok(motion.includes(token), token);
+  assert.match(motion, /Icons and images may overlap/);
+  assert.match(motion, /tooltip hand-over/);
 });
 
 test('docs prose list rules never reach kit lists', () => {

@@ -148,7 +148,7 @@ primitive under “Which motion for which state change”; the shape column is t
 | Primitive | Answers | Shipped as | Shape |
 |---|---|---|---|
 | Delayed-pending hook | Is it working? | `useDelayedPending`, `Button loading` | Drives `Spinner` / `Button loading` / `LoadingState` / `SaveStatus`: show after 300 ms, hold at least 500 ms. |
-| `Button` success / error state | Did it work? | `Button result` / `resultLabels` | Label/icon crossfade in place, held 1.5 s, announced through `aria-live`. |
+| `Button` success / error state | Did it work? | `Button result` / `resultLabels` | Label out, then result in (text never over text), held 1.5 s, announced through `aria-live`. |
 | `BusyRegion` + Table `refreshing` | Is it working? | `BusyRegion`, `TableWrap refreshing` | Keep previous rows, dim, top indeterminate bar, `aria-busy`. |
 | Optimistic helper | Did it register? | `useOptimisticValue` | `useOptimistic`-style, with a visible rollback that says what was restored. |
 | `ChangeHighlight` / `.uix-changed` | What changed? | `ChangeHighlight`, `useChangeHighlight` | A tint on the changed row or field that fades over `--uix-dur-change`; a steady outline under reduced motion. Sibling of `.uix-arrival`. |
@@ -158,3 +158,4 @@ primitive under “Which motion for which state change”; the shape column is t
 | Disclosure expand (`CollapsibleSection`) | Where did it go? | `CollapsibleSection` | Transform/opacity, never height. The one exception is a sidebar group: it opens and closes in height (`grid-template-rows`) over `--uix-dur-disclosure` (350 ms), the operator's 2.60 animate-ui pick, allowed by a `motion-allow` note in `sidebar.css`. |
 | Sliding tab indicator | Where did it go? | `useSlidingIndicator` (Tabs, Segmented, Sidebar) | The active indicator moves between items over `--uix-dur` (160 ms); keyboard and reduced motion jump. |
 | Drag affordances | Did it register? | `[data-uix-drag]`, `.uix-drop-line`, `settleDrop` (`drag.css`) | Lift on grab, drop target and line, settle ≤ 200 ms, with a keyboard alternative. |
+| Surface morph (view transitions) | Where did it go? | `useViewTransition` (DataWorkspace Maximize, DashboardCanvas pointer drop) | An occasional surface glides between two states: the box on `--uix-ease-glide` over `--uix-dur-glide` (280 ms), the pictures swapping in `--uix-dur`, never scaled. Keyboard, reduced motion and browsers without the API change at once; never on a 100×-a-day path (a queue row opening its Peek, a tab); a record opened now and then may morph. |

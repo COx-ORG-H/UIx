@@ -142,6 +142,25 @@ export const dark = ${obj(darkEntries)};
 export const num = ${obj(numEntries)};
 `;
 
+/* ---------- Spring parameters (native consumers rebuild the spring the linear() was sampled from) ---------- */
+// A spring-sampled easing carries $extensions["uix.spring"]; durationMs resolves its paired duration
+// token, so a platform without a spring engine can run the cubic-bezier fallback over the same time.
+const springTokens = base.filter((t) => t.$extensions?.['uix.spring']);
+const springEntries = springTokens.map((t) => {
+  const s = t.$extensions['uix.spring'];
+  const dur = base.find((d) => key(d) === s.durationToken);
+  const ms = dur && /^(\d*\.?\d+)ms$/.exec(val(dur));
+  if (!ms) throw new Error(`--${t.name}: uix.spring.durationToken '${s.durationToken}' is not a ms duration token`);
+  return [key(t), { ...s, durationMs: Number(ms[1]) }];
+});
+if (!springEntries.length) throw new Error('no spring-sampled easing carries $extensions["uix.spring"]');
+
+const tokensJsWithSpring = `${tokensJs}
+/** Spring-sampled easings as springs: stiffness, damping and mass (unit mass, from rest to 1),
+ *  the overshoot of the travel, the paired duration, and a cubic-bezier fallback over that time. */
+export const spring = ${obj(springEntries)};
+`;
+
 const nameUnion = base.map((t) => JSON.stringify(key(t))).join(' | ');
 const tokensDts = `/* GENERATED — do not edit. */
 export type UixTokenName = ${nameUnion};
@@ -149,6 +168,21 @@ export declare const cssVar: Record<UixTokenName, string>;
 export declare const light: Record<UixTokenName, string>;
 export declare const dark: Partial<Record<UixTokenName, string>>;
 export declare const num: Partial<Record<UixTokenName, number>>;
+export type UixSpringName = ${springEntries.map(([k]) => JSON.stringify(k)).join(' | ')};
+export interface UixSpring {
+  /** As Reanimated withSpring and SwiftUI .interpolatingSpring take them; Compose's spring() takes
+   *  dampingRatio = damping / (2 * sqrt(stiffness * mass)). From rest at 0 to 1. */
+  stiffness: number;
+  damping: number;
+  mass: number;
+  /** Overshoot past the target within the duration, as a fraction of the travel (0.031 = 3.1 %). */
+  overshoot: number;
+  durationToken: UixTokenName;
+  durationMs: number;
+  /** cubic-bezier(x1, y1, x2, y2) over durationMs, for a platform with no spring engine. */
+  cubicBezier: readonly [number, number, number, number];
+}
+export declare const spring: Record<UixSpringName, UixSpring>;
 `;
 
 /* ---------- write ---------- */
@@ -159,7 +193,7 @@ await Promise.all([
   writeFile(out('css', 'tokens.css'), css),
   writeFile(out('tailwind', 'theme.css'), tailwindTheme),
   writeFile(out('tailwind', 'preset.cjs'), tailwindPreset),
-  writeFile(out('ts', 'tokens.js'), tokensJs),
+  writeFile(out('ts', 'tokens.js'), tokensJsWithSpring),
   writeFile(out('ts', 'tokens.d.ts'), tokensDts),
 ]);
 

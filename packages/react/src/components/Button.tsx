@@ -38,8 +38,8 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loadingDelay?: number;
   /**
    * How the button's last action ended (HAR-2581). When it changes to `success` or `error`,
-   * or an action ends with one, the label crossfades to a check and `resultLabels.success`
-   * ("Done") or an alert mark and `resultLabels.error` ("Failed") for 1.5 s, announced
+   * or an action ends with one, the label fades out, then a check and `resultLabels.success`
+   * ("Done") or an alert mark and `resultLabels.error` ("Failed") shows for 1.5 s, announced
    * politely, then returns. Never on the first render. The button is always as wide as its
    * widest wording, so nothing beside it moves. Pass `null` while there is no result (keep
    * the prop defined); say what failed and how to recover somewhere that stays, such as a
