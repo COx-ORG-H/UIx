@@ -7,7 +7,8 @@ import { fillLabel } from '../fill-label.js';
 import { DEFAULT_FILE_KIND_LABELS, FILE_KINDS, fileKind, fileMatchesAccept } from '../file-model.js';
 import type { FileKind, FileKindLabels } from '../file-model.js';
 import { UploadIcon } from '../icons/components.js';
-import { useUixLabels } from '../labels-context.js';
+import { usePluralLabel, useUixLabels } from '../labels-context.js';
+import type { UixCountLabel } from '../plural.js';
 
 /** The words of a `FileDrop`, German by default. */
 export interface FileDropLabels {
@@ -17,10 +18,13 @@ export interface FileDropLabels {
   choose: string;
   /** The choose button's full name (it contains `choose`, WCAG 2.5.3). */
   chooseLabel: string;
-  /** One file being dragged. */
+  /** One file being dragged, when `fileMany` is a plain string. */
   fileOne: string;
-  /** `{count}` files being dragged. */
-  fileMany: string;
+  /**
+   * `{count}` files being dragged. Takes the plural forms (`{ one, few, other }`) or a function of
+   * the count too, and then `fileOne` is not read.
+   */
+  fileMany: UixCountLabel;
   /** While dragging, with known kinds. `{files}`: `fileOne`/`fileMany`; `{kinds}`: the kind names. */
   dragSummary: string;
   /** While dragging, when the browser says nothing about the files. */
@@ -173,10 +177,11 @@ export function FileDrop({
     };
   }, [targetRef, disabled]);
 
+  const plural = usePluralLabel();
   const [before, after = ''] = labels.prompt.split('{choose}');
   let summary: string | null = null;
   if (drag) {
-    const files = drag.count === 1 ? labels.fileOne : fillLabel(labels.fileMany, { count: drag.count });
+    const files = fillLabel(plural(labels.fileMany, drag.count, labels.fileOne), { count: drag.count });
     const named = drag.kinds.filter((k) => k !== 'other' || drag.kinds.length > 1);
     summary = drag.count === 0 ? labels.dragRelease
       : named.length ? fillLabel(labels.dragSummary, { files, kinds: named.map((k) => kindLabels[k]).join(', ') })

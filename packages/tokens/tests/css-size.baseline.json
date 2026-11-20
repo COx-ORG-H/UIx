@@ -557,9 +557,9 @@
       "brotli": 687
     },
     "styles/components/toast.css": {
-      "raw": 5774,
-      "gzip": 1927,
-      "brotli": 1599
+      "raw": 7759,
+      "gzip": 2486,
+      "brotli": 2093
     },
     "styles/components/tooltip.css": {
       "raw": 7207,

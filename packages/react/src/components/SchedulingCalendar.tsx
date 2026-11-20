@@ -15,9 +15,10 @@ import type { SchedulingSlotSelection } from './SchedulingResourceDay.js';
 import type { SchedulingAvailabilityKind, SchedulingResource, SchedulingResourceSpan } from '../scheduling-resource-model.js';
 import type { TimeGridEntryContext } from './SchedulingTimeGrid.js';
 import { cx } from '../cx.js';
-import { useUixLabels } from '../labels-context.js';
+import { useUixLabels, useUixLocale } from '../labels-context.js';
+import type { UixCountLabel } from '../plural.js';
 import { StatusPill } from './StatusPill.js';
-import { fillLabel } from '../fill-label.js';
+import { fillCountLabel, fillLabel } from '../fill-label.js';
 
 /** `day` is one column of the time grid. `week` is the time grid when `timeGrid` is set, else seven day cells. */
 export type SchedulingCalendarView = 'month' | 'week' | 'day' | 'agenda';
@@ -172,20 +173,24 @@ export interface SchedulingCalendarLabels {
   /** A window's accessible name unless it sets `accessibleName`. `{title}` is its kind, name and scope. */
   overlay?: string;
   legend: string;
-  /** The "+N more" toggle on a day with more entries than `maxEntriesPerDay`. `{count}` placeholder. */
-  moreEntries: string;
+  /**
+   * The "+N more" toggle on a day with more entries than `maxEntriesPerDay`. `{count}` placeholder.
+   * Like every count label here, it takes the plural forms (`{ one, few, other }`) or a function of
+   * the count too.
+   */
+  moreEntries: UixCountLabel;
   /** Accessible name of that toggle. `{count}` and `{date}` placeholders. */
-  moreEntriesLabel: string;
+  moreEntriesLabel: UixCountLabel;
   /** The toggle once the day is expanded in place. */
   fewerEntries: string;
   /** The "+N" at the end of a week row whose spans did not all get a lane. `{count}` placeholder. */
   moreSpans?: string;
   /** Accessible name of that control. `{count}` and `{date}` (the first day with a hidden span). */
-  moreSpansLabel?: string;
+  moreSpansLabel?: UixCountLabel;
   /** The name of a day's button when `days[date].label` is given. `{date}` and `{label}` placeholders; use `'{label}'` if your labels already say the date. */
   dayName?: string;
   /** The accessible text of a day's count when `days[date].label` is not given. `{count}` placeholder. */
-  dayCount?: string;
+  dayCount?: UixCountLabel;
   states: Record<SchedulingEntryState, string>;
   /** The words for `status`, used in the default accessible name and the agenda. */
   statuses?: Partial<Record<SchedulingStatus, string>>;
@@ -194,9 +199,9 @@ export interface SchedulingCalendarLabels {
   /** Names the strip of windows above the time grid. */
   windows?: string;
   /** "+N windows" when the strip has more windows than lanes. `{count}` placeholder. */
-  moreWindows?: string;
+  moreWindows?: UixCountLabel;
   /** Accessible name of that control. `{count}` and `{date}` (the first day with a hidden window). */
-  moreWindowsLabel?: string;
+  moreWindowsLabel?: UixCountLabel;
   /** Names the lane above the hours that holds all-day and long entries. */
   topLane?: string;
   /** The cue on the second-day part of an entry that crosses midnight. `{time}` is its start. */
@@ -204,9 +209,9 @@ export interface SchedulingCalendarLabels {
   /** The time text of an agenda row whose entry has no time of day (`allDay`). */
   allDay?: string;
   /** Under an agenda day whose rows are not all listed. `{count}` placeholder. */
-  hiddenInDay?: string;
+  hiddenInDay?: UixCountLabel;
   /** Under an agenda day that entries from an earlier day run into. `{count}` placeholder. */
-  continuesInDay?: string;
+  continuesInDay?: UixCountLabel;
   /** Read after an item's name when it can be moved. */
   moveHint?: string;
   /** Announced for a pending move. `{start}` and `{end}` placeholders. */
@@ -506,6 +511,8 @@ export function SchedulingCalendar({
   resources, resourceSpans = EMPTY_SPANS, slotMinutes, dayStart, dayEnd, onSelectSlot, selectedSlot, resourceLayout = 'auto', resourceListBelow = 480,
   loading, error, onRetry, className, labels: labelOverrides,
 }: SchedulingCalendarProps) {
+  // the plural forms follow the labels' language: the provider's locale, then this component's
+  const pluralLocale = useUixLocale() ?? locale;
   const uixLabels = useUixLabels();
   const overrides = { ...uixLabels.schedulingCalendar, ...labelOverrides };
   const labels = {
@@ -767,12 +774,12 @@ export function SchedulingCalendar({
     const badge = renderDayBadge?.(date, onDay);
     const hasBadge = badge != null && badge !== false;
     const dateButton = <button type="button" className="uix-scheduling-calendar__date" data-calendar-date={date} tabIndex={activeDate === date ? 0 : -1} onFocus={() => setActiveDate(date)} onKeyDown={(event) => onDayKeyDown(event, date)} onClick={onSelectDate ? () => onSelectDate(date) : undefined} aria-label={info?.label ? fillLabel(labels.dayName, { date: dateText(date, 'day'), label: info.label }) : dateText(date, 'day')}>{Number(date.slice(-2))}</button>;
-    const moreText = fillLabel(labels.moreEntries, { count: hiddenCount });
-    const moreName = fillLabel(labels.moreEntriesLabel, { count: hiddenCount, date: dateText(date, 'day') });
+    const moreText = fillCountLabel(labels.moreEntries, { count: hiddenCount }, pluralLocale);
+    const moreName = fillCountLabel(labels.moreEntriesLabel, { count: hiddenCount, date: dateText(date, 'day') }, pluralLocale);
     return <div key={date} className="uix-scheduling-calendar__day" data-outside={view === 'month' && !monthDays[index]!.inMonth || undefined}>
       {hasBadge || info ? <div className="uix-scheduling-calendar__dayhead">
         {hasBadge && <span className="uix-scheduling-calendar__badge">{badge}</span>}
-        {info && <span className="uix-scheduling-calendar__count" aria-hidden={info.label ? true : undefined}><span aria-hidden="true">{info.count}</span><span className="uix-visually-hidden">{info.label ?? fillLabel(labels.dayCount, { count: info.count })}</span></span>}
+        {info && <span className="uix-scheduling-calendar__count" aria-hidden={info.label ? true : undefined}><span aria-hidden="true">{info.count}</span><span className="uix-visually-hidden">{info.label ?? fillCountLabel(labels.dayCount, { count: info.count }, pluralLocale)}</span></span>}
         {info?.markers && info.markers.length > 0 && <span className="uix-scheduling-calendar__markers">{info.markers.map((marker) => <Marker key={marker.id} marker={marker} />)}</span>}
         {dateButton}
       </div> : dateButton}
@@ -799,7 +806,7 @@ export function SchedulingCalendar({
     const hidden = countsOnly ? hiddenIds.filter((id) => overlayById.has(id) && !drawnWindows!.has(id)).length : hiddenIds.length;
     const firstHiddenDay = layout.firstHiddenDayByRow?.[row] ?? rowDays[0]!;
     const moreText = fillLabel(labels.moreSpans, { count: hidden });
-    const moreName = fillLabel(labels.moreSpansLabel, { count: hidden, date: dateText(firstHiddenDay, 'day') });
+    const moreName = fillCountLabel(labels.moreSpansLabel, { count: hidden, date: dateText(firstHiddenDay, 'day') }, pluralLocale);
     // A row whose spans are all hidden (a cap of 0) still keeps one lane, for its "+N".
     const style = { ['--uix-scheduling-calendar-lanes' as string]: Math.max(windowLanes + spanLanes, hidden > 0 ? 1 : 0) } as CSSProperties;
     return <div key={rowDays[0]} className="uix-scheduling-calendar__week" style={style}>
