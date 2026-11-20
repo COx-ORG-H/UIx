@@ -48,6 +48,9 @@ import type { ButtonResultLabels } from './components/ButtonFeedback.js';
 import type { AuditLogLabels } from './components/AuditLog.js';
 import type { DataWorkspaceLabels } from './components/DataWorkspace.js';
 import type { AiLabels } from './ai-labels.js';
+import type { UseTableLabels } from './hooks/useTable.js';
+import { countLabel } from './plural.js';
+import type { UixCountLabel } from './plural.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -59,6 +62,13 @@ import type { AiLabels } from './ai-labels.js';
  * on the server.
  */
 export interface UixLabels {
+  /**
+   * Not words: the BCP 47 tag of the language these labels are in, e.g. `de`, `bs`, `sr-Latn`.
+   * Every plural-aware label picks its form with `Intl.PluralRules` in this locale, and the date
+   * fields format in it when `dateFormat.locale` is not set. Every label pack sets it. Name the
+   * script for Serbian (`sr-Latn`, `sr-Cyrl`): a bare `sr` means Cyrillic to `Intl`.
+   */
+  locale?: string;
   /** The words a `Button` with `result` shows for a moment after its action (HAR-2581). */
   buttonResult?: Partial<ButtonResultLabels>;
   modal?: { close?: string };
@@ -91,10 +101,11 @@ export interface UixLabels {
   /** `SearchBar` (HAR-2030): the clear button's name and the submit button's text. */
   searchBar?: Partial<SearchBarLabels>;
   /**
-   * `resultsOne` / `resultsMany`: the polite result count; `{count}`. Items mode (HAR-1378):
-   * `empty` when nothing matches, `recent` the heading of the recent items.
+   * `resultsOne` / `resultsMany`: the polite result count; `{count}`. `resultsMany` also takes the
+   * plural forms (`{ one, few, other }`) or a function of the count, and then `resultsOne` is not
+   * read. Items mode (HAR-1378): `empty` when nothing matches, `recent` the heading of the recent items.
    */
-  commandPalette?: { input?: string; resultsOne?: string; resultsMany?: string; empty?: string; recent?: string };
+  commandPalette?: { input?: string; resultsOne?: string; resultsMany?: UixCountLabel; empty?: string; recent?: string };
   /** `QrCode` (HAR-1251): the text shown when the value is too long for a QR code. */
   qrCode?: Partial<QrCodeLabels>;
   /** `CodeDisplay` (HAR-1253): the countdown, the expiry announcements, the copy button's words. */
@@ -171,6 +182,8 @@ export interface UixLabels {
   dateFormat?: UixDateFormat;
   /** Read by `useUixLabels()` callers; `Pagination` itself is server-safe and takes `labels`. */
   pagination?: Partial<PaginationLabels>;
+  /** `useTable`'s `announcement`: the sort, result and selection words. */
+  table?: Partial<UseTableLabels>;
   /** Read by `useUixLabels()` callers; `BulkBar` itself is server-safe and takes `label`. */
   bulkBar?: { region?: string };
   /**
@@ -197,6 +210,15 @@ export interface UixDateFormat {
   placeholder?: string;
 }
 
+/**
+ * A complete set of kit chrome words for one language: every namespace of `UixLabels`, every
+ * key, and the `locale` they are written in. A language pack (`@tensor_1/react/locales/de`, …) is
+ * one; a pack that misses a key fails the type check.
+ */
+export type UixLabelPack = {
+  [K in Exclude<keyof UixLabels, 'locale' | 'dateFormat'>]-?: Required<NonNullable<UixLabels[K]>>;
+} & { locale: string };
+
 const UixLabelsContext = createContext<UixLabels>({});
 
 export interface UixLabelsProviderProps {
@@ -211,7 +233,9 @@ export function UixLabelsProvider({ labels, children }: UixLabelsProviderProps) 
     const merged: Record<string, unknown> = { ...parent };
     for (const [key, entry] of Object.entries(labels)) {
       const inherited = (parent as Record<string, unknown>)[key];
-      merged[key] = inherited && entry ? { ...(inherited as object), ...(entry as object) } : entry ?? inherited;
+      // `locale` is a string: an inner provider replaces it, it is not spread
+      const objects = typeof inherited === 'object' && typeof entry === 'object';
+      merged[key] = inherited && entry && objects ? { ...(inherited as object), ...(entry as object) } : entry ?? inherited;
     }
     return merged as UixLabels;
   }, [parent, labels]);
@@ -221,4 +245,22 @@ export function UixLabelsProvider({ labels, children }: UixLabelsProviderProps) 
 /** The chrome strings in effect here (empty outside a provider). */
 export function useUixLabels(): UixLabels {
   return useContext(UixLabelsContext);
+}
+
+/**
+ * The locale of the labels in effect here: the provider's `locale`, then `dateFormat.locale`;
+ * `undefined` outside a provider (plural forms then follow English, the kit's own language).
+ */
+export function useUixLocale(): string | undefined {
+  const labels = useContext(UixLabelsContext);
+  return labels.locale ?? labels.dateFormat?.locale;
+}
+
+/**
+ * `countLabel` with the provider's locale: the template of a count label for `count`, e.g.
+ * `usePluralLabel()(labels.groupCount, 3)`. See {@link countLabel}.
+ */
+export function usePluralLabel(): (label: UixCountLabel, count: number, one?: string) => string {
+  const locale = useUixLocale();
+  return useMemo(() => (label: UixCountLabel, count: number, one?: string) => countLabel(label, count, locale, one), [locale]);
 }

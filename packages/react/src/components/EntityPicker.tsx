@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
-import { useUixLabels } from '../labels-context.js';
+import { usePluralLabel, useUixLabels } from '../labels-context.js';
+import type { UixCountLabel } from '../plural.js';
 import { SearchSuggest } from './SearchSuggest.js';
 import type { SearchSuggestOption } from './SearchSuggest.js';
 
@@ -21,22 +22,22 @@ export interface EntityPickerLabels {
   change: string;
   /** Shown in the field when nothing is chosen. */
   none: string;
-  /** Polite count after a search. `{count}`. */
-  results: string;
+  /** Polite count after a search. `{count}`. Takes the plural forms or a function of the count too. */
+  results: UixCountLabel;
   /**
    * The last line of the list when the search found more than it returned (HAR-1648). Not an
    * option: it cannot be chosen.
    */
   more: string;
-  /** Polite count when there are more matches than shown. `{count}` is the number shown. */
-  resultsMore: string;
+  /** Polite count when there are more matches than shown. `{count}` is the number shown. Plural-aware. */
+  resultsMore: UixCountLabel;
   /**
    * Shown, with no Retry, when the search failed for good (HAR-1834): `onSearch` rejected with
    * `{ retryable: false }` (and no `message`), or `isRetryable` said no. E.g. no permission.
    */
   forbidden: string;
-  /** Shown in the open list while the query is shorter than `minQueryLength`. `{count}`. */
-  tooShort: string;
+  /** Shown in the open list while the query is shorter than `minQueryLength`. `{count}`. Plural-aware. */
+  tooShort: UixCountLabel;
   /** The same when `minQueryLength` is 1. */
   typeToSearch: string;
 }
@@ -124,6 +125,7 @@ export function EntityPicker({
   'aria-describedby': describedBy, 'aria-labelledby': labelledBy, renderValue, labels: labelOverrides, className,
 }: EntityPickerProps) {
   const labels = { ...DEFAULT_ENTITY_PICKER_LABELS, ...useUixLabels().entityPicker, ...labelOverrides };
+  const plural = usePluralLabel();
   const [editing, setEditing] = useState(value == null);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<readonly SearchSuggestOption[]>([]);
@@ -254,11 +256,11 @@ export function EntityPicker({
         loading={status === 'loading'}
         loadingLabel={labels.loading}
         empty={tooShort ? undefined : labels.empty}
-        idle={tooShort ? fillLabel(minQueryLength === 1 ? labels.typeToSearch : labels.tooShort, { count: minQueryLength }) : undefined}
+        idle={tooShort ? fillLabel(minQueryLength === 1 ? labels.typeToSearch : plural(labels.tooShort, minQueryLength), { count: minQueryLength }) : undefined}
         note={status === 'done' && hasMore ? labels.more : undefined}
         error={status === 'error' ? (fatal ?? labels.error) : undefined}
         footer={status === 'error' && fatal == null ? { label: labels.retry, onSelect: () => setAttempt((n) => n + 1) } : undefined}
-        status={status === 'done' ? fillLabel(hasMore ? labels.resultsMore : labels.results, { count: results.length }) : undefined}
+        status={status === 'done' ? fillLabel(plural(hasMore ? labels.resultsMore : labels.results, results.length), { count: results.length }) : undefined}
         strategy="fixed"
       />
       {hidden}

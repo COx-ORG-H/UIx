@@ -15,7 +15,7 @@ import {
   DEFAULT_PRINT_LAYOUT_LABELS, DEFAULT_QR_CODE_LABELS, DEFAULT_QR_SCANNER_LABELS, DEFAULT_RULE_BUILDER_LABELS,
   DEFAULT_SCHEDULING_CALENDAR_LABELS, DEFAULT_SCHEDULING_TIMELINE_LABELS, DEFAULT_SHORTCUT_LABELS, DEFAULT_SORTABLE_LIST_LABELS,
   DEFAULT_TAG_INPUT_LABELS, DEFAULT_TEXT_DIFF_LABELS, DEFAULT_TIME_PICKER_LABELS, DEFAULT_TREE_LABELS,
-  FILE_DROP_LABELS_EN, FILE_KIND_LABELS_EN, FILE_ROW_LABELS_EN,
+  DEFAULT_USE_TABLE_LABELS, FILE_DROP_LABELS_EN, FILE_KIND_LABELS_EN, FILE_ROW_LABELS_EN,
 } from '../../packages/react/src/index.js';
 import type { UixLabels } from '../../packages/react/src/index.js';
 
@@ -92,6 +92,7 @@ export const ENGLISH = {
   kanban: DEFAULT_KANBAN_LABELS,
   dashboardCanvas: DEFAULT_DASHBOARD_CANVAS_LABELS,
   ai: DEFAULT_AI_LABELS,
+  table: DEFAULT_USE_TABLE_LABELS,
   viewMenu: {
     rowActions: 'Column actions: {label}', reorder: 'Drag to reorder: {label}', moveUp: 'Move up', moveDown: 'Move down',
     hide: 'Hide', show: 'Show', required: 'Always shown', moved: '{label} moved to position {position} of {count}',
