@@ -2,9 +2,9 @@
   "_note": "Bundle budget for the main @tensor_1/react entry (roadmap #22). Written by `npm run size:update -w @tensor_1/react` (scripts/entry-size.mjs --update). Bytes of an esbuild bundle of dist/, minified, peers external; gzip level 9, brotli quality 11. `npm run size` fails when a metric grows past max(2%, 512 B) of these numbers. --update rewrites only the entries that moved past the tolerance.",
   "sizes": {
     "main (everything)": {
-      "min": 720044,
-      "gzip": 235502,
-      "brotli": 197138
+      "min": 704892,
+      "gzip": 230387,
+      "brotli": 192624
     },
     "main → Button only": {
       "min": 40520,
