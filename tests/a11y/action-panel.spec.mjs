@@ -69,7 +69,15 @@ test('first press local, second press global: Ctrl+K again closes the panel and 
   await expect(panel(page)).toBeHidden();
   const field = page.getByRole('combobox', { name: 'Command palette' });
   await expect(field).toBeFocused();
+  // Escape closes the native dialog at once (hidden, focus back), but the palette's `open` state
+  // follows on its `close` event, a task later. A key pressed before that (CI under load) would
+  // toggle the stale `true` off: wait for the event and React's commit after it, as a person does.
+  await page.evaluate(() => {
+    window.__paletteClosed = false;
+    document.querySelector('dialog.uix-cmdk-dialog').addEventListener('close', () => setTimeout(() => { window.__paletteClosed = true; }, 0), { once: true });
+  });
   await page.keyboard.press('Escape');
+  await page.waitForFunction(() => window.__paletteClosed === true);
   await expect(field).toBeHidden();
   await expect(row(page, 'INC-0412')).toBeFocused();
   // Off a row, the first press is the palette's.
