@@ -73,6 +73,14 @@ export interface TooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'con
  * While the bubble is open it takes the first Escape (HAR-2415), also on a combobox-style trigger
  * whose list is open (a Select, a date field): one Escape closes the bubble, the next one the list.
  */
+/** The trigger a Tooltip describes, as a stable getter per ref: a registered command's keys are read there. */
+const anchors = new WeakMap<object, () => Element | null>();
+const triggerAnchor = (ref: { current: HTMLElement | null }) => {
+  let get = anchors.get(ref);
+  if (!get) { get = () => ref.current; anchors.set(ref, get); }
+  return get;
+};
+
 export function Tooltip({ label, content, placement = 'top', shortcut, shortcutId, className, children, ...props }: TooltipProps) {
   const triggerRef = useRef<HTMLSpanElement>(null);
   const bubbleRef = useRef<HTMLSpanElement>(null);
@@ -87,7 +95,7 @@ export function Tooltip({ label, content, placement = 'top', shortcut, shortcutI
   const childProps = isValidElement(children) ? children.props as { shortcut?: unknown; shortcutId?: unknown } : {};
   const own = shortcut ?? (isKeyShortcut(childProps.shortcut) ? childProps.shortcut : undefined);
   const ownId = shortcutId ?? (shortcut == null && typeof childProps.shortcutId === 'string' ? childProps.shortcutId : undefined);
-  const keys = useDisplayedShortcut(own, ownId);
+  const keys = useDisplayedShortcut(own, ownId, ownId ? triggerAnchor(triggerRef) : undefined);
   const then = useUixLabels().shortcuts?.then ?? 'then';
 
   useAnchoredPosition(triggerRef, bubbleRef, { open, placement, offset: 6 });

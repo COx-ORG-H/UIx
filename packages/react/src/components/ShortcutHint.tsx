@@ -18,6 +18,13 @@ const isShown = (el: HTMLElement | null) => {
 const focusVisible = (el: Element) => {
   try { return el.matches(':focus-visible'); } catch { return true; }
 };
+/** The control a hint marker sits in (stable per marker ref). */
+const anchors = new WeakMap<object, () => Element | null>();
+const hintAnchor = (marker: { current: HTMLSpanElement | null }) => {
+  let get = anchors.get(marker);
+  if (!get) { get = () => marker.current?.parentElement ?? null; anchors.set(marker, get); }
+  return get;
+};
 /** React events from the portal reach the button's handlers through the component tree: stop them there. */
 const stop = (event: SyntheticEvent) => event.stopPropagation();
 
@@ -56,7 +63,8 @@ export function ShortcutHint({ keys: literal, shortcutId, label, describedBy }: 
   const [open, setOpen] = useState(false);
   const platform = useKbdPlatform();
   const spokenId = `${useId()}-keys`;
-  const keys = useDisplayedShortcut(literal, shortcutId);
+  // A registered command's keys as they are at this button: none outside the command's scope.
+  const keys = useDisplayedShortcut(literal, shortcutId, hintAnchor(markerRef));
   const then = useUixLabels().shortcuts?.then ?? 'then';
   // With a registered shortcut the keys can come and go (the character-key switch): the marker
   // stays, the description and the bubble follow.

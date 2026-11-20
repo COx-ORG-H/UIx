@@ -334,7 +334,7 @@ test('without a provider useShortcut works on the document default registry', ()
   assert.deepEqual(runs, ['standalone'], 'unregistered on unmount');
 });
 
-test('an inner scope's sequence wins over a global single key that starts it', () => {
+test("an inner scope's sequence wins over a global single key that starts it", () => {
   const runs = [];
   const app = mount(h(ui.ShortcutProvider, { storageKey: null },
     h(Bind, { runs, id: 'global-g', keys: 'G' }),
@@ -346,7 +346,7 @@ test('an inner scope's sequence wins over a global single key that starts it', (
   assert.deepEqual(runs, ['list-gi', 'global-g']);
 });
 
-test('a provider's platform change re-renders every hint, literal keys too', () => {
+test("a provider's platform change re-renders every hint, literal keys too", () => {
   let platform = 'other';
   const App = () => h(ui.ShortcutProvider, { storageKey: null, platform },
     h(Bind, { runs: [], id: 'palette', keys: 'Mod+K' }),
@@ -393,6 +393,24 @@ test('Button shortcutId: the description says the registered keys; none while of
   assert.equal(button.getAttribute('aria-describedby'), null, 'no keys, no description');
   act(() => api.setOverride('assign', 'Mod+Shift+A'));
   assert.equal(described(), 'Control+Shift+A');
+});
+
+test('a hint for a scoped command shows its keys only where they work: inside its scope', () => {
+  const app = mount(h(ui.ShortcutProvider, { storageKey: null },
+    h(ui.ShortcutScope, { label: 'Ticket list' },
+      h(Bind, { runs: [], id: 'resolve', keys: 'E' }),
+      h(ui.Button, { id: 'inside', shortcutId: 'resolve' }, 'Resolve')),
+    h(ui.Button, { id: 'outside', shortcutId: 'resolve' }, 'Resolve'),
+    h(ui.KbdCombo, { id: 'follows', shortcutId: 'resolve' })));
+  const inside = app.host.querySelector('#inside');
+  const outside = app.host.querySelector('#outside');
+  assert.ok(inside.getAttribute('aria-describedby'), 'in the scope: described by its key');
+  assert.equal(outside.getAttribute('aria-describedby'), null, 'outside: the key would do nothing, so no hint');
+  assert.equal(app.host.querySelector('#follows'), null, 'a KbdCombo follows focus: nothing focused in the scope');
+  act(() => inside.focus());
+  assert.match(app.host.querySelector('#follows').textContent, /E/);
+  act(() => outside.focus());
+  assert.equal(app.host.querySelector('#follows'), null);
 });
 
 test('KbdCombo shows a sequence as "G then I" and says it as "G, then I"; the word is translatable', () => {

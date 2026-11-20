@@ -350,7 +350,8 @@ function CommandPaletteItems({
   const renderRow = ({ item, id }: { item: CommandPaletteItem; id: string }) => {
     const isActive = id === activeId;
     // The registry's keys for a registered command (none while it is off), else the literal ones.
-    const keys = item.shortcutId ? shortcuts.keysFor(item.shortcutId) : toSequence(item.shortcut);
+    // at the opener, where the command will run: a scoped command shows keys only when opened from its scope
+    const keys = item.shortcutId ? shortcuts.keysFor(item.shortcutId, returnTo.current ?? (typeof document === 'undefined' ? null : document.activeElement)) : toSequence(item.shortcut);
     return (
       <div
         key={id}

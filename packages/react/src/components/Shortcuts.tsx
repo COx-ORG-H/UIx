@@ -226,7 +226,8 @@ export function useShortcut(options: UseShortcutOptions): UseShortcutResult {
     return registry.register(() => latest.current, scope);
     // The definition is read live through `latest`; these re-register so hints and the sheet update.
   }, [registry, scope, id, keysKey, label, group, enabled, hidden]);
-  const keys = useShortcutKeys(id);
+  // The keys at the shortcut's own scope (none for a scope that is not mounted).
+  const keys = useShortcutKeys(id, scope ? scope.element : undefined);
   const platform = useKbdPlatform();
   return { keys, ariaKeyShortcuts: ariaKeyShortcutsFor(keys, platform) };
 }
@@ -239,8 +240,8 @@ export interface ShortcutsApi {
   /** Remap a shortcut (`'Alt+A'`), turn it off (`null`) or give it back its default (`undefined`). Returns `false` when `keys` is not a binding. */
   setOverride: (id: string, keys: ShortcutBinding | null | undefined) => boolean;
   resetOverrides: () => void;
-  /** The keys a command has now, or `null`. */
-  keysFor: (id: string) => KeySequence | null;
+  /** The keys a command has at `near` (default: the focused element): a scoped command has none outside its scope. */
+  keysFor: (id: string, near?: Element | null) => KeySequence | null;
   /** Whether a command is registered and enabled (its keys may be off). */
   has: (id: string) => boolean;
   /** Run a command as if its keys were pressed: the modifier path for every single-key verb (palette, menu). */
@@ -273,7 +274,7 @@ export function useShortcuts(): ShortcutsApi {
         return true;
       },
       resetOverrides: () => registry.resetOverrides(),
-      keysFor: (id) => registry.keysFor(id),
+      keysFor: (id, near) => registry.keysFor(id, near === undefined ? (typeof document === 'undefined' ? null : document.activeElement) : near),
       has: (id) => registry.has(id),
       run: (id) => registry.run(id),
       active: (target) => registry.active(target),

@@ -197,12 +197,16 @@ export class ShortcutRegistry {
   }
 
   /**
-   * The keys a command answers to now, after remaps and the character-key switch, or `null` when
-   * nothing registered under that id fires. With several registrations, the one whose scope holds
-   * `near` (default: the focused element), else the latest.
+   * The keys a command answers to at `near` (a hint's own element, or the focused one), after
+   * remaps and the character-key switch: a registration whose scope holds `near`, else a global
+   * one, else `null`. So a hint for a scoped command shows no keys outside that scope, where they
+   * do nothing; with `near` omitted (or `null`) only a global registration counts.
    */
   keysFor(id: string, near?: Element | null): KeySequence | null {
-    const entry = this.pick(id, near);
+    const matches = this.entries.filter((entry) => { const def = entry.get(); return def.id === id && def.enabled !== false; });
+    const inScope = near ? matches.filter((entry) => entry.scope?.element()?.contains(near)) : [];
+    const global = matches.filter((entry) => !entry.scope);
+    const entry = inScope[inScope.length - 1] ?? global[global.length - 1];
     return entry ? this.keysOf(entry) : null;
   }
 
