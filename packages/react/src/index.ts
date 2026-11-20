@@ -460,7 +460,14 @@ export { DataWorkspace, DEFAULT_DATA_WORKSPACE_LABELS } from './components/DataW
 export type {
   DataWorkspaceProps, DataWorkspaceColumn, DataWorkspaceIdColumn, DataWorkspaceLabels, DataWorkspacePagination, DataWorkspaceSort,
   DataWorkspaceSortState, DataWorkspaceSortValue, DataWorkspaceGroup, DataWorkspaceVirtualize, DataWorkspaceRowActionsContext,
+  DataWorkspaceQuery, DataWorkspaceSelectionScope,
 } from './components/DataWorkspace.js';
+// Selection scope (roadmap #12): by id, or every record matching a query except some; plain JSON for a bulk endpoint
+export {
+  EMPTY_SELECTION_SCOPE, isInSelectionScope, isSelectionScopeEmpty, selectAllMatching, selectionQueryKey, selectionScopeCount,
+  selectionScopeMatcher, setInSelectionScope, toggleInSelectionScope,
+} from './selection-scope.js';
+export type { SelectionScope, SelectionScopeIds, SelectionScopeQuery } from './selection-scope.js';
 // The per-item action panel (roadmap #10): Enter runs the primary action, Mod+K lists every action with its keys.
 export { ActionPanel, ActionPanelScope, ACTION_PANEL_SHORTCUT_ID, DEFAULT_ACTION_PANEL_LABELS } from './components/ActionPanel.js';
 export type { ActionPanelProps, ActionPanelScopeProps, ActionPanelLabels } from './components/ActionPanel.js';

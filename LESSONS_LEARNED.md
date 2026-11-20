@@ -1,5 +1,7 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 8a8a97d6 routine review fixes on unreleased selection scope (a note state not reset by later picks, new keys leaking into the legacy selection path, a click on an inert cell landing on its row, a total offered mid-refetch), found by a fresh-context review; the first three pinned by jsdom tests -->
+<!-- lesson-skip: 81265f2c routine: a nowrap bulk count grew a restated filter and ran past the bar in Linux fonts only; the 8f4970d reflow lesson (write in the longest real label before measuring) again, pinned by the 320 px selection-scope spec -->
 <!-- lesson-skip: 7a6f1333 routine: axe target-size (wcag22aa) counts an element's own box, not a ::before hit area; the a11y job named the crumb -->
 <!-- lesson-skip: 4e3f75a0 routine: the glyph guard named a text separator and a hand-drawn mask (icon set now), and a stray apostrophe broke a docs string; both named by CI gates -->
 <!-- lesson-skip: dd03ff1a routine: a source that answered with nothing kept its group heading; found by looking at the live demo, pinned by a jsdom test -->
