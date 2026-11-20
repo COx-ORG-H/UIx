@@ -54,7 +54,9 @@ jobs:
       - name: Table runtime budget
         run: npm run test:performance
 
-      - name: Chart preset bundle budget
+      # The chart entries' hard limits, then the main entry's baseline budget
+      # (packages/react/etc/entry-size.baseline.json; Docs/performance-lanes.md).
+      - name: Bundle budgets (chart entries, main entry)
         run: npm run test:size
 
       - name: Token value parity
@@ -149,6 +151,48 @@ jobs:
           name: select-cross-browser-report
           path: playwright-report/
           retention-days: 7
+
+  perf:
+    # Roadmap #22: a 10,000-row DataWorkspace rendered by React in a real Chromium at 4× CPU
+    # throttling — mount, scroll 1,000 rows, sort, select all, search keystrokes — each interaction
+    # timed as INP times it (input to next paint). Fails when a median passes its budget in
+    # tests/perf/budgets.json, after one more set of runs. It runs beside the other jobs, so it adds
+    # little to a PR's wall time. The no-GPU lane is nightly (perf-nightly.yml), not here.
+    # Budgets and how to read the report: Docs/performance-lanes.md.
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install (workspace)
+        run: npm ci
+
+      # tokens build only (the harness's stylesheet); the harness bundles the components from source.
+      - name: Build styleguide CSS (tokens)
+        run: npm run build
+
+      # No --with-deps (see the a11y job): the runner image ships Chromium's libraries.
+      - name: Install Playwright chromium
+        run: npx playwright install chromium
+
+      - name: Perf gate arithmetic
+        run: node --test tests/perf/stats.test.mjs
+
+      - name: DataWorkspace render benchmark (10,000 rows, 4× CPU)
+        run: npm run test:perf:workspace
+
+      - name: Upload perf report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-report
+          path: perf-report/
+          retention-days: 30
 
   a11y:
     # Accessibility gate (ADR-0016 Decision 6 — S6). axe-core over the static styleguide in

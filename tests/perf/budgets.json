@@ -1,0 +1,123 @@
+{
+  "_note": "Budgets for tests/perf/bench.mjs (roadmap #22; Docs/performance-lanes.md). Each baseline is the median a CI run measured, written by `node tests/perf/bench.mjs adopt <report.json>`. A lane fails when a median passes baseline + max(ratio x baseline, floorMs), after one more set of runs.",
+  "lanes": {
+    "workspace": {
+      "cpu": 4,
+      "runs": 5,
+      "tolerance": {
+        "ratio": 0.5,
+        "floorMs": 25
+      },
+      "metrics": {
+        "mount": {
+          "baseline": 167.7
+        },
+        "mount: long-frame blocking": {
+          "baseline": 99.2
+        },
+        "scroll 1,000 rows: p95 frame": {
+          "baseline": 66.7
+        },
+        "scroll 1,000 rows: total": {
+          "baseline": 1658.9
+        },
+        "sort": {
+          "baseline": 240
+        },
+        "select all": {
+          "baseline": 120
+        },
+        "search keystroke (worst of 3)": {
+          "baseline": 168
+        }
+      },
+      "adoptedFrom": {
+        "date": "2026-11-20T13:18:22.596Z",
+        "browser": "Chromium 149.0.7827.55",
+        "runs": 5
+      },
+      "calibration": 109.2
+    },
+    "no-gpu": {
+      "cpu": 4,
+      "runs": 3,
+      "tolerance": {
+        "ratio": 1.5,
+        "floorMs": 50
+      },
+      "metrics": {
+        "modal open: latency": {
+          "baseline": 96
+        },
+        "modal open: p95 frame": {
+          "baseline": 50
+        },
+        "modal open: longest frame": {
+          "baseline": 50
+        },
+        "drawer open: latency": {
+          "baseline": 64
+        },
+        "drawer open: p95 frame": {
+          "baseline": 50
+        },
+        "drawer open: longest frame": {
+          "baseline": 50
+        },
+        "scroll edges: p95 frame": {
+          "baseline": 16.7
+        },
+        "scroll edges: longest frame": {
+          "baseline": 16.8
+        },
+        "task tray open: latency": {
+          "baseline": 40
+        },
+        "task tray open: p95 frame": {
+          "baseline": 16.7
+        },
+        "task tray open: longest frame": {
+          "baseline": 16.8
+        },
+        "modal open (no blur): latency": {
+          "baseline": 80
+        },
+        "modal open (no blur): p95 frame": {
+          "baseline": 35.9
+        },
+        "modal open (no blur): longest frame": {
+          "baseline": 50
+        },
+        "drawer open (no blur): latency": {
+          "baseline": 56
+        },
+        "drawer open (no blur): p95 frame": {
+          "baseline": 33.4
+        },
+        "drawer open (no blur): longest frame": {
+          "baseline": 33.4
+        },
+        "scroll edges (no blur): p95 frame": {
+          "baseline": 16.7
+        },
+        "scroll edges (no blur): longest frame": {
+          "baseline": 16.8
+        },
+        "task tray open (no blur): latency": {
+          "baseline": 40
+        },
+        "task tray open (no blur): p95 frame": {
+          "baseline": 16.8
+        },
+        "task tray open (no blur): longest frame": {
+          "baseline": 16.8
+        }
+      },
+      "adoptedFrom": {
+        "date": "2026-11-20T12:31:56.478Z",
+        "browser": "Chromium 149.0.7827.55 (GPU off)",
+        "runs": 3
+      }
+    }
+  }
+}

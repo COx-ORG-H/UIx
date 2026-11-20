@@ -262,9 +262,9 @@
       "brotli": 666
     },
     "styles/components/kbd.css": {
-      "raw": 2330,
-      "gzip": 1064,
-      "brotli": 874
+      "raw": 2542,
+      "gzip": 1126,
+      "brotli": 936
     },
     "styles/components/labels.css": {
       "raw": 1026,
@@ -455,6 +455,11 @@
       "raw": 12889,
       "gzip": 3620,
       "brotli": 3061
+    },
+    "styles/components/shortcut-sheet.css": {
+      "raw": 1913,
+      "gzip": 704,
+      "brotli": 561
     },
     "styles/components/sidebar.css": {
       "raw": 23371,
