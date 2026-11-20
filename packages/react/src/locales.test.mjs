@@ -145,11 +145,12 @@ for (const [tag, pack] of Object.entries(PACKS)) {
 }
 
 test('packs: the completeness check fails a pack with a missing key, a lost placeholder or a missing form', () => {
-  const broken = structuredClone({ ...bs, taskTray: undefined });
+  // the namespaces whose words are functions cannot be cloned: set aside, then put back
+  const broken = structuredClone({ ...bs, taskTray: undefined, toast: undefined });
   delete broken.modal.close;
   broken.dataWorkspace.selectRow = 'Odaberi';
   broken.dataWorkspace.groupCount = { one: '{count} red', other: '{count} redova' };
-  const problems = packProblems({ ...broken, taskTray: bs.taskTray });
+  const problems = packProblems({ ...broken, taskTray: bs.taskTray, toast: bs.toast });
   assert.ok(problems.includes('modal.close: missing'), problems.join('\n'));
   assert.ok(problems.some((p) => p.startsWith('dataWorkspace.selectRow:')));
   assert.ok(problems.includes('dataWorkspace.groupCount: no "few" form'));

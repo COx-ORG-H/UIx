@@ -65,6 +65,12 @@ export const en: UixLabelPack = {
   },
   toast: {
     dismiss: 'Dismiss',
+    undoShortcut: 'Undo the last action',
+    undone: (message) => (message ? `Undone: ${message}` : 'Undone'),
+    remaining: (seconds) => `${seconds} s`,
+    count: (count) => `×${count}`,
+    held: (count) => (count === 1 ? '1 notification waiting' : `${count} notifications waiting`),
+    showHeld: 'Show',
   },
   toaster: {
     region: 'Notifications',
