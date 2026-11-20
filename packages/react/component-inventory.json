@@ -6,6 +6,22 @@
       "subpath": "."
     },
     {
+      "name": "AiActor",
+      "subpath": "."
+    },
+    {
+      "name": "AiLabel",
+      "subpath": "."
+    },
+    {
+      "name": "AiOutputCard",
+      "subpath": "."
+    },
+    {
+      "name": "AiSuggestion",
+      "subpath": "."
+    },
+    {
       "name": "Alert",
       "subpath": "."
     },
@@ -622,6 +638,10 @@
       "subpath": "."
     },
     {
+      "name": "ProposalReview",
+      "subpath": "."
+    },
+    {
       "name": "Prose",
       "subpath": "."
     },
@@ -739,6 +759,10 @@
     },
     {
       "name": "SortableList",
+      "subpath": "."
+    },
+    {
+      "name": "SourceList",
       "subpath": "."
     },
     {
