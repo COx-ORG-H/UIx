@@ -361,6 +361,17 @@ body[data-docs-menu-open] { overflow: hidden; }
 .uix-docs__token-table tr:last-child td,
 .uix-docs__api-table tr:last-child td { border-bottom: 0; }
 
+/* Accessibility → Screen-reader status (at-status.js): pairing names never break mid-name, and the
+   known issues keep a readable measure; the wrap scrolls the table at phone width. */
+.uix-docs__at-status { min-width: 44rem; }
+.uix-docs__at-status td:first-child { width: 11rem; }
+.uix-docs__at-status td:last-child { min-width: 18rem; }
+.uix-docs__at-list,
+.uix-docs__at-issues { margin: 0; padding-left: var(--uix-space-4); }
+.uix-docs__at-list { list-style: none; padding-left: 0; display: grid; gap: var(--uix-space-1); }
+.uix-docs__at-label { white-space: nowrap; }
+.uix-docs__at-status p { margin: 0 0 var(--uix-space-1); }
+
 .uix-docs__component-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--uix-space-3); }
 .uix-docs__component-card { min-height: 130px; padding: var(--uix-space-4); display: flex; flex-direction: column; border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); background: var(--uix-surface); color: inherit; text-decoration: none; }
 .uix-docs__component-card:hover { border-color: var(--uix-border-strong); color: inherit; text-decoration: none; box-shadow: var(--uix-shadow-sm); }
