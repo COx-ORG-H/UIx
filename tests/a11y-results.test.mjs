@@ -45,7 +45,7 @@ function evidenceProblems(markdown) {
     const rows = transcript.filter(([, pairing, heard]) => pairing?.includes(label(key)) && heard && heard !== '—');
     if (!rows.length) problems.push(`${key} is ${header[key]} but no transcript row records what ${label(key)} said`);
     const col = checklistHead?.indexOf(COLUMN[key]) ?? -1;
-    const blank = col < 0 ? checklist.length || 8 : checklist.filter((cells) => !/^(pass|fail|na)/.test(cells[col] ?? '')).length;
+    const blank = col < 0 ? checklist.length || 8 : checklist.filter((cells) => !/^(pass|fail|na)(?![\w-])/.test(cells[col] ?? '')).length;
     if (blank) problems.push(`${key} is ${header[key]} but ${blank} checklist row(s) in its column have no pass, fail or na`);
   }
   return problems;
@@ -97,11 +97,19 @@ test('a pairing marked pass or fail has its transcript and checklist; a header-o
     if (Object.fromEntries(headers.get(id)).protocol === '2') assert.deepEqual(evidenceProblems(markdown), [], `${id}.md evidence`);
   }
   // The claim this guards against: flip the header to pass and leave the sections as they are.
-  const forged = readFileSync(join(RESULTS, 'command-palette.md'), 'utf8').replace('nvda-chrome: not-run', 'nvda-chrome: pass');
+  const forged = readFileSync(join(RESULTS, 'command-palette.md'), 'utf8').replace(/\r\n/g, '\n').replace('nvda-chrome: not-run', 'nvda-chrome: pass');
   const problems = evidenceProblems(forged);
   assert.equal(problems.length, 2, problems.join('; '));
   assert.match(problems[0], /no transcript row/);
   assert.match(problems[1], /checklist row\(s\)/);
+  // And a run recorded properly is accepted: the pairing's transcript row and its whole column.
+  const recorded = forged
+    .replace('| Step | Pairing | Heard | Verdict |\n|------|---------|-------|---------|\n',
+      '| Step | Pairing | Heard | Verdict |\n|------|---------|-------|---------|\n| 1 | NVDA + Chrome | "Commands, combo box, expanded" | pass |\n')
+    .replace(/^(\| \d \| [^|]+ \| )not run( \|)/gm, '$1pass$2');
+  assert.deepEqual(evidenceProblems(recorded), []);
+  assert.deepEqual(evidenceProblems(recorded.replace(/^(\| 7 \| [^|]+ \| )pass/m, '$1na (no async here)')), [], 'na with a reason counts');
+  assert.equal(evidenceProblems(recorded.replace(/^(\| 7 \| [^|]+ \| )pass/m, '$1passed?')).length, 1, 'only a verdict word counts');
 });
 
 test('the docs status table matches the result files, row for row', () => {
