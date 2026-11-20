@@ -4,10 +4,17 @@
 
 ```ts
 
-// Warning: (ae-forgotten-export) The symbol "UixLabelPack" needs to be exported by the entry point hr.d.ts
-//
 // @public
 export const hr: UixLabelPack;
+
+// Warning: (ae-forgotten-export) The symbol "UixLabels" needs to be exported by the entry point hr.d.ts
+//
+// @public
+export type UixLabelPack = {
+    [K in Exclude<keyof UixLabels, 'locale' | 'dateFormat'>]-?: Required<NonNullable<UixLabels[K]>>;
+} & {
+    locale: string;
+};
 
 // (No @packageDocumentation comment for this package)
 
