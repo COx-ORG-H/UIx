@@ -388,3 +388,5 @@ missing or blank.
 <!-- lesson-skip: e3de79c7 the contract gate named the values; allowlist + missed-default case, routine -->
 <!-- lesson-skip: 9f4490fb pseudo-element margin missed the border-box reset; the 1 px visual diff pointed at it -->
 <!-- lesson-skip: 6a8ed528 routine: two table variants (card mode, bottom caption) missed by the edge exceptions; found in review -->
+
+<!-- lesson-skip: 488ac745 routine: out-of-scope docs helper (the ReferenceError named it) plus a spec repair; docs.test.js now renders the Toast page -->
