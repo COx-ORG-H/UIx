@@ -111,6 +111,9 @@
 <!-- lesson-skip: 4b192a18 routine: a fallback could run an update twice if the engine threw after calling it; Qodo's risk note named it, pinned by a jsdom test -->
 <!-- lesson-skip: 38dc8ac3 routine: compare() escapes its text, so <code> showed literally; found by looking at the 390 px shot -->
 
+### 2026-11-20 · screenshots of scroll-driven effects · `86b3f381`
+- **Rule:** never pass `animations: 'disabled'` to a Playwright screenshot of anything drawn by a scroll-timeline animation (a revealed divider, a scroll fade); it resets the animation to its start, so the pixels show the unscrolled state. Scroll, wait two frames, shoot without it.  **Why:** Playwright finishes or cancels every CSS animation for the shot, scroll-driven ones included; the forced-colours lane read a drawn divider as missing.  **Gate:** `tests/a11y/forced-colors.lane.spec.mjs` (pinned header) shoots without it; ⚠ TODO no lint for the option on scroll-timeline subjects.  **Tag:** false-red, motion, test-double-fidelity
+
 ### 2026-11-20 · a timing budget taken on one hosted runner · `f509fa08`
 - **Rule:** never gate a browser benchmark on raw milliseconds from one GitHub-hosted runner; time a fixed calibration (script and DOM work, no code under test) in the same throttled page and divide by the runner's speed before comparing.  **Why:** two `ubuntu-latest` runs of the same commit read 1.4× apart on every metric (sort 168 vs 256 ms) with a tight spread inside each run, so a +50% budget failed on hardware.  **Gate:** `tests/perf/stats.test.mjs` (judge scales by calibration; a normalized lane with no calibration baseline fails).  **Tag:** perf, ci, hosted-runner, false-red
 
