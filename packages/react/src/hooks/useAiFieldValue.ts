@@ -58,7 +58,17 @@ export function useAiFieldValue<T>({
 
   // a new proposal (or the first AI value arriving) fills the field
   useEffect(() => {
-    if (aiValue === undefined || took.current === proposalId) return;
+    if (aiValue === undefined) {
+      // proposal withdrawn: an untouched AI value goes back to the initial value; a person's edit stays
+      if (took.current !== null) {
+        if (!reportedEdit.current) setRaw(initialValue);
+        took.current = null;
+        reportedEdit.current = false;
+        shownFor.current = null;
+      }
+      return;
+    }
+    if (took.current === proposalId) return;
     took.current = proposalId;
     reportedEdit.current = false;
     setRaw(aiValue);
