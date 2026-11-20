@@ -23,7 +23,7 @@
     font: inherit; font-size: var(--uix-text-body); cursor: pointer; transition: border-color var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-select-trigger:hover { border-color: var(--uix-control-border-hover); }
   .uix-select-trigger:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
-  .uix-select-trigger__chevron { margin-left: auto; color: var(--uix-text-muted); width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  .uix-select-trigger__chevron { margin-inline-start: auto; color: var(--uix-text-muted); width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
 
   /* the React trigger: one line, the value ends in an ellipsis instead of being cut off */
   button.uix-select { display: flex; align-items: center; gap: var(--uix-space-2); min-width: 0; text-align: start; line-height: 1.25; }
