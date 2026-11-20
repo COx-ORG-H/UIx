@@ -8,6 +8,7 @@
  *   `--uix-delay-tooltip`, …) instead of a second number in JavaScript. */
 
 import { prefersReducedMotion } from './hooks/useReducedMotion.js';
+import { prefersReducedTransparency } from './hooks/useReducedTransparency.js';
 
 export const KEY_OPENED = 'data-uix-key-opened';
 
@@ -115,13 +116,16 @@ export function tokenEase(name: string): Ease {
  *
  * `from` is the radius in px at the start (`leave`: at the end); `delay(i)` staggers element `i`.
  * Returns a cancel that clears the filters. Callers skip it under reduced motion and for keyboard opens.
+ * Under reduced transparency (`<html data-transparency="reduce">`, or `data-contrast="more"`) it
+ * draws nothing: the rows still fade and move in CSS, only without the blur. The blur tokens are
+ * 0px there too, but a caller's own `from` must not bring the blur back.
  */
 export function blurIn(
   elements: readonly HTMLElement[],
   options: { from: number; duration: number; ease: Ease; delay?: (index: number) => number; leave?: boolean; property?: string },
 ): () => void {
   const els = elements.slice();
-  if (typeof window === 'undefined' || els.length === 0 || options.from <= 0 || options.duration <= 0) return () => {};
+  if (typeof window === 'undefined' || els.length === 0 || options.from <= 0 || options.duration <= 0 || prefersReducedTransparency()) return () => {};
   const { from, duration, ease, delay = () => 0, leave = false, property } = options;
   // `property`: write the radius into a custom property (a pseudo-element's blur reads it) instead
   // of the element's own filter
@@ -136,10 +140,11 @@ export function blurIn(
   let frame = 0;
   let stopped = false;
   // reduced motion switched on mid-arrival (the kit's one rule: the OS setting or
-  // <html data-motion="reduce">): the CSS motion stops at once, and so does the blur
+  // <html data-motion="reduce">): the CSS motion stops at once, and so does the blur; reduced
+  // transparency switched on mid-arrival clears the blur the same way
   const tick = () => {
     if (stopped) return;
-    if (prefersReducedMotion()) { stopped = true; els.forEach((el) => write(el, 0)); return; }
+    if (prefersReducedMotion() || prefersReducedTransparency()) { stopped = true; els.forEach((el) => write(el, 0)); return; }
     const now = view.performance.now();
     let busy = false;
     els.forEach((el, i) => {
