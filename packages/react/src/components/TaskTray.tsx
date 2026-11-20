@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { CSSProperties, FocusEvent as ReactFocusEvent, HTMLAttributes, KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react';
 import { cx } from '../cx.js';
+import { useStickyLayer } from '../hooks/useStickyLayer.js';
 import { useUixLabels } from '../labels-context.js';
 import { markKeyOpened, tokenMs, watchInputModality } from '../motion.js';
 import { ChevronUpIcon, XIcon } from '../icons/components.js';
@@ -231,6 +232,9 @@ export function TaskTray({
   const panelId = useId();
   const headingId = useId();
   const regionRef = useRef<HTMLElement>(null);
+  // The tray stays over the page: its height (the pill, and the panel while open) is a sticky
+  // offset, so a focused row stops clear of it (WCAG 2.2 SC 2.4.11; sticky-layers.ts).
+  useStickyLayer(regionRef, { edge: 'bottom' });
   const pillRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   useEffect(() => { watchInputModality(); }, []);

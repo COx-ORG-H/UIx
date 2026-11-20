@@ -46,10 +46,12 @@
   /* A scroller with its own sticky header has a hard top edge: the header is the edge. The table
      wrap's rows also stop below its header when the keyboard brings one into view, not under it.
      The header's height is --uix-table-head-h (44 px; table.css sizes the header cells with it):
-     set it on the wrap or above to change both. A table with no <thead>, or in card mode (its
-     header is clipped away), has nothing to clear. */
+     set it on the wrap or above to change both. React's TableWrap measures the header and writes
+     --uix-sticky-head on the wrap, which wins, so a taller header is cleared too (WCAG 2.2
+     SC 2.4.11). A table with no <thead>, or in card mode (its header is clipped away), has nothing
+     to clear. */
   :where(.uix-scroll-edge--hard) { --uix-scroll-edge-start: 0px; }
-  :where(.uix-table-wrap) { --uix-scroll-edge-size: var(--uix-space-4); --uix-scroll-edge-head: var(--uix-table-head-h, 44px); scroll-padding-top: var(--uix-scroll-edge-head); }
+  :where(.uix-table-wrap) { --uix-scroll-edge-size: var(--uix-space-4); --uix-scroll-edge-head: var(--uix-sticky-head, var(--uix-table-head-h, 44px)); scroll-padding-top: var(--uix-scroll-edge-head); }
   :where(.uix-table-wrap:is(:not(:has(> .uix-table > thead)), :has(> .uix-table--cards))) { --uix-scroll-edge-head: 0px; }
   /* the divider a sticky header gains once content is under it: firmer than the hairline */
   :where(.uix-scroll-edge-head, .uix-table-wrap) {

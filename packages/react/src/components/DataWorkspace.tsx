@@ -15,6 +15,7 @@ import { isFilterEmpty, summarizeFilter } from '../filter-model.js';
 import type { FilterField, FilterSummaryLabels, FilterValue, SummarizeFilterOptions } from '../filter-model.js';
 import { useResolvedFilterLabels } from '../hooks/useResolvedFilterLabels.js';
 import { useVirtualRows } from '../hooks/useVirtualRows.js';
+import { keepClearOfStickyLayers } from '../sticky-layers.js';
 import { playArrival } from '../hooks/arrival.js';
 import { useViewTransition } from '../hooks/useViewTransition.js';
 import type { UseVirtualRowsResult } from '../hooks/useVirtualRows.js';
@@ -984,7 +985,8 @@ function WorkspaceTable<T>({
     }
     return null;
   };
-  /** Scroll the row into view by the least amount, clear of the sticky header in a windowed body. */
+  /** Scroll the row into view by the least amount, clear of the sticky header in a windowed body
+   *  and of the fixed layers (toasts, the task tray) over the wrap or the page (WCAG 2.2 SC 2.4.11). */
   const reveal = (el: HTMLElement) => {
     el.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
     const wrap = wrapRef.current;
@@ -993,6 +995,7 @@ function WorkspaceTable<T>({
       const under = head.getBoundingClientRect().bottom - el.getBoundingClientRect().top;
       if (under > 0) wrap.scrollTop -= under;
     }
+    keepClearOfStickyLayers(el);
   };
   const setActive = (rowId: string) => {
     if (rowId === active) return;
@@ -1010,7 +1013,7 @@ function WorkspaceTable<T>({
     const index = ids.indexOf(rowId);
     if (index >= 0 && wrapRef.current && virtual && windowed) {
       pendingFocus.current = rowId;
-      wrapRef.current.scrollTop = index * virtual.rowHeight;
+      virtual.scrollToIndex(index);
     }
   };
   useIsomorphicLayoutEffect(() => {

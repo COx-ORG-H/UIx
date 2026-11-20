@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { ReactNode, HTMLAttributes, KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from 'react';
 import { cx } from '../cx.js';
+import { useStickyLayer } from '../hooks/useStickyLayer.js';
 import { useUixLabels } from '../labels-context.js';
 import { prefersReducedMotion } from '../hooks/useReducedMotion.js';
 import { tokenMs } from '../motion.js';
@@ -303,6 +304,9 @@ export function Toaster({ children, regionLabel: regionLabelProp, store = defaul
   // overlapping it for most of the glide. Positions are layout positions (the toaster's box plus offsetTop), so a toast's own
   // enter or exit transform does not count as movement.
   const regionRef = useRef<HTMLDivElement>(null);
+  // The stack stays over the page while it scrolls: its height is a sticky offset, so a focused
+  // row stops clear of it (WCAG 2.2 SC 2.4.11; sticky-layers.ts). An empty stack is 0 px tall.
+  useStickyLayer(regionRef, { edge: position.startsWith('top') ? 'top' : 'bottom' });
   const homeRef = useRef<HTMLSpanElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
   // One stable portal target: moving its DOM host preserves the queue's React identity,

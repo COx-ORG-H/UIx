@@ -1,8 +1,9 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 import { shouldVirtualize, virtualWindow } from '../table-engine.js';
+import { stickyInsets } from '../sticky-layers.js';
 
 export interface UseVirtualRowsOptions {
   /**
@@ -40,6 +41,14 @@ export interface UseVirtualRowsOptions {
   enabled?: boolean;
 }
 
+export interface ScrollToIndexOptions {
+  /**
+   * Where the row lands: `nearest` (default) scrolls the least that shows it, or not at all when it
+   * is in view; `start`, `center` and `end` place it in the clear part of the scroller.
+   */
+  align?: 'nearest' | 'start' | 'center' | 'end';
+}
+
 export interface UseVirtualRowsResult<T> {
   /** Attach to the scrolling TableWrap. */
   containerRef: RefObject<HTMLDivElement>;
@@ -51,9 +60,16 @@ export interface UseVirtualRowsResult<T> {
   virtualized: boolean;
   /**
    * The row height in use: the measured pitch with `measureRows`, else the `rowHeight` option.
-   * Scroll a keyboard-focused row into view with it (`index * rowHeight`).
    */
   rowHeight: number;
+  /**
+   * Scrolls the container so row `index` is in view, mounted or not, clear of what covers the
+   * container (WCAG 2.2 SC 2.4.11): its `scroll-padding` (a `TableWrap` pads for its sticky header)
+   * and the fixed layers registered with `useStickyLayer` (the Toaster, the TaskTray) where they
+   * reach over it. With `measureRows` the rows' offset in the container (a header above them) is
+   * measured; without it row 0 starts at the container's top. Focus the row once it is rendered.
+   */
+  scrollToIndex: (index: number, options?: ScrollToIndexOptions) => void;
 }
 
 /**
@@ -131,6 +147,42 @@ export function useVirtualRows<T>(
   );
   const visibleRows = useMemo(() => rows.slice(window.start, window.end), [rows, window.start, window.end]);
 
+  const latest = useRef({ rowHeight, start: window.start, count: rows.length, measureRows });
+  latest.current = { rowHeight, start: window.start, count: rows.length, measureRows };
+  const scrollToIndex = useCallback((index: number, { align = 'nearest' }: ScrollToIndexOptions = {}) => {
+    const element = containerRef.current;
+    const { rowHeight: pitch, start, count, measureRows: selector } = latest.current;
+    if (!element || count === 0 || !(pitch > 0)) return;
+    const target = Math.min(count - 1, Math.max(0, Math.round(index)));
+    const box = element.getBoundingClientRect();
+    const boxTop = box.top + element.clientTop;
+    const boxBottom = boxTop + element.clientHeight;
+    // where row 0 starts in the content: the first mounted row, less the rows above it
+    const first = selector ? element.querySelector<HTMLElement>(selector) : null;
+    const origin = first ? first.getBoundingClientRect().top - boxTop + element.scrollTop - start * pitch : 0;
+    // the clear band: inside the scroll padding and clear of the fixed layers that reach over the box
+    const style = element.ownerDocument.defaultView?.getComputedStyle(element);
+    let padTop = parseFloat(style?.scrollPaddingTop ?? '') || 0;
+    let padBottom = parseFloat(style?.scrollPaddingBottom ?? '') || 0;
+    const insets = stickyInsets(element.ownerDocument);
+    const viewport = element.ownerDocument.documentElement.clientHeight;
+    if (insets.top > 0) padTop = Math.max(padTop, insets.top - boxTop);
+    if (insets.bottom > 0) padBottom = Math.max(padBottom, boxBottom - (viewport - insets.bottom));
+    const room = element.clientHeight - padTop - padBottom;
+    const top = origin + target * pitch;
+    const bottom = top + pitch;
+    const toStart = top - padTop;
+    const toEnd = bottom + padBottom - element.clientHeight;
+    let next = element.scrollTop;
+    if (align === 'start' || room < pitch) next = toStart;
+    else if (align === 'end') next = toEnd;
+    else if (align === 'center') next = toStart - (room - pitch) / 2;
+    else if (toStart < next) next = toStart;
+    else if (toEnd > next) next = toEnd;
+    const max = Math.max(0, element.scrollHeight - element.clientHeight);
+    element.scrollTop = Math.min(max, Math.max(0, next));
+  }, []);
+
   return {
     containerRef,
     rows: visibleRows,
@@ -140,5 +192,6 @@ export function useVirtualRows<T>(
     totalHeight: window.total,
     virtualized,
     rowHeight,
+    scrollToIndex,
   };
 }

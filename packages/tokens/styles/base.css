@@ -16,6 +16,11 @@
   button, input, optgroup, select, textarea { margin: 0; }
 
   html { -webkit-text-size-adjust: 100%; }
+  /* Sticky-layer focus offsets (WCAG 2.2 SC 2.4.11, technique C43): fixed layers that content
+     scrolls under (the Toaster, the TaskTray, a product's fixed header) keep their heights in these
+     two properties (React: useStickyLayer), so a focused element and a #fragment stop
+     clear of them. Unset, both are 0 and nothing changes. */
+  :root { scroll-padding-block: var(--uix-sticky-top, 0px) var(--uix-sticky-bottom, 0px); }
   /* default theme follows the OS until JS sets data-theme */
   @media (prefers-color-scheme: dark) { :root:not([data-theme]):not(.dark) { color-scheme: dark; } }
   :root[data-theme="dark"], :root.dark { color-scheme: dark; }
