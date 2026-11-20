@@ -71,6 +71,12 @@ export const de: UixLabelPack = {
   },
   toast: {
     dismiss: 'Schließen',
+    undoShortcut: 'Letzte Aktion rückgängig machen',
+    undone: (message) => (message ? `Rückgängig gemacht: ${message}` : 'Rückgängig gemacht'),
+    remaining: (seconds) => `${seconds} s`,
+    count: (count) => `×${count}`,
+    held: (count) => (count === 1 ? '1 Benachrichtigung wartet' : `${count} Benachrichtigungen warten`),
+    showHeld: 'Anzeigen',
   },
   toaster: {
     region: 'Benachrichtigungen',
