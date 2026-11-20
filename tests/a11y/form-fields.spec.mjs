@@ -2,7 +2,7 @@
  * globalSetup): geometry, focus and keyboard that jsdom cannot measure, and axe on each section.
  * Runs in the light and dark Chromium projects. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/form-fields/harness.html';
 const themeOf = (name) => (name === 'dark' ? 'dark' : 'light');

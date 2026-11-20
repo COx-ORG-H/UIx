@@ -5,7 +5,7 @@
  * the linked axis pointer, the scatter's hit targets, and the card's container-query layout.
  * The models themselves are unit-tested in packages/react/src/chart-analytic.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/insight/harness.html';
 const DOCS = 'docs/explorer.html#examples-insight-charts';

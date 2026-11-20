@@ -9,7 +9,7 @@
  *   - at phone width nothing scrolls sideways and long titles wrap inside the panel.
  * The store and the React wiring are pinned in packages/react/src/task-tray-dom.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/task-tray/harness.html';
 const GATED = new Set(['serious', 'critical']);
