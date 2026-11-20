@@ -26,6 +26,7 @@ import type { SessionTimeoutLabels } from './components/SessionTimeout.js';
 import type { SearchBarLabels } from './components/SearchBar.js';
 import type { KeyboardGrabLabels } from './hooks/useKeyboardGrab.js';
 import type { LightboxLabels } from './components/Lightbox.js';
+import type { ToastLabels } from './components/Toast.js';
 import type { SortableListLabels } from './components/SortableList.js';
 import type { KanbanLabels } from './components/Kanban.js';
 import type { DashboardCanvasLabels } from './components/DashboardCanvas.js';
@@ -71,7 +72,8 @@ export interface UixLabels {
   toolbar?: { more?: string };
   /** `Lightbox` (HAR-1826): previous / next / close, the counter, the zoom toggle. */
   lightbox?: Partial<LightboxLabels>;
-  toast?: { dismiss?: string };
+  /** `Toast` and `Toaster`: the ×, Ctrl/⌘+Z's name and announcement, the countdown, a merged count, the held summary. */
+  toast?: Partial<ToastLabels>;
   toaster?: { region?: string };
   /** `TaskTray`: the landmark's name, its buttons, the pill's count words and the announcements. */
   taskTray?: Partial<TaskTrayLabels>;
