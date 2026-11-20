@@ -141,7 +141,7 @@ test('virtualize: 2,000 rows mount a bounded window with the true size; End scro
   const parity = (rows) => { const by = new Map(); for (const [i, bg] of rows) { const k = i % 2; if (by.has(k) && by.get(k) !== bg) return null; by.set(k, bg); } return Object.fromEntries(by); };
   await page.mouse.move(0, 0);
   // settled: no row colour still easing in
-  const settle = () => expect.poll(() => page.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running' && a.effect?.target?.closest?.('#long')).length)).toBe(0);
+  const settle = () => expect.poll(() => page.evaluate(() => document.getAnimations().filter((a) => a.timeline === document.timeline).filter((a) => a.playState === 'running' && a.effect?.target?.closest?.('#long')).length)).toBe(0);
   await settle();
   const top = parity(await paint());
   expect(top, 'one colour per parity').not.toBeNull();

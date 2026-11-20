@@ -17,7 +17,7 @@
     /* --uix-table-head-bg: the card's own surface in light, a visible band above it in dark (HAR-3087) */
     position: sticky; top: 0; z-index: var(--uix-z-raised); background: var(--uix-table-head-bg); text-align: left;
     font-size: var(--uix-text-meta); font-weight: 600; color: var(--uix-text-hushed);
-    padding: 0 var(--uix-space-4); height: 44px; border-bottom: 1px solid var(--uix-border); white-space: nowrap;
+    padding: 0 var(--uix-space-4); height: var(--uix-table-head-h, 44px); border-bottom: 1px solid var(--uix-border); white-space: nowrap;
   }
   .uix-table th[data-sort] { cursor: pointer; user-select: none; }
   .uix-table th[data-sort]:hover { color: var(--uix-text); }
@@ -129,6 +129,8 @@
   }
 
   /* ── column sizing + cell behaviour (a shared vocabulary, not per-app px) ──────── */
+  /* a caption drawn under the rows; the scroll edge keeps the header's divider for it (scroll-edge.css) */
+  .uix-table__caption--bottom { caption-side: bottom; }
   .uix-table--fixed { table-layout: fixed; width: 100%; }
   .uix-col--w-xs { width: var(--uix-col-w-xs); }
   .uix-col--w-sm { width: var(--uix-col-w-sm); }
