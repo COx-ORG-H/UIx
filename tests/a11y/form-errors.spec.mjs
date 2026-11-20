@@ -14,7 +14,7 @@
  * jsdom covers the rules (packages/react/src/form-errors-dom.test.mjs); this proves focus, scroll,
  * the accessibility tree and contrast in a real browser on tests/form-errors/harness.tsx. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { settleAnimations } from './settle.mjs';
 
 const HARNESS = '/tests/form-errors/harness.html';
@@ -157,12 +157,20 @@ test('leaving: in-app navigation asks with the discard words, Keep editing stays
 test('leaving: the browser asks before unload only while there is something to lose', async ({ page }) => {
   const kinds = [];
   page.on('dialog', (dialog) => { kinds.push(dialog.type()); void dialog.dismiss(); });
+  // The guard's listener follows the render in an effect: wait for the words, then a frame.
+  const settled = async (text) => {
+    await expect(page.getByTestId('leave-active')).toHaveText(text);
+    await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0))));
+  };
   await page.locator('#incident-title').fill('Mail relay down');
+  await settled('Armed');
   await page.locator('#incident-title').fill('');
+  await settled('Not armed');
   // Clean again (nothing typed stays): no prompt.
   await page.reload({ waitUntil: 'networkidle' });
   expect(kinds).toEqual([]);
   await page.locator('#incident-title').fill('Mail relay down');
+  await settled('Armed');
   await page.close({ runBeforeUnload: true });
   await expect.poll(() => kinds).toEqual(['beforeunload']);
 });
