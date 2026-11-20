@@ -49,6 +49,7 @@ export const AT_STATUS = [
     id: 'combobox', name: 'Combobox, EntityPicker', protocol: 2, version: '2.70.0', date: '2026-11-20', tester: 'none',
     results: { ...notRun, 'automated-tree': 'pass', 'nvda-guidepup': 'fail' },
     knownIssues: [
+      'Combobox, NVDA (automated): ArrowDown into the next group spoke the group ("SOFTWARE, grouping"), not the option.',
       'EntityPicker, NVDA (automated): ArrowDown spoke the list ("Assignee. Search, list"), not the option; the result count was not spoken.',
       'Combobox clears its text on re-focus (it opens with the full list); the chosen option is active and selected, but the field reads blank.',
       'EntityPicker says "1 results": its count is not plural-aware yet.',

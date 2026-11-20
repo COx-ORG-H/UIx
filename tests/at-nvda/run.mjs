@@ -7,8 +7,9 @@
  * but an automated one: Guidepup sends the keys, nobody listens. The results files record it as
  * "NVDA (Guidepup, automated)" with the browser the transcript names, never as a human pass.
  *
- * It fails (exit 1) when a step's keys did not act, when NVDA did not say what the step expects, or
- * when a known gap is now heard (see `steps`): an empty or stale transcript must not pass.
+ * It fails (exit 1) when a segment's keys did not act, when NVDA did not say what the segment
+ * expects (or said a toast more than once), or when a known gap is now heard (see `steps`): an
+ * empty or stale transcript must not pass.
  *
  *   npm i --no-save @guidepup/guidepup@0.40.0
  *   npx @guidepup/setup@0.29.3 setup --ci && npx @guidepup/setup@0.29.3 install nvda
@@ -60,56 +61,91 @@ async function toWebContent(page) {
 }
 
 /** One scripted step. Playwright puts DOM focus on the widget and NVDA reports what it landed on
- * (`arrival`); the log is then cleared, so only what the keys made NVDA say counts. Every key goes
- * through NVDA as a user would press it (`wait:` lets a debounce or a live region settle, `type:`
- * types characters). Three checks, all on what happened after the keys:
- *   - `acted`, run in the page: the keys did what the script says (a box checked, a value chosen),
- *     so a step whose navigation silently did nothing fails;
+ * (`arrival`); the log is then cleared, so only what the keys made NVDA say counts. The keys run in
+ * segments, and each segment is judged on the speech it alone produced. Every key goes through
+ * NVDA as a user would press it (`wait:` lets a debounce or a live region settle, `type:` types).
+ * Per segment, all on what happened after its keys:
+ *   - `acted`, run in the page: the keys did what the script says (focus moved to 19 November, the
+ *     active option changed), so a key that was swallowed fails the run;
  *   - `speak`: phrases NVDA must have said; a miss fails the run;
- *   - `gap`: a phrase NVDA should say but did not in run 44725485902, recorded as a known issue in
+ *   - `once`: phrases NVDA must have said exactly once (a toast spoken twice fails);
+ *   - `gaps`: phrases NVDA should say but did not in run 44725485902, each a known issue in
  *     Docs/a11y/results/. A gap is reported, not failed on; a gap that is now heard fails the run
  *     too, so the result file gets updated instead of going stale. */
+const activeOptionText = (selector) => () => {
+  const input = document.querySelector(selector);
+  return document.getElementById(input?.getAttribute('aria-activedescendant') ?? '')?.textContent ?? '';
+};
 const steps = [
   { id: 'data-workspace', title: 'DataWorkspace: the first row, ArrowDown, Tab to its checkbox, Space',
-    focus: '#workspace tbody tr[tabindex="0"]', keys: ['ArrowDown', 'Tab', 'Space'],
-    acted: () => document.querySelector('#workspace tbody tr:nth-child(2) input[type="checkbox"]')?.checked === true,
-    speak: [/Select INC-1002/, /(?<!not )\bchecked\b/], gap: { phrase: /VPN drops every hour/, issue: 'a focused row is spoken as "row", without its cells' } },
+    focus: '#workspace tbody tr[tabindex="0"]', segments: [
+      { keys: ['ArrowDown'], acted: () => document.activeElement === document.querySelector('#workspace tbody tr:nth-child(2)'),
+        gaps: [{ phrase: /VPN drops every hour/, issue: 'a focused row is spoken as "row", without its cells' }] },
+      { keys: ['Tab', 'Space'], acted: () => document.querySelector('#workspace tbody tr:nth-child(2) input[type="checkbox"]')?.checked === true,
+        speak: [/Select INC-1002/, /(?<!not )\bchecked\b/] },
+    ] },
   { id: 'data-workspace-sort', title: 'DataWorkspace: Enter on the Priority header button',
-    focus: '#workspace th:nth-child(4) button', keys: ['Enter', 'wait:500'],
-    acted: () => document.querySelector('#workspace th:nth-child(4)')?.getAttribute('aria-sort') === 'ascending',
-    speak: [/sorted ascending/] },
-  { id: 'command-palette', title: 'CommandPalette (in place): the field, type "rep", ArrowDown',
-    focus: '#palette-inline input', keys: ['type:rep', 'wait:800', 'ArrowDown'],
-    acted: () => {
-      const input = document.querySelector('#palette-inline input');
-      return (document.getElementById(input?.getAttribute('aria-activedescendant') ?? '')?.textContent ?? '').startsWith('Reports');
-    },
-    speak: [/\b1 result\b/] },
+    focus: '#workspace th:nth-child(4) button', segments: [
+      { keys: ['Enter', 'wait:500'], acted: () => document.querySelector('#workspace th:nth-child(4)')?.getAttribute('aria-sort') === 'ascending',
+        speak: [/sorted ascending/] },
+    ] },
+  { id: 'command-palette', title: 'CommandPalette (in place): type "rep", clear it, ArrowDown',
+    focus: '#palette-inline input', segments: [
+      { keys: ['type:rep', 'wait:800'], acted: () => activeOptionText('#palette-inline input')().startsWith('Reports'), speak: [/\b1 result\b/] },
+      { keys: ['Backspace', 'Backspace', 'Backspace', 'wait:800'], acted: () => activeOptionText('#palette-inline input')().startsWith('Create incident'),
+        speak: [/\b6 results\b/] },
+      { keys: ['ArrowDown'], acted: () => activeOptionText('#palette-inline input')().startsWith('Assign to me'), speak: [/Assign to me/] },
+    ] },
   { id: 'combobox', title: 'Combobox: Category, ArrowDown twice, Enter',
-    focus: '#combobox input', keys: ['ArrowDown', 'ArrowDown', 'Enter'],
-    acted: () => document.querySelector('#combobox input')?.value === 'Email',
-    speak: [/Printer/, /Category, combo box/, /Email/] },
+    focus: '#combobox input', segments: [
+      { keys: ['ArrowDown'], acted: () => activeOptionText('#combobox input')() === 'Printer', speak: [/Printer/] },
+      { keys: ['ArrowDown'], acted: () => activeOptionText('#combobox input')() === 'Email',
+        gaps: [{ phrase: /Email/, issue: 'moving into the next group speaks the group ("SOFTWARE, grouping"), not the option' }] },
+      { keys: ['Enter'], acted: () => document.querySelector('#combobox input')?.value === 'Email', speak: [/Category, combo box/, /Email/] },
+    ] },
   { id: 'entity-picker', title: 'EntityPicker: Assignee, type "am", ArrowDown, Enter',
-    focus: '#entity-input', keys: ['type:am', 'wait:1200', 'ArrowDown', 'Enter'],
-    acted: () => !!document.querySelector('#entity button[aria-label="Clear Amra Kovač"]'),
-    speak: [/Amra Kovač/], gap: { phrase: /\b1 results?\b/, issue: 'the result count is not spoken, and ArrowDown speaks the list, not the option' } },
+    focus: '#entity-input', segments: [
+      { keys: ['type:am', 'wait:1200'], acted: () => !!document.querySelector('#entity [role="option"]'),
+        gaps: [{ phrase: /\b1 results?\b/, issue: 'the result count is not spoken' }] },
+      { keys: ['ArrowDown'], acted: () => activeOptionText('#entity-input')().includes('Amra Kovač'),
+        gaps: [{ phrase: /Amra Kovač/, issue: 'ArrowDown speaks the list ("Assignee. Search, list"), not the option' }] },
+      { keys: ['Enter'], acted: () => !!document.querySelector('#entity button[aria-label="Clear Amra Kovač"]'), speak: [/Amra Kovač/] },
+    ] },
   { id: 'date-picker', title: 'DatePicker: Due date, ArrowDown opens the calendar, ArrowLeft, Escape',
-    focus: '#date-input', keys: ['ArrowDown', 'wait:400', 'ArrowLeft', 'Escape'],
-    acted: () => document.activeElement?.id === 'date-input' && document.getElementById('date-input')?.value === '20/11/2026',
-    speak: [/Calendar, dialog/, /Due date/], gap: { phrase: /19 November 2026/, issue: 'the focused calendar day is spoken without its date' } },
+    focus: '#date-input', segments: [
+      { keys: ['ArrowDown', 'wait:400'], acted: () => document.activeElement?.getAttribute('data-date') === '2026-11-20', speak: [/Calendar, dialog/] },
+      { keys: ['ArrowLeft'], acted: () => document.activeElement?.getAttribute('data-date') === '2026-11-19',
+        gaps: [{ phrase: /19 November 2026/, issue: 'the focused calendar day is spoken without its date' }] },
+      { keys: ['Escape'], acted: () => document.activeElement?.id === 'date-input' && document.getElementById('date-input')?.value === '20/11/2026',
+        speak: [/Due date/] },
+    ] },
   { id: 'diff-viewer', title: 'DiffViewer: "Accept incoming for $.priority", Enter',
-    focus: '#diff button[aria-label^="Accept incoming"]', keys: ['Enter', 'wait:800'],
-    acted: () => document.querySelector('#diff button[aria-label^="Accept incoming"]')?.getAttribute('aria-pressed') === 'true',
-    speak: [/1 of 3 differences resolved/], gap: { phrase: /(^|[ ,])pressed\b(?<!not pressed)/, issue: 'the new pressed state is not spoken' } },
+    focus: '#diff button[aria-label^="Accept incoming"]', segments: [
+      { keys: ['Enter', 'wait:800'], acted: () => document.querySelector('#diff button[aria-label^="Accept incoming"]')?.getAttribute('aria-pressed') === 'true',
+        speak: [/1 of 3 differences resolved/], gaps: [{ phrase: /(^|[ ,])pressed\b(?<!not pressed)/, issue: 'the new pressed state is not spoken' }] },
+    ] },
   { id: 'toast-polite', title: 'Toast: Enter on "Show success toast", wait',
-    focus: '#toast-polite', keys: ['Enter', 'wait:2000'],
-    acted: () => document.querySelectorAll('.uix-toaster .uix-toast--success').length === 1,
-    speak: [/Incident INC-1002 saved/] },
+    focus: '#toast-polite', segments: [
+      { keys: ['Enter', 'wait:2000'], acted: () => document.querySelectorAll('.uix-toaster .uix-toast--success').length === 1,
+        once: [/Incident INC-1002 saved/g] },
+    ] },
   { id: 'toast-assertive', title: 'Toast: Enter on "Show error toast", wait',
-    focus: '#toast-assertive', keys: ['Enter', 'wait:2000'],
-    acted: () => document.querySelectorAll('.uix-toaster [role="alert"]').length === 1,
-    speak: [/Could not save INC-1002/] },
+    focus: '#toast-assertive', segments: [
+      { keys: ['Enter', 'wait:2000'], acted: () => document.querySelectorAll('.uix-toaster [role="alert"]').length === 1,
+        once: [/Could not save INC-1002/g] },
+    ] },
 ];
+
+/** Judge one segment's speech. */
+function judge(segment, spoken, acted) {
+  const heard = (re) => spoken.some((phrase) => new RegExp(re.source, re.flags.replace('g', '')).test(phrase));
+  const missing = (segment.speak ?? []).filter((re) => !heard(re)).map(String);
+  const counts = (segment.once ?? []).map((re) => ({ phrase: String(re), times: spoken.reduce((n, phrase) => n + (phrase.match(re)?.length ?? 0), 0) }));
+  const notOnce = counts.filter(({ times }) => times !== 1);
+  const gaps = (segment.gaps ?? []).map(({ phrase, issue }) => ({ issue, heard: heard(phrase) }));
+  const ok = acted && !missing.length && !notOnce.length && !gaps.some((gap) => gap.heard);
+  return { keys: segment.keys, spoken, acted, missing, counts, gaps, ok };
+}
 
 async function run() {
   mkdirSync(OUT, { recursive: true });
@@ -131,20 +167,19 @@ async function run() {
       await nvda.clearSpokenPhraseLog();
       await nvda.perform(NVDAKeyCodeCommands.reportCurrentFocus);
       const arrival = await nvda.lastSpokenPhrase();
-      await nvda.clearSpokenPhraseLog();
-      for (const key of step.keys) {
-        if (key.startsWith('type:')) await nvda.type(key.slice(5));
-        else if (key.startsWith('wait:')) await delay(Number(key.slice(5)));
-        else await nvda.press(key);
-        await delay(250);
+      const segments = [];
+      for (const segment of step.segments) {
+        await nvda.clearSpokenPhraseLog();
+        for (const key of segment.keys) {
+          if (key.startsWith('type:')) await nvda.type(key.slice(5));
+          else if (key.startsWith('wait:')) await delay(Number(key.slice(5)));
+          else await nvda.press(key);
+          await delay(250);
+        }
+        const spoken = [...await nvda.spokenPhraseLog()].filter((phrase) => phrase.trim());
+        segments.push(judge(segment, spoken, await page.evaluate(segment.acted)));
       }
-      const spoken = [...await nvda.spokenPhraseLog()].filter((phrase) => phrase.trim());
-      const heard = (re) => spoken.some((phrase) => re.test(phrase));
-      const acted = await page.evaluate(step.acted);
-      const missing = step.speak.filter((re) => !heard(re)).map(String);
-      const gap = step.gap ? { issue: step.gap.issue, heard: heard(step.gap.phrase) } : null;
-      const ok = acted && missing.length === 0 && !gap?.heard;
-      results.push({ id: step.id, title: step.title, arrival, spoken, acted, missing, gap, ok });
+      results.push({ id: step.id, title: step.title, arrival, segments, ok: segments.every((s) => s.ok) });
       await page.keyboard.press('Escape').catch(() => {});
     }
   } finally {
@@ -155,10 +190,15 @@ async function run() {
   writeFileSync(join(OUT, 'nvda-transcript.json'), JSON.stringify({ meta, results }, null, 2));
   const md = [`# NVDA transcript (automated, Guidepup)`, '', `- date: ${meta.date}`, `- runner: ${meta.runner}`, `- AT: ${meta.at}`, `- browser: ${meta.browser}`, `- executable: ${meta.executable}`, ''];
   for (const r of results) {
-    const verdict = !r.acted ? 'KEYS DID NOT ACT' : r.missing.length ? 'MISSING SPEECH' : r.gap?.heard ? 'KNOWN GAP NOW HEARD: update the result file' : r.gap ? 'ok, known gap' : 'ok';
-    md.push(`## ${r.id} — ${verdict}`, '', r.title, '', `- on arrival: ${JSON.stringify(r.arrival)}`, ...r.spoken.map((phrase) => `- ${JSON.stringify(phrase)}`));
-    if (r.missing.length) md.push(`- not heard: ${r.missing.join(', ')}`);
-    if (r.gap) md.push(`- known gap: ${r.gap.issue}${r.gap.heard ? ' (now heard)' : ''}`);
+    md.push(`## ${r.id} — ${r.ok ? 'ok' : 'FAILED'}`, '', r.title, '', `- on arrival: ${JSON.stringify(r.arrival)}`);
+    for (const s of r.segments) {
+      const verdict = !s.acted ? 'KEYS DID NOT ACT' : s.missing.length ? 'MISSING SPEECH' : s.counts.some((c) => c.times !== 1) ? 'NOT SPOKEN EXACTLY ONCE'
+        : s.gaps.some((g) => g.heard) ? 'KNOWN GAP NOW HEARD: update the result file' : s.gaps.length ? 'ok, known gap' : 'ok';
+      md.push(`- **${s.keys.filter((k) => !k.startsWith('wait:')).join(', ')}** (${verdict}): ${s.spoken.map((p) => JSON.stringify(p)).join(' / ') || '(nothing)'}`);
+      if (s.missing.length) md.push(`  - not heard: ${s.missing.join(', ')}`);
+      for (const c of s.counts) md.push(`  - ${c.phrase} spoken ${c.times} time(s)`);
+      for (const g of s.gaps) md.push(`  - known gap: ${g.issue}${g.heard ? ' (now heard)' : ''}`);
+    }
     md.push('');
   }
   writeFileSync(join(OUT, 'nvda-transcript.md'), md.join('\n'));

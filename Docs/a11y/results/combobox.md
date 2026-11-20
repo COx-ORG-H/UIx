@@ -56,6 +56,7 @@ Nobody has run a pairing yet. The rows below are NVDA's own speech from the auto
 
 ## Known issues
 
+- Combobox, NVDA (automated run 44725485902): ArrowDown from "Printer" into the Software group spoke "SOFTWARE, grouping" and not the option "Email" (it was heard only after Enter). Needs a human NVDA pass to confirm; if it holds, the group label should not replace the option's name.
 - EntityPicker, NVDA (automated run 44725485902): after typing "am" and ArrowDown, NVDA said "Assignee. Search, list" instead of the option "Amra Kovač", and the polite result count was not spoken. Needs a human NVDA pass to confirm before a fix.
 - Combobox clears its text when focus returns to a filled field (it opens with the full list); the chosen option is the active, selected one but the edit field reads blank. Script step 4 decides per reader whether that is a fail of item 3.
 - EntityPicker's count says "1 results": `labels.results` is `{count} results` with no plural form. Plural-aware labels are a separate work package in flight; the spec accepts either form until it lands.
