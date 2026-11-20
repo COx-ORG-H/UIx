@@ -147,7 +147,6 @@ export function useTable<T extends Row>(data: readonly T[], options: UseTableOpt
   const [announcement, setAnnouncement] = useState('');
   const mounted = useRef(false);
   const labels: UseTableLabels = { ...DEFAULT_USE_TABLE_LABELS, ...useUixLabels().table, ...options.labels };
-  const locale = useUixLocale();
   // the latest words, read when a facet changes; a new labels object must not re-announce
   const words = useRef({ labels, locale });
   words.current = { labels, locale };

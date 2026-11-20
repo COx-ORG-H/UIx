@@ -253,7 +253,6 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   const uixLabels = useUixLabels();
   const locale = useTextLocale();
   const labels: SelectLabels = { ...DEFAULT_LABELS, ...uixLabels.select, ...labelsProp };
-  const locale = useUixLocale();
 
   const uid = useId();
   const listId = `${uid}-listbox`;
