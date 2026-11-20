@@ -29,7 +29,8 @@
     "test:visual:update": "playwright test tests/visual --update-snapshots",
     "test:a11y": "npm run test:a11y:node && npm run test:a11y:browser",
     "test:a11y:node": "node --test tests/spec-lint.test.mjs tests/a11y-results.test.mjs tests/display-preferences-inline.test.mjs tests/field-combobox.test.mjs tests/workspace-actions.test.mjs tests/theme-contrast.test.mjs tests/smoke-consumer/cleanup.test.mjs",
-    "test:a11y:browser": "playwright test tests/a11y",
+    "test:a11y:browser": "playwright test tests/a11y --project=light --project=dark",
+    "test:a11y:lanes": "playwright test tests/a11y --project=forced-colors --project=text-spacing --project=font-20 --project=font-24",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "changeset publish"
