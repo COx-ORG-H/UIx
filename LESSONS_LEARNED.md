@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: f5f6c3e5 routine second-round review fix on the opt-in experiment (click attribution), pinned by a spec -->
 <!-- lesson-skip: 8dbda6b6 missed edge cases in an opt-in experiment, caught by review -->
 <!-- lesson-skip: 0f42b0d0 routine review fixes on unreleased rule 10 (cascade-order fold, cross-file aliases, inline TS animations) and a comment over the css-size tolerance the gate named; each pinned by a check-motion test -->
 <!-- lesson-skip: dcef8a8d routine: the review named two more inline-style shapes for the TS scan; pinned by check-motion tests -->
