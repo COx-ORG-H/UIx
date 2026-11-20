@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Peek return harness — UIx v2</title>
+  <!-- Test harness for tests/a11y/peek-return.spec.mjs: a ticket queue whose rows open a side Peek.
+       ?cue=0 renders the queue without peekRowId (the behaviour before the experiment). Offline. -->
+  <script>document.documentElement.dataset.theme = new URLSearchParams(location.search).get('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');</script>
+  <link rel="stylesheet" href="../../packages/tokens/build/css/styles.css">
+  <style>
+    body { margin: 0; padding: var(--uix-space-4); background: var(--uix-bg-app); color: var(--uix-text); }
+    main { max-width: 72rem; margin: 0 auto; display: grid; gap: var(--uix-space-3); }
+  </style>
+</head>
+<body>
+  <main id="root"><p>Loading the harness…</p></main>
+  <script type="module" src="dist/harness.js"></script>
+</body>
+</html>
