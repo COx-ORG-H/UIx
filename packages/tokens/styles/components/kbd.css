@@ -11,6 +11,8 @@
 @layer uix.components {
   .uix-kbd-combo { display: inline-flex; align-items: center; }
   .uix-kbd-combo__keys { display: inline-flex; align-items: center; gap: var(--uix-space-1); }
+  /* the word between the chords of a sequence (G then I; the shortcut registry) */
+  .uix-kbd-combo__then { margin-inline: var(--uix-space-1); color: var(--uix-text-muted); font-size: var(--uix-text-eyebrow); }
 }
 
 /* Shortcut hints are for a keyboard. On a device with no hover and a coarse pointer (a touch

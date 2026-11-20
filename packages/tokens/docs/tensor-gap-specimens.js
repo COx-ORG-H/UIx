@@ -19,6 +19,11 @@ const step = (number, title, body, last) => `<li class="uix-step"><span class="u
 const compactSection = (id, title, meta, body, open) => `<details class="uix-collapsible uix-collapsible--compact"${open ? ' open' : ''}><summary class="uix-collapsible__summary"><h3 class="uix-collapsible__heading"><span id="${id}" class="uix-collapsible__title">${title}</span><span class="uix-collapsible__meta">${meta}</span></h3><span class="uix-collapsible__chevron" aria-hidden="true">${CHEVRON}</span></summary><div class="uix-collapsible__body" role="region" aria-labelledby="${id}">${body}</div></details>`;
 const heartbeat = (state, label) => `<span class="uix-heartbeat${state === 'live' ? '' : ` uix-heartbeat--${state}`}"${label ? ` role="img" aria-label="${label}"` : ' aria-hidden="true"'}><span class="uix-heartbeat__ping"></span><span class="uix-heartbeat__dot"></span></span>`;
 
+// The shortcut sheet (React `ShortcutSheet`): one row is the command's words and its KbdCombo, as
+// the component renders them (spoken keys first, glyphs hidden).
+const sheetKeys = (chords, spoken) => `<span class="uix-kbd-combo"><span class="uix-visually-hidden">${spoken}</span>${chords.map((chord, i) => `${i ? '<span class="uix-kbd-combo__then" aria-hidden="true">then</span>' : ''}<span class="uix-kbd-combo__keys" aria-hidden="true">${chord.map((key) => `<kbd class="uix-kbd">${key}</kbd>`).join('')}</span>`).join('')}</span>`;
+const sheetRow = (label, chords, spoken) => `<div class="uix-shortcut-sheet__row"><dt class="uix-shortcut-sheet__label">${label}</dt><dd class="uix-shortcut-sheet__keys">${sheetKeys(chords, spoken)}</dd></div>`;
+
 
 // The interactive Stat is the React component's own markup, with fixed ids in place of useId's;
 // packages/react/src/operator-primitives.test.mjs renders each tile again and compares.
@@ -74,7 +79,44 @@ ${checkItem('Priority', true)}
 ${step(1, 'What is changing', '<label class="uix-field__label" for="gap-step-summary">Summary</label><input class="uix-input" id="gap-step-summary" placeholder="Replace the ledger sync job">')}
 ${step(2, 'When', '<label class="uix-field__label" for="gap-step-window">Window</label><input class="uix-input" id="gap-step-window" placeholder="Saturday 02:00–04:00">')}
 ${step(3, 'Review', '<p>Check the two parts above, then submit.</p>', true)}
-</ol>`,
+</ol>
+<div class="uix-guide__subhead" data-tensor-gaps>Shortcut sheet (React <code>ShortcutSheet</code> in a <code>ShortcutProvider</code>, <code>.uix-shortcut-sheet</code>) — the <kbd class="uix-kbd">?</kbd> dialog the shortcut registry fills: what works where focus is, grouped by scope, each command's current keys, and the single-key switch (WCAG 2.1.4). Opened here from a list row, so the list's own keys are listed too. The component page has the live React demo.</div>
+<div data-shortcut-sheet-example>
+<button type="button" class="uix-btn uix-btn--secondary" data-uix-open="#docs-shortcut-sheet">Keyboard shortcuts</button>
+<dialog class="uix-dialog uix-shortcut-sheet" id="docs-shortcut-sheet" aria-labelledby="docs-shortcut-sheet-title" data-uix-instant>
+<div class="uix-dialog__header"><h2 class="uix-dialog__title" id="docs-shortcut-sheet-title">Keyboard shortcuts</h2><button type="button" class="uix-dialog__close" data-uix-close aria-label="Close dialog">${CROSS}</button></div>
+<div class="uix-dialog__body">
+<div class="uix-shortcut-sheet__groups">
+<section class="uix-shortcut-sheet__group" aria-labelledby="docs-shortcut-sheet-g0"><h3 class="uix-shortcut-sheet__heading" id="docs-shortcut-sheet-g0">Everywhere</h3>
+<dl class="uix-shortcut-sheet__list">
+${sheetRow('Show keyboard shortcuts', [['?']], '?')}
+${sheetRow('Open the command palette', [['Ctrl', 'K']], 'Control+K')}
+</dl>
+<h4 class="uix-shortcut-sheet__subhead">Navigation</h4>
+<dl class="uix-shortcut-sheet__list">
+${sheetRow('Go to the inbox', [['G'], ['I']], 'G, then I')}
+${sheetRow('Go to my tickets', [['G'], ['M']], 'G, then M')}
+</dl>
+</section>
+<section class="uix-shortcut-sheet__group" aria-labelledby="docs-shortcut-sheet-g1"><h3 class="uix-shortcut-sheet__heading" id="docs-shortcut-sheet-g1">Ticket list</h3>
+<dl class="uix-shortcut-sheet__list">
+${sheetRow('Next ticket', [['J']], 'J')}
+${sheetRow('Previous ticket', [['K']], 'K')}
+</dl>
+<h4 class="uix-shortcut-sheet__subhead">Ticket</h4>
+<dl class="uix-shortcut-sheet__list">
+${sheetRow('Assign to me', [['A']], 'A')}
+${sheetRow('Resolve', [['E']], 'E')}
+</dl>
+</section>
+</div>
+<div class="uix-shortcut-sheet__settings">
+<label class="uix-switch"><input type="checkbox" role="switch" checked aria-describedby="docs-shortcut-sheet-hint"><span class="uix-switch__track"></span>Single-key shortcuts</label>
+<p id="docs-shortcut-sheet-hint" class="uix-shortcut-sheet__hint">Shortcuts of one character, such as ? or G then I. Turn them off if you use speech input or press keys by accident.</p>
+</div>
+</div>
+</dialog>
+</div>`,
 
   'examples-form-controls': `
 <div class="uix-guide__subhead" data-tensor-gaps>Segmented as a radio group (React <code>Segmented selection="radio"</code>) — one tab stop, arrow keys change the choice</div>

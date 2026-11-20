@@ -19,6 +19,12 @@ export interface CommandPaletteItem {
   icon?: ReactNode;
   /** Key names (`['Mod', 'K']`) shown at the end of the row and set as `aria-keyshortcuts`. */
   shortcut?: readonly string[];
+  /**
+   * A registered shortcut's id (`useShortcut`): the row shows that command's current keys instead
+   * of `shortcut` (none while it is not active), and choosing an item with no `onSelect` or `href`
+   * runs it, so every single-key verb also has a path through the palette (WCAG 2.1.4).
+   */
+  shortcutId?: string;
   /** Runs when the item is chosen. */
   onSelect?: () => void;
   /** Where the item leads: `onNavigate(href)`, else the browser goes there. */
