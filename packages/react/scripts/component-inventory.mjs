@@ -31,7 +31,7 @@ const sources = {
 const entries = Object.keys(manifest.exports).filter((key) => key !== './component-inventory.json' && key !== './page-rules').sort();
 if (JSON.stringify(entries) !== JSON.stringify(Object.keys(sources).sort())) throw new Error('Classify each public entry point in component-inventory.mjs');
 const components = [];
-const nonComponents = new Set(['.:QrCapacityError']);
+const nonComponents = new Set(['.:QrCapacityError', '.:ShortcutRegistry']);
 for (const subpath of entries) {
   const file = program.getSourceFile(`${root}/src/${sources[subpath]}`);
   if (!file) throw new Error(`Cannot find source for ${subpath}`);

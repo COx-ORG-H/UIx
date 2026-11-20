@@ -201,7 +201,7 @@ const PACK_DEFAULTS = {
   filterEditor: 'DEFAULT_FILTER_EDITOR_LABELS', filterSummary: 'DEFAULT_FILTER_SUMMARY_LABELS', ruleBuilder: 'DEFAULT_RULE_BUILDER_LABELS',
   fileUpload: 'DEFAULT_FILE_UPLOAD_LABELS', fileRow: 'FILE_ROW_LABELS_EN', fileDrop: 'FILE_DROP_LABELS_EN', fileKinds: 'FILE_KIND_LABELS_EN',
   attachment: 'DEFAULT_ATTACHMENT_LABELS', tagInput: 'DEFAULT_TAG_INPUT_LABELS', passwordInput: 'DEFAULT_PASSWORD_INPUT_LABELS',
-  pagination: 'DEFAULT_PAGINATION_LABELS', table: 'DEFAULT_USE_TABLE_LABELS',
+  pagination: 'DEFAULT_PAGINATION_LABELS', table: 'DEFAULT_USE_TABLE_LABELS', shortcuts: 'DEFAULT_SHORTCUT_LABELS',
 };
 
 test('the en pack is the kit\'s English: equal to every exported default it covers', () => {
