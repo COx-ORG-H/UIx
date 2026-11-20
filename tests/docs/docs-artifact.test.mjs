@@ -63,7 +63,8 @@ for (const fixture of cases) test(`${fixture.name}: the Motion page mounts the l
     await live.locator('.uix-docs__live-grid').waitFor();
     // the components the 2.60 motion lives in, mounted from React
     assert.equal(await live.locator('.uix-sidebar .uix-glide').count(), 1);
-    assert.equal(await live.locator('[role="toolbar"] .uix-btn').count(), 5);
+    // the tooltip hand-over row only: other demos (DataWorkspace, since #291) carry toolbars of their own
+    assert.equal(await live.locator('[role="toolbar"][aria-label="Werkzeuge"] .uix-btn').count(), 5);
     assert.ok(await live.locator('svg[data-animate]').count() >= 10);
     // the hover glide is wired: the sidebar's mark shows under the pointer's row
     await live.locator('.uix-sidebar .uix-navitem', { hasText: 'Teams' }).hover();

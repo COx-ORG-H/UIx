@@ -20,4 +20,14 @@
   .uix-switch > input:checked + .uix-switch__track::after { transform: translateX(16px); }
   .uix-switch > input:focus-visible + .uix-switch__track { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
   .uix-switch > input:disabled + .uix-switch__track { opacity: .5; }
+  /* EXPERIMENT (touch press, not adopted): under a finger the thumb stretches 1.18× into the track
+     while held (its outer edge stays put: 16 px × .18 / 2 = 1.44 px of shift) and springs to rest on
+     release. A fine pointer and reduced motion keep today's thumb. */
+  @media (pointer: coarse) and (prefers-reduced-motion: no-preference) {
+    :where(:root:not([data-motion="reduce"])) .uix-switch__track::after { transition: transform var(--uix-dur-pop) var(--uix-ease-pop); }
+    :where(:root:not([data-motion="reduce"])) .uix-switch:active > input:not(:disabled) + .uix-switch__track::after {
+      transform: translateX(1.44px) scaleX(1.18); transition-duration: var(--uix-dur-exit-fast); transition-timing-function: var(--uix-ease-out);
+    }
+    :where(:root:not([data-motion="reduce"])) .uix-switch:active > input:checked:not(:disabled) + .uix-switch__track::after { transform: translateX(14.56px) scaleX(1.18); }
+  }
 }

@@ -26,6 +26,21 @@
   .uix-btn:is(:disabled, [aria-disabled="true"]):active { transform: none; }
   .uix-btn.uix-btn--link:is(:disabled, [aria-disabled="true"]) { border-color: transparent; }
   .uix-btn[aria-disabled="true"]:not([data-disabled-reason]) { pointer-events: none; }
+  /* EXPERIMENT (touch press, not adopted): under a finger the press is a little deeper, goes in
+     at once and springs back on release. A fine pointer and reduced motion keep the .97 above. */
+  @media (pointer: coarse) and (prefers-reduced-motion: no-preference) {
+    :where(:root:not([data-motion="reduce"])) .uix-btn {
+      transition: background-color var(--uix-dur-fast) var(--uix-ease-out),
+                  border-color var(--uix-dur-fast) var(--uix-ease-out),
+                  color var(--uix-dur-fast) var(--uix-ease-out),
+                  transform var(--uix-dur-pop) var(--uix-ease-pop);
+    }
+    :where(:root:not([data-motion="reduce"])) .uix-btn:active:not(:disabled, [aria-disabled="true"]) {
+      transform: scale(.96);
+      transition-duration: var(--uix-dur-fast), var(--uix-dur-fast), var(--uix-dur-fast), var(--uix-dur-exit-fast);
+      transition-timing-function: var(--uix-ease-out), var(--uix-ease-out), var(--uix-ease-out), var(--uix-ease-out);
+    }
+  }
   .uix-btn:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
   .uix-btn svg { width: var(--uix-icon-md); height: var(--uix-icon-md); }
 

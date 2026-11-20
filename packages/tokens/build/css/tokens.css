@@ -458,4 +458,9 @@
     --uix-shadow-popover: 0 8px 24px rgba(0,0,0,.50),0 1px 2px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.05);
     --uix-shadow-overlay: 0 16px 48px rgba(0,0,0,.60),inset 0 1px 0 rgba(255,255,255,.05);
   }
+
+  /* resolved on every element (zero specificity), so each reads the nearest container's inputs */
+  :where(*) {
+    --uix-radius-inner: max(var(--uix-radius-inner-min, 0px), calc(var(--uix-radius-outer) - var(--uix-radius-inset, 0px)));
+  }
 }

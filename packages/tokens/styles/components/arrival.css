@@ -1,9 +1,11 @@
 /* uix arrival — "you are here": the highlight a page puts on the element a link or a search result
    landed on (a settings row, a section, a comment). Add the class after scrolling the target into
    view; it tints the target and fades out on its own. To replay it, remove the class, force a
-   reflow, and add it again. Depends only on --uix-* tokens. */
+   reflow, and add it again. Script sets [data-uix-arrival] instead (the same cue, which a React
+   re-render of the element's class never cuts short): DataWorkspace's way back from a Peek.
+   Depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-arrival {
+  .uix-arrival, [data-uix-arrival] {
     border-radius: var(--uix-radius-md);
     scroll-margin-block: var(--uix-space-10);
     animation: uix-arrival var(--uix-dur-highlight) var(--uix-ease-out) both;
@@ -12,6 +14,21 @@
     /* the outline carries the tint past the element's edge; only its colour fades */
     0%, 40% { background-color: var(--uix-brand-muted); outline: var(--uix-space-2) solid var(--uix-brand-muted); outline-offset: 0; }
     100% { background-color: transparent; outline: var(--uix-space-2) solid transparent; outline-offset: 0; }
+  }
+
+  /* A table row: its cells paint the row's colour (--uix-row-bg, a registered colour in table.css),
+     so the cue tints that colour and a frozen cell tints with its row. No outline past the row's
+     edge (the table wrap clips it) and no fill-mode: the last frame is the row's own colour, so a
+     zebra, selected or hovered row keeps it. */
+  tr:is(.uix-arrival, [data-uix-arrival]) {
+    border-radius: 0;
+    animation: uix-arrival-row var(--uix-dur-highlight) var(--uix-ease-out);
+  }
+  @keyframes uix-arrival-row { 0%, 40% { --uix-row-bg: var(--uix-brand-muted); } }
+  /* the row's steady outline sits just inside its edge, where the wrap does not clip it */
+  @keyframes uix-arrival-row-static {
+    0% { outline: 2px solid var(--uix-ring); outline-offset: -2px; }
+    100% { outline: 2px solid transparent; outline-offset: -2px; }
   }
 
   /* no fade: a steady outline for the highlight time, then nothing */
@@ -23,13 +40,16 @@
      would end this steady outline before anyone saw it; a layered !important wins over it. The
      in-app preference (data-motion="reduce", HAR-1372) gets the same outline. */
   @media (prefers-reduced-motion: reduce) {
-    .uix-arrival { animation: uix-arrival-static var(--uix-dur-highlight) step-end both !important; }
+    .uix-arrival, [data-uix-arrival] { animation: uix-arrival-static var(--uix-dur-highlight) step-end both !important; }
+    tr:is(.uix-arrival, [data-uix-arrival]) { animation: uix-arrival-row-static var(--uix-dur-highlight) step-end both !important; }
   }
   @media (prefers-reduced-motion: no-preference) {
-    :root[data-motion="reduce"] .uix-arrival { animation: uix-arrival-static var(--uix-dur-highlight) step-end both !important; }
+    :root[data-motion="reduce"] :is(.uix-arrival, [data-uix-arrival]) { animation: uix-arrival-static var(--uix-dur-highlight) step-end both !important; }
+    :root[data-motion="reduce"] tr:is(.uix-arrival, [data-uix-arrival]) { animation: uix-arrival-row-static var(--uix-dur-highlight) step-end both !important; }
   }
 
   @media (forced-colors: active) {
-    .uix-arrival { animation: uix-arrival-static var(--uix-dur-highlight) step-end both; }
+    .uix-arrival, [data-uix-arrival] { animation: uix-arrival-static var(--uix-dur-highlight) step-end both; }
+    tr:is(.uix-arrival, [data-uix-arrival]) { animation: uix-arrival-row-static var(--uix-dur-highlight) step-end both; }
   }
 }
