@@ -26,6 +26,9 @@ import type { SearchBarLabels } from './components/SearchBar.js';
 import type { KeyboardGrabLabels } from './hooks/useKeyboardGrab.js';
 import type { LightboxLabels } from './components/Lightbox.js';
 import type { SortableListLabels } from './components/SortableList.js';
+import type { KanbanLabels } from './components/Kanban.js';
+import type { DashboardCanvasLabels } from './components/DashboardCanvas.js';
+import type { ViewMenuColumnLabels } from './components/TableControls.js';
 import type { DiffViewerLabels } from './components/DiffViewer.js';
 import type { MatchReviewLabels } from './components/MatchReview.js';
 import type { QrCodeLabels } from './components/QrCode.js';
@@ -109,6 +112,12 @@ export interface UixLabels {
   inlineEdit?: Partial<InlineEditLabels>;
   /** `SortableList` (HAR-1375): the grip, Move up / Move down, the move announcement. */
   sortableList?: Partial<SortableListLabels>;
+  /** `KanbanCard` (WCAG 2.5.7): the Move menu's button and its moves. */
+  kanban?: Partial<KanbanLabels>;
+  /** `DashboardCanvas`: the handles, their step buttons (WCAG 2.5.7) and the announcements. */
+  dashboardCanvas?: Partial<DashboardCanvasLabels>;
+  /** `ViewMenu` column rows: the grip, the ⋯ menu's Move up / Move down / Hide / Show, the move announcement. */
+  viewMenu?: Partial<ViewMenuColumnLabels>;
   /** `useKeyboardGrab` (HAR-2590): picked up, dropped, cancelled; `{label}`. */
   keyboardGrab?: Partial<KeyboardGrabLabels>;
   /** `typeToConfirmMismatch` (HAR-1831): `{value}` is the text to type. */
