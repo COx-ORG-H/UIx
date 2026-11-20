@@ -34,8 +34,14 @@ const BUDGET = {
   'file-drop-back': '--uix-dur-fast',
   'file-drop-reenter': '--uix-dur-fast',
 };
+// a token may compute as `160ms` or, minified, `.16s`
 const ms = (page, token) => (typeof token === 'number' ? token
-  : page.evaluate((t) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(t)), token));
+  : page.evaluate((t) => {
+    const raw = getComputedStyle(document.documentElement).getPropertyValue(t).trim();
+    const m = /^(-?\d*\.?\d+)(ms|s)$/.exec(raw);
+    if (!m) throw new Error(`${t} is not a time: '${raw}'`);
+    return m[2] === 's' ? Number(m[1]) * 1000 : Number(m[1]);
+  }, token));
 const show = (frames) => frames.map((f) => `${f.t}:${f.old.toFixed(2)}/${f.new.toFixed(2)}`).join(' ');
 
 for (const [id, token] of Object.entries(BUDGET)) {
