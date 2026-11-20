@@ -5,6 +5,10 @@
  * document is still running. Infinite ones (spinners) never finish and are skipped, so they stay
  * on screen for axe exactly as a user sees them — unlike emulating reduced motion, which the
  * global guard in motion.css turns into a different rendering.
+ *
+ * Only animations on the document timeline count. A scroll edge (scroll-edge.css) is a CSS
+ * animation on a scroll timeline: it follows the scroll position, never moves by itself, and
+ * stays "running" for as long as its scroller exists, so waiting for it would never end.
  */
 import { expect } from '@playwright/test';
 
@@ -18,11 +22,11 @@ export const settleOverlay = (overlay) => expect.poll(() => overlay.evaluate((el
   const transform = getComputedStyle(el).transform;
   // subtree: an overlay's rows may still be arriving (2.60 row stagger) after the overlay settled;
   // infinite ones (a spinner in the list) never finish and are skipped, as in settleAnimations
-  return !el.hasAttribute('data-uix-placing') && el.getAnimations({ subtree: true }).filter((a) => a.effect?.getComputedTiming().endTime !== Infinity).length === 0 && (transform === 'none' || transform === 'matrix(1, 0, 0, 1, 0, 0)');
+  return !el.hasAttribute('data-uix-placing') && el.getAnimations({ subtree: true }).filter((a) => a.timeline === document.timeline && a.effect?.getComputedTiming().endTime !== Infinity).length === 0 && (transform === 'none' || transform === 'matrix(1, 0, 0, 1, 0, 0)');
 }), { message: 'the overlay is still held or moving' }).toBe(true);
 
 export const settleAnimations = (page) => expect.poll(() => page.evaluate(() => document.getAnimations()
-  .filter((a) => a.playState === 'running' && a.effect?.getComputedTiming().endTime !== Infinity)
+  .filter((a) => a.timeline === document.timeline && a.playState === 'running' && a.effect?.getComputedTiming().endTime !== Infinity)
   .map((a) => a.animationName || a.transitionProperty || a.id || 'animation')), {
   message: 'finite animations still running before the axe scan',
 }).toEqual([]);

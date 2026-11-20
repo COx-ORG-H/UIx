@@ -567,3 +567,39 @@ test('mentions: without onMentionSearch, @ is ordinary text and no list ever ope
   assert.equal(editor.getText(), '@an');
   await view.unmount();
 });
+
+test('limit feedback (experimental): a typed edit over maxLength reports limit from the counter; a draft the product loads does not', async () => {
+  const events = [];
+  const listen = (event) => events.push([event.detail.kind, event.target]);
+  window.document.addEventListener('uix-feedback', listen);
+  let setOuter;
+  function Host() {
+    const [value, setValue] = useState('Short');
+    setOuter = setValue;
+    return h(RichTextEditor, { value, onChange: setValue, maxLength: 12, 'aria-label': 'Note' });
+  }
+  try {
+    const view = await mount(h(Host));
+    const editor = editorOf(view.host);
+    const counter = view.host.querySelector('.uix-rich-text__counter');
+    await act(async () => { editor.chain().focus('end').insertContent(' and more').run(); });
+    await settle();
+    assert.ok(counter.hasAttribute('data-over'));
+    assert.deepEqual(events.map(([kind]) => kind), ['limit'], 'the typed crossing reports once');
+    assert.equal(events[0][1], counter);
+    await act(async () => { editor.chain().focus('end').insertContent('!').run(); });
+    await settle();
+    assert.equal(events.length, 1, 'not again while it stays over');
+    // the product swaps in a short value, then loads a long saved draft: no edit, no feedback
+    await act(async () => setOuter('Hi'));
+    await settle();
+    await act(async () => setOuter('A saved draft that is far too long'));
+    await settle();
+    assert.ok(view.host.querySelector('.uix-rich-text__counter').hasAttribute('data-over'));
+    assert.equal(events.length, 1, 'a loaded draft is not a crossing');
+    await view.unmount();
+    view.host.remove();
+  } finally {
+    window.document.removeEventListener('uix-feedback', listen);
+  }
+});

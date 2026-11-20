@@ -2553,6 +2553,7 @@ export const DISPLAY_PREFERENCE_OPTIONS: {
     readonly contrast: readonly ["standard", "more", "system"];
     readonly textScale: readonly ["sm", "md", "lg", "xl"];
     readonly motion: readonly ["system", "reduce"];
+    readonly transparency: readonly ["standard", "reduce", "system"];
     readonly density: readonly ["compact", "standard", "comfortable"];
 };
 
@@ -2571,6 +2572,8 @@ export interface DisplayAttributes {
     'data-text-scale'?: 'sm' | 'lg' | 'xl';
     // (undocumented)
     'data-theme': 'light' | 'dark';
+    // (undocumented)
+    'data-transparency'?: 'reduce';
 }
 
 // @public
@@ -2616,6 +2619,12 @@ export interface DisplayPreferencesLabels {
     textSmall: string;
     // (undocumented)
     theme: string;
+    // (undocumented)
+    transparency: string;
+    // (undocumented)
+    transparencyReduce: string;
+    // (undocumented)
+    transparencyStandard: string;
 }
 
 // @public (undocumented)
@@ -2627,7 +2636,7 @@ export interface DisplayPreferencesProps extends Omit<HTMLAttributes<HTMLDivElem
     settings?: readonly (keyof DisplayPreferenceValues)[];
     // (undocumented)
     storageKey?: string;
-    value?: DisplayPreferenceValues;
+    value?: Partial<DisplayPreferenceValues>;
 }
 
 // @public
@@ -2645,6 +2654,8 @@ export interface DisplayPreferenceValues {
     textScale: TextScalePreference;
     // (undocumented)
     theme: ThemePreference;
+    // (undocumented)
+    transparency: TransparencyPreference;
 }
 
 // @public (undocumented)
@@ -2918,6 +2929,20 @@ export interface FeaturedStageProps extends Omit<HTMLAttributes<HTMLElement>, 't
     visual?: ReactNode;
     visualLabel?: string;
 }
+
+// @public
+export function feedback(kind: FeedbackKind, target?: EventTarget | null): boolean;
+
+// @public
+export const FEEDBACK_EVENT = "uix-feedback";
+
+// @public
+export interface FeedbackEventDetail {
+    kind: FeedbackKind;
+}
+
+// @public
+export type FeedbackKind = 'success' | 'warning' | 'error' | 'selection' | 'limit';
 
 // @public (undocumented)
 export function Field(input: FieldProps): react.JSX.Element;
@@ -3542,6 +3567,18 @@ export type FormFieldErrors<V> = {
 
 // @public
 export function groupCommandItems(items: readonly CommandPaletteItem[]): CommandPaletteGroup[];
+
+// @public
+export const HAPTIC_PATTERNS: Readonly<Record<FeedbackKind, readonly number[]>>;
+
+// @public
+export const HAPTICS_ATTRIBUTE = "data-haptics";
+
+// @public
+export function hapticsEnabled(): boolean;
+
+// @public
+export function hapticsSupported(): boolean;
 
 // @public
 export function Heartbeat(input: HeartbeatProps): react.JSX.Element;
@@ -5891,6 +5928,9 @@ export interface PredictionBandPoint {
 export function prefersReducedMotion(): boolean;
 
 // @public
+export function prefersReducedTransparency(): boolean;
+
+// @public
 export function PresenceDot(input: PresenceDotProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -7828,6 +7868,7 @@ export interface SortableListProps<T> extends Omit<HTMLAttributes<HTMLUListEleme
     // (undocumented)
     items: readonly T[];
     labels?: Partial<SortableListLabels>;
+    makeRoom?: boolean;
     onReorder: (orderedIds: string[]) => void;
     // (undocumented)
     renderItem: (item: T, context: SortableListItemContext) => ReactNode;
@@ -8194,6 +8235,7 @@ export interface SystemDisplayPreferences {
     dark: boolean;
     // (undocumented)
     moreContrast: boolean;
+    reducedTransparency?: boolean;
 }
 
 // @public (undocumented)
@@ -9048,6 +9090,9 @@ export const TOP_LANE_CROSS_MIDNIGHT_MINUTES = 360;
 export function Tr(input: TrProps): react.JSX.Element;
 
 // @public (undocumented)
+export type TransparencyPreference = 'standard' | 'reduce' | 'system';
+
+// @public (undocumented)
 export function traverseRelationshipNode(nodes: RelationshipGraphNode[], currentId: string | undefined, direction: -1 | 1): string | undefined;
 
 // @public (undocumented)
@@ -9466,6 +9511,9 @@ export interface UserChipProps extends HTMLAttributes<HTMLSpanElement> {
 
 // @public
 export function useReducedMotion(): boolean;
+
+// @public
+export function useReducedTransparency(): boolean;
 
 // @public
 export function uses12Hour(locale?: string | readonly string[]): boolean;

@@ -16,6 +16,7 @@ import { Plugin, PluginKey } from '@tiptap/pm/state';
 import type { Node as PMNode } from '@tiptap/pm/model';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import { cx } from '../cx.js';
+import { feedback } from '../feedback.js';
 import { computePosition } from '../overlay-position.js';
 import { formatLabel } from '../emoji-model.js';
 import { canRenderEmoji, emojiImageSrc, emojiPattern, normalizeEmojiImageBaseUrl } from '../emoji-image.js';
@@ -282,6 +283,23 @@ const popoverOpen = (el: Element): boolean => {
   try { return el.matches(':popover-open'); } catch { return false; }
 };
 
+/** `limit` feedback (experimental) the moment the person's own edit takes the text over
+ * `maxLength`, when the counter turns red and the field invalid. Not on the first render, not again
+ * while it stays over, and not for a value the product sets (a draft loaded after mount): only a
+ * text passed to `noteEdit` counts. The event starts at the counter, so listeners in a shadow root
+ * hear it. */
+function useLimitFeedback(over: boolean, text: string) {
+  const was = useRef(over);
+  const edited = useRef<string | null>(null);
+  const counterRef = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    if (over && !was.current && edited.current === text) feedback('limit', counterRef.current);
+    was.current = over;
+  }, [over, text]);
+  const noteEdit = useCallback((next: string) => { edited.current = next; }, []);
+  return { counterRef, noteEdit };
+}
+
 const isMac = (): boolean => typeof navigator !== 'undefined' && /mac|iphone|ipad/i.test(navigator.platform || navigator.userAgent);
 
 /** The loading/error stand-in: a plain Textarea with the same value and ARIA, and the composer bar. */
@@ -293,8 +311,9 @@ export function RichTextEditorFallback(props: RichTextEditorProps) {
   const labels = { ...DEFAULT_RICH_TEXT_LABELS, ...labelOverrides };
   const counterId = useId();
   const over = maxLength !== undefined && value.length > maxLength;
+  const limit = useLimitFeedback(over, value);
   const counter = maxLength !== undefined ? (
-    <span id={counterId} className="uix-rich-text__counter" data-over={over || undefined}>
+    <span ref={limit.counterRef} id={counterId} className="uix-rich-text__counter" data-over={over || undefined}>
       {formatLabel(labels.characterCount, { count: value.length, max: maxLength })}
     </span>
   ) : null;
@@ -303,7 +322,7 @@ export function RichTextEditorFallback(props: RichTextEditorProps) {
       id={id}
       name={name}
       value={value}
-      onChange={(event) => onChange(event.target.value)}
+      onChange={(event) => { limit.noteEdit(event.target.value); onChange(event.target.value); }}
       onBlur={onBlur}
       onKeyDown={(event) => {
         if (onSubmitShortcut && (event.metaKey || event.ctrlKey) && event.key === 'Enter') {
@@ -662,6 +681,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
   const emit = (next: string) => {
     if (next === lastValue.current) return;
     lastValue.current = next;
+    limit.noteEdit(next);
     setMarkdown(next);
     latest.current.onChange(next);
   };
@@ -734,6 +754,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
   }, [editor, disabled, readOnly]);
 
   const over = maxLength !== undefined && markdown.length > maxLength;
+  const limit = useLimitFeedback(over, markdown);
   const invalid = props['aria-invalid'] || over;
   const describedBy = [props['aria-describedby'], maxLength !== undefined ? counterId : undefined, status ? statusId : undefined]
     .filter(Boolean).join(' ') || undefined;
@@ -1150,7 +1171,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
   );
 
   const counter = maxLength !== undefined ? (
-    <span id={counterId} className="uix-rich-text__counter" data-over={over || undefined}>
+    <span ref={limit.counterRef} id={counterId} className="uix-rich-text__counter" data-over={over || undefined}>
       {formatLabel(labels.characterCount, { count: markdown.length, max: maxLength })}
     </span>
   ) : null;

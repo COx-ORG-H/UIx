@@ -10,6 +10,13 @@
   /* The dragged row lifts and its neighbours make room by reordering, frame by frame: no motion of its own. */
   .uix-sortable__row[data-dragging] { position: relative; z-index: var(--uix-z-raised); border-color: var(--uix-ring); box-shadow: var(--uix-shadow-popover); }
   .uix-sortable[data-dragging] { cursor: grabbing; user-select: none; }
+  /* EXPERIMENT `makeRoom` (phone-OS motion study, Tier 3 item 16): the dragged row follows the
+     pointer and its neighbours move aside by its height, so the gap shows where it lands; on drop
+     it glides in. Transform only (`translate`, set by make-room.ts); a new target retargets a shift
+     from where it is. The list is the rows' offset parent, so script reads each row's place
+     without its shift. Reduced motion: the script does not run it (and motion.css drops the glide). */
+  .uix-sortable[data-make-room] { position: relative; }
+  .uix-sortable[data-make-room] > .uix-sortable__row[data-uix-room] { transition: translate var(--uix-dur) var(--uix-ease-glide); }
   .uix-sortable__content { flex: 1; min-width: 0; overflow-wrap: break-word; }
   /* 24 × 32: the grip is a pointer target, wide enough without taking the content's room. */
   .uix-sortable__grip {
