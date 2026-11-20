@@ -9,7 +9,7 @@
  * single-key switch; axe finds nothing serious with each banner showing, in both themes; nothing
  * overflows at 320 px. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/selection-scope/harness.html';
 const GATED = new Set(['serious', 'critical']);
@@ -37,8 +37,14 @@ const settled = async (page) => {
   await expect(page.locator('.uix-data-workspace__table')).not.toHaveAttribute('aria-busy', 'true');
   await expect(rowBoxes(page).first()).toBeVisible();
 };
+const rangeText = (page) => page.locator('.uix-data-workspace__range').textContent();
+/** Types a new search and waits for its own answer: the footer's "x–y of N" changes (every search
+ * here has a different total), then the table is not refreshing. Busy alone is not enough: it
+ * turns on a render after the keystroke, so a check right after the fill can see the old rows. */
 const search = async (page, text) => {
+  const before = await rangeText(page);
   await page.locator('.uix-data-workspace__search input').fill(text);
+  await expect.poll(async () => (await rangeText(page)) !== before).toBe(true);
   await settled(page);
 };
 
@@ -201,7 +207,6 @@ test('320 px: the banner and the bulk bar wrap inside the page', async ({ page }
   await open(page, testInfo);
   await headBox(page).check();
   await banner(page).getByRole('button', { name: /^Select all/ }).click();
-  await search(page, '');
   // each part's own box, not only the bar's: a nowrap count can run past a bar that fits
   await page.evaluate(() => {
     // the longest real words: a long filter in words (CI's Linux fonts are wider than Windows')
