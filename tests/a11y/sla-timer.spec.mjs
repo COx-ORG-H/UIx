@@ -9,7 +9,7 @@
  *     `announce` says so once through the polite region.
  * The model, the shared clock, the hidden tab and hydration are pinned in packages/react/src/sla-timer-dom.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/sla-timer/harness.html';
 const GATED = new Set(['serious', 'critical']);
