@@ -248,6 +248,10 @@ export const srCyrl: UixLabelPack = {
     resultsMany: { one: '{count} резултат', few: '{count} резултата', other: '{count} резултата' },
     empty: 'Нема резултата',
     recent: 'Недавно',
+    loading: 'Претраживање…',
+    failed: 'Претрага није успела',
+    retry: 'Покушај поново',
+    breadcrumb: 'Путања',
   },
   qrCode: {
     tooLong: 'Предугачко за QR код',

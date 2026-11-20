@@ -123,8 +123,13 @@ export interface UixLabels {
    * `resultsOne` / `resultsMany`: the polite result count; `{count}`. `resultsMany` also takes the
    * plural forms (`{ one, few, other }`) or a function of the count, and then `resultsOne` is not
    * read. Items mode (HAR-1378): `empty` when nothing matches, `recent` the heading of the recent items.
+   * Sources and pages (roadmap #9): `loading` and `failed` name a source's rows (`{source}`),
+   * `retry` its button, `breadcrumb` the trail of pages.
    */
-  commandPalette?: { input?: string; resultsOne?: string; resultsMany?: UixCountLabel; empty?: string; recent?: string };
+  commandPalette?: {
+    input?: string; resultsOne?: string; resultsMany?: UixCountLabel; empty?: string; recent?: string;
+    loading?: string; failed?: string; retry?: string; breadcrumb?: string;
+  };
   /** `QrCode` (HAR-1251): the text shown when the value is too long for a QR code. */
   qrCode?: Partial<QrCodeLabels>;
   /** `CodeDisplay` (HAR-1253): the countdown, the expiry announcements, the copy button's words. */

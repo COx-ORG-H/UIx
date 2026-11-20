@@ -1485,7 +1485,53 @@ export interface ComboboxProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onC
 }
 
 // @public
+export const COMMAND_FRECENCY_HALF_LIFE: number;
+
+// @public
+export const COMMAND_FRECENCY_MAX_ENTRIES = 200;
+
+// @public
+export const COMMAND_FRECENCY_STORAGE_KEY = "uix-command-frecency";
+
+// @public
 export const COMMAND_PALETTE_SHORTCUT_ID = "uix.command-palette";
+
+// @public
+export type CommandFold = (text: string) => readonly string[];
+
+// @public
+export function commandFoldFor(locale?: string): CommandFold;
+
+// @public
+export interface CommandFrecency {
+    entries: CommandFrecencyEntries;
+    recent: <T extends {
+        id: string;
+    }>(items: readonly T[], limit?: number) => T[];
+    record: (id: string) => void;
+    reset: (id?: string) => void;
+    score: (id: string) => number;
+}
+
+// @public
+export type CommandFrecencyEntries = Readonly<Record<string, CommandFrecencyEntry>>;
+
+// @public
+export interface CommandFrecencyEntry {
+    count: number;
+    last: number;
+    value: number;
+}
+
+// @public
+export function commandFrecencyScore(entry: CommandFrecencyEntry | undefined, now: number, halfLife?: number): number;
+
+// @public
+export interface CommandFrecencyStorage {
+    read: () => CommandFrecencyEntries | null;
+    subscribe?: (onChange: () => void) => () => void;
+    write: (entries: CommandFrecencyEntries) => void;
+}
 
 // @public
 export function CommandGroup(input: CommandGroupProps): react.JSX.Element;
@@ -1524,6 +1570,8 @@ export interface CommandPaletteGroup {
 
 // @public
 export interface CommandPaletteItem {
+    aliases?: readonly string[];
+    contextBoost?: number;
     description?: string;
     disabled?: boolean;
     group?: string;
@@ -1534,8 +1582,18 @@ export interface CommandPaletteItem {
     // (undocumented)
     label: string;
     onSelect?: () => void;
+    page?: CommandPalettePage;
     shortcut?: readonly string[];
     shortcutId?: string;
+}
+
+// @public
+export interface CommandPalettePage {
+    id: string;
+    items?: readonly CommandPaletteItem[];
+    label: string;
+    placeholder?: string;
+    sources?: readonly CommandPaletteSource[];
 }
 
 // @public (undocumented)
@@ -1543,11 +1601,14 @@ export interface CommandPaletteProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     children?: ReactNode;
     emptyLabel?: ReactNode;
+    failedLabel?: string;
     filter?: (items: readonly CommandPaletteItem[], query: string) => CommandPaletteItem[];
+    frecency?: Pick<CommandFrecency, 'score'> & Partial<Pick<CommandFrecency, 'record'>>;
     inputLabel?: string;
     inputProps?: InputHTMLAttributes<HTMLInputElement>;
     items?: readonly CommandPaletteItem[];
     limit?: number;
+    loadingLabel?: string;
     onItemSelect?: (item: CommandPaletteItem) => void;
     onNavigate?: (href: string, item: CommandPaletteItem) => void;
     // (undocumented)
@@ -1559,8 +1620,20 @@ export interface CommandPaletteProps extends HTMLAttributes<HTMLDivElement> {
     recent?: readonly CommandPaletteItem[];
     recentLabel?: string;
     resultsLabel?: (count: number) => string;
+    retryLabel?: string;
     shortcut?: ShortcutBinding;
     shortcutLabel?: string;
+    sources?: readonly CommandPaletteSource[];
+}
+
+// @public
+export interface CommandPaletteSource {
+    contextBoost?: number;
+    debounce?: number;
+    id: string;
+    label: string;
+    load: (query: string, signal: AbortSignal) => Promise<readonly CommandPaletteItem[]>;
+    minQueryLength?: number;
 }
 
 // @public
@@ -2500,6 +2573,9 @@ export interface DaySpanLayout {
     placed: PlacedDaySpan[];
 }
 
+// @public
+export function decayedFrecency(entry: CommandFrecencyEntry | undefined, now: number, halfLife?: number): number;
+
 // @public (undocumented)
 export const DEFAULT_ACCOUNT_MENU_LABELS: AccountMenuLabels;
 
@@ -2691,6 +2767,9 @@ export const DEFAULT_TREE_LABELS: TreeLabels;
 
 // @public (undocumented)
 export const DEFAULT_USE_TABLE_LABELS: UseTableLabels;
+
+// @public
+export const defaultCommandFold: CommandFold;
 
 // @public
 export const defaultTimelineStep: (scale: TimelineScale) => number;
@@ -4014,6 +4093,9 @@ export type FormFieldErrors<V> = {
 };
 
 // @public
+export const FRECENCY_WEIGHT = 0.5;
+
+// @public
 export function groupActionPanelActions(actions: readonly ActionPanelAction[], query?: string): ActionPanelGroup[];
 
 // @public
@@ -4911,6 +4993,9 @@ export interface LoadingStateProps extends HTMLAttributes<HTMLDivElement> {
     label?: string;
     rows?: number;
 }
+
+// @public
+export function localCommandFrecencyStorage(key?: string): CommandFrecencyStorage;
 
 // @public
 export function LocaleSwitcher(input: LocaleSwitcherProps): react.JSX.Element;
@@ -6124,6 +6209,9 @@ export interface PaginationProps extends Omit<HTMLAttributes<HTMLDivElement>, 'o
 }
 
 // @public
+export function parseCommandFrecency(raw: unknown): CommandFrecencyEntries;
+
+// @public
 export function parseDateInput(text: string, locale?: string | readonly string[]): string | null;
 
 // @public (undocumented)
@@ -6797,6 +6885,23 @@ export interface RadioProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
 }
 
 // @public
+export function rankCommandItems(items: readonly CommandPaletteItem[], query: string, options?: RankCommandOptions): RankedCommand[];
+
+// @public
+export interface RankCommandOptions {
+    fold?: CommandFold;
+    frecency?: (id: string) => number;
+    locale?: string;
+}
+
+// @public
+export interface RankedCommand {
+    alias?: string;
+    item: CommandPaletteItem;
+    score: number;
+}
+
+// @public
 export function rankOverflow<T>(items: readonly T[], compare: (a: T, b: T) => number, n: number): {
     visible: T[];
     hidden: number;
@@ -6804,6 +6909,12 @@ export function rankOverflow<T>(items: readonly T[], compare: (a: T, b: T) => nu
 
 // @public
 export function readSystemDisplayPreferences(): SystemDisplayPreferences;
+
+// @public
+export function recordCommandUse(entries: CommandFrecencyEntries, id: string, now: number, input?: {
+    halfLife?: number | undefined;
+    max?: number | undefined;
+}): CommandFrecencyEntries;
 
 // @public
 export interface RecordConflictChange {
@@ -10348,6 +10459,10 @@ export interface UixLabels {
         resultsMany?: UixCountLabel;
         empty?: string;
         recent?: string;
+        loading?: string;
+        failed?: string;
+        retry?: string;
+        breadcrumb?: string;
     };
     confirmDialog?: {
         typeToConfirm?: string;
@@ -10548,6 +10663,17 @@ export function useArrive(): ArriveState;
 
 // @public
 export function useChangeHighlight<T extends HTMLElement = HTMLElement>(value: unknown, input?: ChangeHighlightOptions): RefObject<T | null>;
+
+// @public
+export function useCommandFrecency(input?: UseCommandFrecencyOptions): CommandFrecency;
+
+// @public
+export interface UseCommandFrecencyOptions {
+    halfLife?: number;
+    max?: number;
+    storage?: CommandFrecencyStorage | null;
+    storageKey?: string;
+}
 
 // Warning: (ae-forgotten-export) The symbol "Key" needs to be exported by the entry point index.d.ts
 //

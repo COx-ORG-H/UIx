@@ -237,6 +237,10 @@ export const hr: UixLabelPack = {
     resultsMany: { one: '{count} rezultat', few: '{count} rezultata', other: '{count} rezultata' },
     empty: 'Nema rezultata',
     recent: 'Nedavno',
+    loading: 'Pretraživanje…',
+    failed: 'Pretraživanje nije uspjelo',
+    retry: 'Pokušaj ponovno',
+    breadcrumb: 'Putanja',
   },
   qrCode: {
     tooLong: 'Predugo za QR kôd',
