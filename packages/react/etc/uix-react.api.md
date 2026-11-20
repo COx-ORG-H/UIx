@@ -2603,6 +2603,15 @@ export const DEFAULT_SHORTCUT_LABELS: ShortcutLabels;
 // @public (undocumented)
 export const DEFAULT_SHORTCUT_PREFERENCES: ShortcutPreferenceValues;
 
+// @public
+export const DEFAULT_SLA_REMAINING_THRESHOLDS: readonly SlaThreshold[];
+
+// @public
+export const DEFAULT_SLA_THRESHOLDS: readonly SlaThreshold[];
+
+// @public
+export const DEFAULT_SLA_TIMER_LABELS: SlaTimerLabels;
+
 // @public (undocumented)
 export const DEFAULT_SORTABLE_LIST_LABELS: SortableListLabels;
 
@@ -8607,6 +8616,104 @@ export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 // @public
+export const SLA_SORT_LAST: number;
+
+// @public
+export interface SlaInput {
+    breachedAt?: SlaTime | null;
+    completedAt?: SlaTime | null;
+    dueAt?: SlaTime | null;
+    paused?: boolean;
+    pausedAt?: SlaTime | null;
+    startedAt?: SlaTime | null;
+    thresholds?: readonly SlaThreshold[];
+}
+
+// @public
+export type SlaLevel = 'notice' | 'warning' | 'urgent';
+
+// @public
+export function slaSortValue(input: SlaInput, now?: SlaTime): number;
+
+// @public
+export type SlaState = 'none' | 'on-track' | SlaLevel | 'breached' | 'paused' | 'met';
+
+// @public (undocumented)
+export interface SlaStatus {
+    deadline: Date | null;
+    level: 'on-track' | SlaLevel | 'breached';
+    nextChangeAt: number | null;
+    remaining: number;
+    // (undocumented)
+    state: SlaState;
+    stopped: boolean;
+}
+
+// @public
+export function slaStatus(input: SlaInput, now?: SlaTime): SlaStatus;
+
+// @public
+export type SlaThreshold = {
+    level: SlaLevel;
+    elapsed: number;
+    remaining?: never;
+    at?: never;
+} | {
+    level: SlaLevel;
+    remaining: number;
+    elapsed?: never;
+    at?: never;
+} | {
+    level: SlaLevel;
+    at: SlaTime;
+    elapsed?: never;
+    remaining?: never;
+};
+
+// @public
+export type SlaTime = Date | number | string;
+
+// @public
+export function SlaTimer(input: SlaTimerProps): react.JSX.Element;
+
+// @public
+export type SlaTimerLabelOverrides = Partial<Omit<SlaTimerLabels, 'states'>> & {
+    states?: Partial<SlaTimerLabels['states']>;
+};
+
+// @public
+export interface SlaTimerLabels {
+    breached: string;
+    breachedAgo: string;
+    deadline: string;
+    due: string;
+    dueIn: string;
+    labelled: string;
+    lessThanMinute: string;
+    lessThanMinuteLong: string;
+    met: string;
+    none: string;
+    over: string;
+    paused: string;
+    pausedLeft: string;
+    states: Record<Exclude<SlaState, 'none'>, string>;
+}
+
+// @public (undocumented)
+export interface SlaTimerProps extends SlaInput, Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
+    announce?: boolean;
+    format?: 'compact' | 'relative' | 'absolute';
+    label?: string;
+    // (undocumented)
+    labels?: SlaTimerLabelOverrides;
+    locale?: string;
+    now?: SlaTime;
+    pausedReason?: string;
+    timeZone?: string;
+    variant?: 'cell' | 'header';
+}
+
+// @public
 export const snapToStep: (ms: number, step: number) => number;
 
 // @public
@@ -10194,6 +10301,7 @@ export interface UixLabels {
         expand?: string;
         collapse?: string;
     };
+    slaTimer?: SlaTimerLabelOverrides;
     sortableList?: Partial<SortableListLabels>;
     table?: Partial<UseTableLabels>;
     tagInput?: Partial<TagInputLabels>;
