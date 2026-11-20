@@ -13,7 +13,7 @@ import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   Button, Checkbox, DashboardCanvas, DataWorkspace, DialogClose, Drawer, Menu, MenuItem, NavGroup, NavItem, Radio, RadioGroup, Select,
-  Sidebar, SidebarSection, SubNavItem, Tooltip,
+  Sidebar, SidebarSection, SubNavItem, Toaster, Tooltip, createToastApi, createToastStore,
 } from '../../../react/src/index.js';
 import type { DashboardCanvasItem, DataWorkspaceColumn } from '../../../react/src/index.js';
 import {
@@ -155,6 +155,21 @@ function DrawerDemo() {
   );
 }
 
+// Its own queue, so the demo's toasts never mix with any other on the page.
+const demoToasts = createToastStore();
+const demoToast = createToastApi(demoToasts);
+const TOAST_MESSAGES = ['INC-0417 an Netzwerk zugewiesen', 'Änderung gespeichert', 'Export bereit: 4.000 Zeilen'];
+
+function ToastDemo() {
+  const [n, setN] = useState(0);
+  return (
+    <div className="uix-docs__live-row uix-docs__live-row--wrap">
+      <Button onClick={() => { demoToast.success(TOAST_MESSAGES[n % TOAST_MESSAGES.length]); setN(n + 1); }}>Meldung zeigen</Button>
+      <Toaster store={demoToasts} regionLabel="Demo-Meldungen" />
+    </div>
+  );
+}
+
 function StepsDemo() {
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState<'forward' | 'back'>('forward');
@@ -245,6 +260,9 @@ function Playground() {
       </Demo>
       <Demo title="Floating drawer" hint="Open it: it slides in 8 px from the edges over a blurred dim. On touch, drag it to the edge to close.">
         <DrawerDemo />
+      </Demo>
+      <Demo title="Swipe a toast away" hint="Show a message, then drag it sideways: past a third of its width, or flicked, it flies out and closes; otherwise it snaps back. The drawer's touch swipe uses the same slop, fling speed and window.">
+        <ToastDemo />
       </Demo>
       <Demo title="Step entrance" hint="Weiter and Zurück: each step slides in from the way you are going.">
         <StepsDemo />
