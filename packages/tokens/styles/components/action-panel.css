@@ -1,0 +1,38 @@
+/* uix action panel — the actions of one item (a ticket row, a card), anchored to it (React
+   `ActionPanel`, `ActionPanelScope`, `DataWorkspace` `getRowActions`; spec
+   Docs/specs/2026-11-20-action-panel.md). A modal native `<dialog>` that only hosts the command
+   palette's list (`.uix-cmdk`, command-palette.css), narrower, with destructive actions in a trailing
+   group and a confirm step in place of the list. Opens and closes with no animation (keyboard-first,
+   many times a day). Depends only on --uix-* tokens. */
+@layer uix.components {
+  /* the dialog is only the host: the list (or the confirm step) is the visible box; no dimmed page,
+     it reads as a menu off its row (the page behind is still inert) */
+  dialog.uix-action-panel {
+    max-inline-size: calc(100vw - 16px); padding: 0; border: 0; background: transparent; color: var(--uix-text); overflow: visible;
+  }
+  dialog.uix-action-panel::backdrop { background: transparent; }
+  dialog.uix-action-panel, dialog.uix-action-panel::backdrop { transition: none; }
+  .uix-action-panel .uix-cmdk { width: min(22rem, calc(100vw - 16px)); }
+  .uix-action-panel .uix-cmdk__input { height: 40px; font-size: var(--uix-text-body); padding-inline: var(--uix-space-3); }
+  .uix-action-panel .uix-cmdk__list { max-height: min(320px, 50vh); padding: var(--uix-space-1); }
+  .uix-action-panel .uix-cmdk__item { padding-block: var(--uix-space-2); }
+  .uix-action-panel .uix-cmdk__empty { padding: var(--uix-space-4) var(--uix-space-3); }
+  /* destructive actions: danger text, last, under a rule */
+  .uix-action-panel__item--danger,
+  .uix-action-panel__item--danger .uix-cmdk__icon,
+  .uix-action-panel__item--danger svg { color: var(--uix-danger-text); }
+  .uix-action-panel__item--danger[aria-disabled="true"] { color: var(--uix-text-muted); }
+  .uix-action-panel__danger:not(:first-child) {
+    margin-block-start: var(--uix-space-1); padding-block-start: var(--uix-space-1); border-block-start: 1px solid var(--uix-border);
+  }
+  /* the confirm step, in place of the list */
+  .uix-action-panel__confirm {
+    display: grid; gap: var(--uix-space-2); width: min(22rem, calc(100vw - 16px)); padding: var(--uix-space-4);
+    border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface-2); box-shadow: var(--uix-shadow-overlay);
+  }
+  .uix-action-panel__question { margin: 0; font-weight: 600; color: var(--uix-text); overflow-wrap: anywhere; }
+  .uix-action-panel__body { margin: 0; font-size: var(--uix-text-meta); color: var(--uix-text-muted); overflow-wrap: anywhere; }
+  .uix-action-panel__buttons { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--uix-space-2); margin-block-start: var(--uix-space-2); }
+  /* DataWorkspace: the row's ⋯ button that opens its panel, after the row's own actions */
+  .uix-data-workspace__panel-trigger { flex: none; }
+}

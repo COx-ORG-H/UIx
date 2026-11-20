@@ -25,13 +25,15 @@ import { Chip } from './Chip.js';
 import { FilterEditor } from './FilterEditor.js';
 import { Menu, MenuItem, MenuItemCheckbox } from './Menu.js';
 import { ToolbarMore } from './ToolbarMore.js';
-import { Columns3Icon } from '../icons/components.js';
+import { Columns3Icon, MoreHorizontalIcon } from '../icons/components.js';
 import { MotionList } from './MotionList.js';
 import { Pagination } from './Pagination.js';
 import type { PaginationLabels } from './Pagination.js';
 import { Popover } from './Popover.js';
 import { SearchBar } from './SearchBar.js';
 import { useShortcut } from './Shortcuts.js';
+import { ACTION_PANEL_SHORTCUT_ID, useActionPanelHost, useActionPanelLabels } from './ActionPanel.js';
+import type { ActionPanelAction } from '../action-panel-model.js';
 import { Select } from './Select.js';
 import { EmptyState, ErrorState, FilteredEmptyState, LoadingState } from './States.js';
 import { BulkBar, RowActions, Table, TableWrap, Td, Th, Tr } from './Table.js';
@@ -429,7 +431,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
   /**
    * The keyboard row model (HAR-2626): one row in the tab order, ↑ / ↓ / Home / End move between
    * rows, Enter opens the row (`onRowActivate`, else its id: the peek or the link), Space does not
-   * scroll the page. Default: on with `onRowActivate`.
+   * scroll the page. Default: on with `onRowActivate` or `getRowActions`.
    */
   rowNavigation?: boolean;
   /** A row's primary action: Enter on the row, and a click on the row (not on a control in it or its cell). Turns on `rowNavigation`. */
@@ -450,6 +452,21 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
    * Focus moves only when it is in the table or nowhere; nothing moves and the open stays instant.
    */
   peekRowId?: string | null;
+  /**
+   * The per-row action panel (enterprise UX study, roadmap #10; spec
+   * `Docs/specs/2026-11-20-action-panel.md`): a row's actions, asked for when they are needed (the
+   * focused row's keys, its panel, Enter, a mounted row's ⋯ button), never for every row. With focus
+   * on a row, Enter runs its `primary` action (`onRowActivate`, when set, is the primary instead),
+   * and Ctrl/⌘+K opens an `ActionPanel` anchored to the row: every action with the keys it has now,
+   * searchable, grouped, destructive ones last and confirmed unless `undoable`. A second Ctrl/⌘+K,
+   * or one with no row focused, reaches the global `CommandPalette` (first press local, through the
+   * shortcut registry's scopes). Each action's `keys` work only while focus is in the rows: the `?`
+   * sheet lists them under the workspace's `label`, the single-key switch and remaps apply (WCAG
+   * 2.1.4). Turns on `rowNavigation`. Keep it stable (`useCallback`): the rows are memoised on it.
+   */
+  getRowActions?: (row: T) => readonly ActionPanelAction[] | null | undefined;
+  /** With `getRowActions`: a ⋯ button in each row's actions cell opens its panel (the pointer and touch path). Default `true`. */
+  actionPanelTrigger?: boolean;
   labels?: Partial<DataWorkspaceLabels>;
 }
 
@@ -522,7 +539,7 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
   onSaveView, onSaveViewAs, saveViewAs = 'changed', maximized = false, onMaximizedChange, toolbarMenu, toolbarEnd, beforeBody, pagination,
   status = 'ready', refreshing = false, rowMotion = false, onRetry, loadingRows = 6, empty, emptyAction, filteredEmpty, filteredEmptyAction,
   error, stateOverride, groups, collapsedGroups, onCollapsedGroupsChange, virtualize, rowNavigation, onRowActivate,
-  activateOnClick = true, activeRowId, onActiveRowChange, peekRowId, multiSort = false, labels: labelOverrides, className, ...props
+  activateOnClick = true, activeRowId, onActiveRowChange, peekRowId, getRowActions, actionPanelTrigger = true, multiSort = false, labels: labelOverrides, className, ...props
 }: DataWorkspaceProps<T, S>) {
   const uixLabels = useUixLabels();
   const labels = { ...DEFAULT_DATA_WORKSPACE_LABELS, ...uixLabels.dataWorkspace, ...labelOverrides };
@@ -682,7 +699,9 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
     const context: DataWorkspaceRowActionsContext = { ladder, compact: ladder === 'priority-mid' };
     return shownRows.map((row) => rowActions(row, context));
   }, [shownRows, rowActions, ladder, lazyRowActions]);
-  const hasActions = !!lazyRowActions || actionsByRow.some((node) => node != null && node !== false);
+  // The action panel's ⋯ button needs the column too; each mounted row decides whether it has one.
+  const panelTrigger = getRowActions != null && actionPanelTrigger;
+  const hasActions = panelTrigger || !!lazyRowActions || actionsByRow.some((node) => node != null && node !== false);
 
   const activeFilters = filters ? filters.fields.filter((field) => !isFilterEmpty(filters.values[field.id])) : [];
   const searching = (search?.value.trim() ?? '') !== '';
@@ -797,7 +816,8 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
         selectable={selectable} selected={selected} onPage={onPage} atCap={atCap} toggleRow={toggleRow} toggleMany={toggleMany}
         actionsByRow={actionsByRow} lazyRowActions={lazyRowActions} hasActions={hasActions} keys={keys} sortable={onSortChange != null} multi={multi} sortFor={sortFor} cycleSort={cycleSort}
         virtualize={pagination || shownGroups ? undefined : virtualize}
-        rowNavigation={rowNavigation ?? onRowActivate != null} onRowActivate={onRowActivate} activateOnClick={activateOnClick}
+        rowNavigation={rowNavigation ?? (onRowActivate != null || getRowActions != null)} onRowActivate={onRowActivate} activateOnClick={activateOnClick}
+        getRowActions={getRowActions} actionPanelTrigger={panelTrigger}
         activeRowId={activeRowId} onActiveRowChange={onActiveRowChange} peekRowId={peekRowId} labels={labels} onRowsExited={onRowsExited}
       />
     );
@@ -867,6 +887,8 @@ interface WorkspaceGridProps<T> {
   activeRowId?: string | null;
   onActiveRowChange?: (rowId: string) => void;
   peekRowId?: string | null;
+  getRowActions?: (row: T) => readonly ActionPanelAction[] | null | undefined;
+  actionPanelTrigger: boolean;
   labels: DataWorkspaceLabels;
   /** The last leaving row has gone: the workspace may now show its empty state. */
   onRowsExited?: () => void;
@@ -879,6 +901,8 @@ interface RowHandlers {
   click: (rowId: string, event: ReactMouseEvent<HTMLTableRowElement>) => void;
   focus: (rowId: string) => void;
   blur: (rowId: string, event: ReactFocusEvent<HTMLTableRowElement>) => void;
+  /** The row's ⋯ button: open its action panel anchored to the button. */
+  openActions: (rowId: string, anchor: HTMLElement) => void;
 }
 
 /**
@@ -939,7 +963,8 @@ const cellContent = <T,>(column: DataWorkspaceColumn<T>, row: T) => {
 function WorkspaceTable<T>({
   label, rows, ids, groups, collapsed, onToggleGroup, getRowId, rowLabel, columns, idColumn, getRowProps, density, zebra, freezeFirstColumn,
   fixed, ladderOn, ladder, refreshing, rowMotion, selectable, selected, onPage, atCap, toggleRow, toggleMany, actionsByRow, lazyRowActions, hasActions, keys, sortable,
-  multi, sortFor, cycleSort, rowNavigation, onRowActivate, activateOnClick, activeRowId, onActiveRowChange, peekRowId, labels, windowing, virtual, onRowsExited,
+  multi, sortFor, cycleSort, rowNavigation, onRowActivate, activateOnClick, activeRowId, onActiveRowChange, peekRowId, getRowActions, actionPanelTrigger,
+  labels, windowing, virtual, onRowsExited,
 }: WorkspaceGridProps<T> & { windowing: DataWorkspaceVirtualize | null; virtual: UseVirtualRowsResult<T> | null }) {
   const cards = ladder === 'cards';
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -1097,6 +1122,41 @@ function WorkspaceTable<T>({
     if (el) { pendingCue.current = null; playArrival(el); }
   });
 
+  // ── the per-row action panel (roadmap #10) ───────────────────────────────────────────────
+  // One panel for the whole table, opened on the focused row. Only the tab-stop row's actions are
+  // asked for on render (their keys are registered, so the ? sheet lists them); any other row's
+  // when its keys, its Enter or its ⋯ button need them.
+  const actionsOn = getRowActions != null && nav;
+  const rowOf = (el: HTMLElement): T | undefined => {
+    const rowId = el.getAttribute('data-uix-row-id');
+    const at = rowId == null ? -1 : ids.indexOf(rowId);
+    return at >= 0 ? rows[at] : undefined;
+  };
+  const tabStopRow = actionsOn && tabStop != null ? rows[ids.indexOf(tabStop)] : undefined;
+  const verbs = useMemo(() => (tabStopRow !== undefined ? getRowActions?.(tabStopRow) ?? null : null), [tabStopRow, getRowActions]);
+  const panelLabels = useActionPanelLabels();
+  const actionHost = useActionPanelHost({
+    enabled: actionsOn,
+    scope: wrapRef,
+    scopeLabel: label,
+    itemOf: (target) => {
+      const tr = target?.closest?.('tbody > tr[data-uix-row-id]') as HTMLElement | null | undefined;
+      return tr && !tr.hasAttribute('data-uix-exiting') && wrapRef.current?.contains(tr) ? tr : null;
+    },
+    actionsOf: (el) => {
+      const row = rowOf(el);
+      const actions = row === undefined ? null : getRowActions?.(row);
+      // With onRowActivate, Enter runs that: no action is the primary one.
+      return onRowActivate && actions ? actions.map((action) => (action.primary ? { ...action, primary: false } : action)) : actions;
+    },
+    nameOf: (el) => {
+      const row = rowOf(el);
+      return row === undefined ? undefined : idColumn?.text(row) ?? rowLabel?.(row) ?? el.getAttribute('data-uix-row-id') ?? undefined;
+    },
+    verbs,
+    showPrimaryKey: onRowActivate == null,
+  });
+
   const latest = {
     toggle: (rowId: string, on: boolean, event: ReactMouseEvent) => toggleRow(rowId, on, event),
     key: (rowId: string, event: ReactKeyboardEvent<HTMLTableRowElement>) => {
@@ -1112,7 +1172,9 @@ function WorkspaceTable<T>({
         event.preventDefault();
         const row = rows[ids.indexOf(rowId)];
         if (onRowActivate) { if (row !== undefined) onRowActivate(row); return; }
-        // Without onRowActivate, Enter opens what the row already offers: its id (peek or link).
+        // Else the row's primary action (asking first when it must), from getRowActions.
+        if (actionHost.runPrimary(event.currentTarget)) return;
+        // Without either, Enter opens what the row already offers: its id (peek or link).
         const el = event.currentTarget;
         (el.querySelector<HTMLElement>('.uix-id-cell__btn') ?? el.querySelector<HTMLElement>('a[href]'))?.click();
       } else if (event.key === ' ') {
@@ -1142,6 +1204,10 @@ function WorkspaceTable<T>({
       const el = event.currentTarget;
       setTimeout(() => { if (el.isConnected && focusedRow.current === rowId) focusedRow.current = null; }, 0);
     },
+    openActions: (rowId: string, anchor: HTMLElement) => {
+      const el = rowElement(rowId);
+      if (el) actionHost.open(el, anchor);
+    },
   };
   const latestRef = useRef(latest);
   latestRef.current = latest;
@@ -1151,6 +1217,7 @@ function WorkspaceTable<T>({
     click: (...args) => latestRef.current.click(...args),
     focus: (...args) => latestRef.current.focus(...args),
     blur: (...args) => latestRef.current.blur(...args),
+    openActions: (...args) => latestRef.current.openActions(...args),
   }), []);
 
   // ── groups: collapsing keeps the header where it was on screen (HAR-2625) ─────────────────
@@ -1304,6 +1371,7 @@ function WorkspaceTable<T>({
         selectable={selectable} selected={isSelected} selectDisabled={!isSelected && atCap}
         hasActions={hasActions} actions={actionsByRow[index]} lazyRowActions={lazyRowActions} ladder={ladder} ladderOn={ladderOn}
         selectRowLabel={selectRowLabel} openLabel={openLabel}
+        getRowActions={actionPanelTrigger ? getRowActions : undefined} panelTitle={panelLabels.title}
         marked={nav || windowing != null || peekRowId !== undefined} ariaRowIndex={windowed ? index + 2 : undefined}
         nav={nav} tabStop={tabStop === rowId} handlers={handlers}
       />
@@ -1481,6 +1549,7 @@ function WorkspaceTable<T>({
         </thead>
         {tbody}
       </Table>
+      {actionHost.element}
     </TableWrap>
   );
 }
@@ -1502,6 +1571,10 @@ interface WorkspaceRowProps<T> {
   ladderOn: boolean;
   selectRowLabel: string;
   openLabel: string;
+  /** The action panel's ⋯ button, for a row with an enabled action (`getRowActions`, with `actionPanelTrigger`). */
+  getRowActions?: (row: T) => readonly ActionPanelAction[] | null | undefined;
+  /** The ⋯ button's name: the panel's title, "Actions for {name}". */
+  panelTitle?: string;
   /** `data-uix-row-id` on the row: for the keyboard model, the windowing's measurement and the way back from a Peek. */
   marked: boolean;
   ariaRowIndex?: number;
@@ -1521,7 +1594,7 @@ interface WorkspaceRowProps<T> {
  */
 function WorkspaceRowInner<T>({
   row, rowId, rowLabel, columns, idColumn, getRowProps, selectable, selected, selectDisabled, hasActions, actions, lazyRowActions, ladder, ladderOn,
-  selectRowLabel, openLabel, marked, ariaRowIndex, nav, tabStop, handlers,
+  selectRowLabel, openLabel, getRowActions, panelTitle, marked, ariaRowIndex, nav, tabStop, handlers,
   'data-uix-key': motionKey, 'data-uix-exiting': motionExiting, 'aria-hidden': motionHidden,
 }: WorkspaceRowProps<T>) {
   const renderedActions = useMemo(() => lazyRowActions ? lazyRowActions(row, { ladder, compact: ladder === 'priority-mid' }) : actions,
@@ -1529,6 +1602,8 @@ function WorkspaceRowInner<T>({
   // the row's name: its id as shown, else the product's words for it, else (last) its key
   const text = idColumn?.text(row) ?? rowLabel?.(row) ?? rowId;
   const extra = getRowProps?.(row);
+  // The ⋯ button only where the row has something to run.
+  const panelTrigger = useMemo(() => getRowActions != null && (getRowActions(row) ?? []).some((action) => !action.disabled), [getRowActions, row]);
   const navProps = nav ? {
     tabIndex: tabStop ? 0 : -1,
     onKeyDown: (event: ReactKeyboardEvent<HTMLTableRowElement>) => { extra?.onKeyDown?.(event); if (!event.defaultPrevented) handlers.key(rowId, event); },
@@ -1560,7 +1635,20 @@ function WorkspaceRowInner<T>({
           {cellContent(column, row)}
         </Td>
       ))}
-      {hasActions && <RowActions data-col={ladderOn ? 'actions' : undefined}>{renderedActions}</RowActions>}
+      {hasActions && (
+        <RowActions data-col={ladderOn ? 'actions' : undefined}>
+          {renderedActions}
+          {panelTrigger && (
+            <Button
+              size="sm" variant="ghost" icon className="uix-data-workspace__panel-trigger" aria-haspopup="dialog"
+              aria-label={fillLabel(panelTitle ?? 'Actions for {name}', { name: text })} shortcutId={ACTION_PANEL_SHORTCUT_ID}
+              onClick={(event) => handlers.openActions(rowId, event.currentTarget)}
+            >
+              <MoreHorizontalIcon size="sm" aria-hidden="true" />
+            </Button>
+          )}
+        </RowActions>
+      )}
     </Tr>
   );
 }

@@ -43,6 +43,7 @@ import type { ShortcutLabels } from './components/ShortcutSheet.js';
 import type { ButtonResultLabels } from './components/ButtonFeedback.js';
 import type { AuditLogLabels } from './components/AuditLog.js';
 import type { DataWorkspaceLabels } from './components/DataWorkspace.js';
+import type { ActionPanelLabels } from './components/ActionPanel.js';
 
 /**
  * Kit chrome strings by component (HAR-1358; TENSOR C20, MOTUS executive summary #3).
@@ -126,6 +127,8 @@ export interface UixLabels {
   auditLog?: Partial<AuditLogLabels>;
   /** `DataWorkspace` (HAR-1388): the toolbar, selection, footer and states. */
   dataWorkspace?: Partial<DataWorkspaceLabels>;
+  /** `ActionPanel` (roadmap #10): the panel's title and search, the item's Mod+K, the confirm step. */
+  actionPanel?: Partial<ActionPanelLabels>;
   filterEditor?: Partial<FilterEditorLabels>;
   /**
    * `summarizeFilter` as a filter chip shows it (DataWorkspace): the operators, ranges and the
