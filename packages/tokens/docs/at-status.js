@@ -3,14 +3,15 @@
  * fails when a row and its file's header disagree, so this table cannot claim a run the repository
  * has no record of. Verdicts: pass | fail | na | not-run (Docs/a11y/manual-sr-protocol.md §1). */
 
-/** The pairings of protocol 2, in the order of the result header. */
+/** The pairings of protocol 2, in the order of the result header. `touch`: required for Stable when the
+ * component renders in a touch layout (a row's `touch: true`, protocol §1). */
 export const AT_PAIRINGS = [
   { key: 'nvda-chrome', label: 'NVDA + Chrome', tier: 'T1' },
   { key: 'jaws-chrome', label: 'JAWS + Chrome', tier: 'T1' },
   { key: 'jaws-edge', label: 'JAWS + Edge', tier: 'T2' },
   { key: 'voiceover-safari', label: 'VoiceOver + Safari (macOS)', tier: 'T2' },
-  { key: 'voiceover-ios', label: 'VoiceOver (iOS)', tier: 'T2' },
-  { key: 'talkback-chrome', label: 'TalkBack + Chrome', tier: 'T2' },
+  { key: 'voiceover-ios', label: 'VoiceOver (iOS)', tier: 'T2', touch: true },
+  { key: 'talkback-chrome', label: 'TalkBack + Chrome', tier: 'T2', touch: true },
   { key: 'nvda-firefox', label: 'NVDA + Firefox', tier: 'T3' },
   { key: 'narrator-edge', label: 'Narrator + Edge', tier: 'T3' },
 ];
@@ -30,7 +31,7 @@ export const AT_STATUS = [
     knownIssues: ['VoiceOver + Safari not run.', 'Recorded under protocol 1 as its worked example; NVDA + Chrome (now T1) not run.'],
   },
   {
-    id: 'data-workspace', name: 'DataWorkspace', protocol: 2, version: '2.70.0', date: '2026-11-20', tester: 'none',
+    id: 'data-workspace', name: 'DataWorkspace', touch: true, protocol: 2, version: '2.70.0', date: '2026-11-20', tester: 'none',
     results: { ...notRun, 'automated-tree': 'pass', 'nvda-guidepup': 'fail' },
     knownIssues: [
       'NVDA (automated) announces a focused row as "row" with none of its cells.',
@@ -54,7 +55,7 @@ export const AT_STATUS = [
     ],
   },
   {
-    id: 'date-picker', name: 'DatePicker', protocol: 2, version: '2.70.0', date: '2026-11-20', tester: 'none',
+    id: 'date-picker', name: 'DatePicker', touch: true, protocol: 2, version: '2.70.0', date: '2026-11-20', tester: 'none',
     results: { ...notRun, 'automated-tree': 'pass', 'nvda-guidepup': 'fail' },
     knownIssues: [
       'NVDA (automated): the focused day in the calendar is spoken as "toggle button, not pressed", without its date.',

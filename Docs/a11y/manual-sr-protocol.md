@@ -46,8 +46,12 @@ readers, and the most common pairs at JAWS + Chrome 31.2 %, NVDA + Chrome 17.3 %
 | `narrator-edge` | T3 | Narrator | Windows 11 | Edge (latest) | Smoke check |
 
 "Touch-relevant" means the component appears in a touch product (POSx, SHOPx, a phone layout of
-TENSOR or MOTUS). The six complex widgets of `scripts/` are operator-desktop first; their
-`voiceover-ios` and `talkback-chrome` cells are recommended until a touch product adopts them.
+TENSOR or MOTUS). Of the six complex widgets in `scripts/`, **DataWorkspace and DatePicker are
+touch-relevant**: MOTUS renders DataWorkspace as mobile record cards and TENSOR's phone-oriented
+employee portal uses DatePicker (reported by Qodo's cross-repo review on #302, 2026-11-20; check the
+consumers again when the list changes). Their `voiceover-ios` and `talkback-chrome` runs are
+required for Stable. For the other four the mobile pairings are recommended until a touch product
+renders them.
 
 ### Tier required for "Stable"
 

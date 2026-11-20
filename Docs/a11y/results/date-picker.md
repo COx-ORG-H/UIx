@@ -61,7 +61,9 @@ Nobody has run a pairing yet. The rows below are NVDA's own speech from the auto
 
 ## Summary
 
-Not Stable-ready: both T1 pairings (NVDA + Chrome, JAWS + Chrome) are `not-run`. The semantics the
+Not Stable-ready: both T1 pairings (NVDA + Chrome, JAWS + Chrome) are `not-run`, and so are
+VoiceOver iOS and TalkBack, which this component needs for Stable because it renders in touch layouts
+(protocol §1). The semantics the
 readers depend on are in place and asserted on every PR. Still needed from a person, in this order:
 NVDA + Chrome, JAWS + Chrome, JAWS + Edge, VoiceOver + Safari (macOS), then VoiceOver iOS and
 TalkBack, NVDA + Firefox and a Narrator smoke check, each through the script, with the transcript

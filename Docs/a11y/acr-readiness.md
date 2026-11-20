@@ -18,21 +18,23 @@ product's own journeys. This note says which claims the kit can back now, and wi
 | NVDA's real speech for those widgets, keys pressed by Guidepup on a Windows runner | What NVDA + Chrome says for each scripted step. Automated: nobody listened | `.github/workflows/at-nvda.yml`, `nvda-transcript` artifact, quoted in `results/` |
 | Human screen-reader runs | Button only: NVDA + Firefox and JAWS + Chrome, protocol 1, UIx 2.6.0, 2026-07-03 | `results/button.md` |
 
-## What an ACR can say today, per widget
+## What the kit can back today, per widget
 
-"Supports" in an ACR needs a person to have used the component with the product's AT. No complex
-widget has that yet, so none of these can be cited as "Supports" for 4.1.2 / 4.1.3 on the strength
-of UIx evidence alone.
+This table describes **UIx's evidence**, not a conformance verdict. A product's ACR row ("Supports",
+"Partially supports", "Does not support") comes from testing **that product** with people using AT;
+UIx evidence can be cited alongside it, never instead of it. No complex widget has a human run yet,
+so none of them can back a "Supports" claim, and an automated finding does not decide a verdict
+either: it tells the product's tester where to look first.
 
-| Component | Semantics in place (automated) | NVDA speech (automated) | Human pairings run | Cite as |
-|-----------|-------------------------------|-------------------------|--------------------|---------|
-| Button | yes | not run | NVDA + Firefox, JAWS + Chrome (protocol 1) | Supports, with JAWS + Chrome; confirm the 2026-07-03 record is a real run (it doubles as the protocol's worked example) |
-| DataWorkspace | yes | **fail**: a focused row is spoken as "row" | none | Partially supports until the row-focus finding is fixed or disproved |
-| CommandPalette | yes | pass | none | Pending a human NVDA + Chrome and JAWS + Chrome pass |
-| Combobox, EntityPicker | yes | **fail** (EntityPicker option and count not spoken) | none | Combobox pending a human pass; EntityPicker partially supports until confirmed |
-| DatePicker | yes | **fail**: the focused day is spoken without its date | none | Partially supports until confirmed by a person; the typed field is a supported alternative input path |
-| DiffViewer | yes | **fail**: the new pressed state is not spoken | none | Pending; the progress line conveys the outcome |
-| Toast and live regions | yes | pass | none | Pending a human pass; 4.1.3 evidence is strong (region mounted before content, spoken once) |
+| Component | Semantics in place (automated) | NVDA speech (automated) | Human pairings recorded | Before a product cites it |
+|-----------|-------------------------------|-------------------------|-------------------------|---------------------------|
+| Button | yes | not run | NVDA + Firefox, JAWS + Chrome (protocol 1, 2.6.0) | Confirm the 2026-07-03 record is a real run (it doubles as the protocol's worked example); add NVDA + Chrome; test the product's own buttons |
+| DataWorkspace | yes | fail: a focused row is spoken as "row" | none | Human NVDA + Chrome, JAWS + Chrome, VoiceOver iOS, TalkBack (touch-relevant); resolve or disprove the row-focus and selection-count findings |
+| CommandPalette | yes | pass | none | Human NVDA + Chrome and JAWS + Chrome |
+| Combobox, EntityPicker | yes | fail: EntityPicker option and count not spoken | none | Human NVDA + Chrome and JAWS + Chrome; confirm the EntityPicker finding |
+| DatePicker | yes | fail: the focused day is spoken without its date | none | Human NVDA + Chrome, JAWS + Chrome, VoiceOver iOS, TalkBack (touch-relevant); confirm the day-name finding |
+| DiffViewer | yes | fail: the new pressed state is not spoken | none | Human NVDA + Chrome and JAWS + Chrome; confirm the pressed-state finding |
+| Toast and live regions | yes | pass | none | Human NVDA + Chrome and JAWS + Chrome |
 
 ## Still needs a human pass
 
@@ -42,13 +44,13 @@ In this order, each through its script in `scripts/` on the harness, results wri
    DiffViewer, to confirm or disprove the automated findings.
 2. **JAWS + Chrome** (T1) for all six. Needs a JAWS licence; nothing in the repo or CI can run it.
 3. **JAWS + Edge** (T2), **VoiceOver + Safari** on macOS (T2).
-4. **VoiceOver iOS** and **TalkBack + Chrome** (T2) once a touch product uses a widget; until then
-   recommended.
+4. **VoiceOver iOS** and **TalkBack + Chrome** (T2): required for DataWorkspace and DatePicker,
+   which already render in touch layouts (protocol §1); recommended for the other four.
 5. **NVDA + Firefox** (T3) and a **Narrator + Edge** smoke check.
 6. **Button**: NVDA + Chrome (now T1) and VoiceOver + Safari.
 
-That is 6 widgets × 8 pairings = 48 runs for the six, plus Button's two. The two T1 pairings alone
-(12 runs) unblock "Stable" and an honest "Supports" for the desktop operator products.
+That is 6 widgets × 8 pairings = 48 runs for the six, plus Button's two. Stable needs the two T1
+pairings for all six (12 runs) plus the two mobile pairings for DataWorkspace and DatePicker (4 runs).
 
 ## Defects to resolve before an ACR cites the widgets
 
@@ -64,5 +66,7 @@ That is 6 widgets × 8 pairings = 48 runs for the six, plus Button's two. The tw
 ## How a product cites this
 
 Name the UIx version, link the component's result file and the docs page's screen-reader status
-table, and test the product's own journey on top: labels, error recovery, page structure and focus
-management across screens are the product's, not the kit's.
+table as supporting evidence, and decide the product's verdict from the product's own test with
+people using AT: labels, error recovery, page structure and focus management across screens are the
+product's, not the kit's. Where UIx records a known issue, the product's row says how the product
+works around it or reports it as a limitation.

@@ -16,6 +16,40 @@ const RESULTS = join(A11Y, 'results');
 const V1_KEYS = ['component', 'uix-version', 'tester', 'date', 'nvda-firefox', 'jaws-chrome', 'voiceover-safari'];
 const V2_KEYS = ['component', 'protocol', 'uix-version', 'tester', 'date', ...AT_PAIRINGS.map((p) => p.key), ...AT_AUTOMATED.map((a) => a.key)];
 const HUMAN = new Set(['pass', 'fail', 'na', 'not-run']);
+/** A pairing's column in the checklist table and the words its transcript rows name it by. */
+const COLUMN = {
+  'nvda-chrome': 'NVDA+Chrome', 'jaws-chrome': 'JAWS+Chrome', 'jaws-edge': 'JAWS+Edge', 'voiceover-safari': 'VO macOS',
+  'voiceover-ios': 'VO iOS', 'talkback-chrome': 'TalkBack', 'nvda-firefox': 'NVDA+FF', 'narrator-edge': 'Narrator',
+};
+const label = (key) => AT_PAIRINGS.find((p) => p.key === key).label;
+
+/** The rows of the markdown table under `## <heading>`, as arrays of trimmed cells (header first). */
+function tableUnder(markdown, heading) {
+  const section = markdown.split(new RegExp(`^## ${heading}\\s*$`, 'm'))[1]?.split(/^## /m)[0] ?? '';
+  return section.split(/\r?\n/).filter((line) => line.trim().startsWith('|') && !/^\|[\s|-]+\|$/.test(line.trim()))
+    .map((line) => line.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map((cell) => cell.trim()));
+}
+
+/**
+ * Problems with a protocol-2 file's evidence: a pairing a person ran (`pass` / `fail`) needs at
+ * least one transcript row naming that pairing with something heard, and a pass, fail or na in
+ * every checklist row of its column. A verdict in the header alone is not a run.
+ */
+function evidenceProblems(markdown) {
+  const header = Object.fromEntries(readHeader(markdown));
+  const problems = [];
+  const transcript = tableUnder(markdown, 'Transcript').slice(1);
+  const [checklistHead, ...checklist] = tableUnder(markdown, 'Checklist results');
+  for (const { key } of AT_PAIRINGS) {
+    if (!['pass', 'fail'].includes(header[key])) continue;
+    const rows = transcript.filter(([, pairing, heard]) => pairing?.includes(label(key)) && heard && heard !== '—');
+    if (!rows.length) problems.push(`${key} is ${header[key]} but no transcript row records what ${label(key)} said`);
+    const col = checklistHead?.indexOf(COLUMN[key]) ?? -1;
+    const blank = col < 0 ? checklist.length || 8 : checklist.filter((cells) => !/^(pass|fail|na)/.test(cells[col] ?? '')).length;
+    if (blank) problems.push(`${key} is ${header[key]} but ${blank} checklist row(s) in its column have no pass, fail or na`);
+  }
+  return problems;
+}
 const AUTOMATED = new Set(['pass', 'fail', 'not-run']);
 
 /** The first ```yaml block after "## Header", as ordered [key, value] pairs. */
@@ -55,6 +89,19 @@ test('every result file has its protocol\'s keys, in order, with allowed values,
       assert.equal(map.tester === 'none', !humanRun, `${id}.md: tester "none" exactly when no pairing was run by a person`);
     }
   }
+});
+
+test('a pairing marked pass or fail has its transcript and checklist; a header-only claim is refused', () => {
+  for (const [id] of headers) {
+    const markdown = readFileSync(join(RESULTS, `${id}.md`), 'utf8');
+    if (Object.fromEntries(headers.get(id)).protocol === '2') assert.deepEqual(evidenceProblems(markdown), [], `${id}.md evidence`);
+  }
+  // The claim this guards against: flip the header to pass and leave the sections as they are.
+  const forged = readFileSync(join(RESULTS, 'command-palette.md'), 'utf8').replace('nvda-chrome: not-run', 'nvda-chrome: pass');
+  const problems = evidenceProblems(forged);
+  assert.equal(problems.length, 2, problems.join('; '));
+  assert.match(problems[0], /no transcript row/);
+  assert.match(problems[1], /checklist row\(s\)/);
 });
 
 test('the docs status table matches the result files, row for row', () => {

@@ -15,10 +15,12 @@ it, Enter activates). A "Bulk actions" toolbar appears above the table once a ro
 | 6 | Down arrow, then End, then Home. | Focus moves row by row; the newly focused row's content each time. | In NVDA / JAWS browse mode, arrows move the virtual cursor instead. Note which mode the reader was in and whether the row model still worked. |
 | 7 | Enter on a row. | The row's primary action ran (the harness records it; the page does not change). | Nothing should be announced beyond the row; a surprise page change is a fail. |
 | 8 | Tab once from a focused row, then Space. | Checkbox "Select INC-…", then "checked". | Space on the row itself does nothing (it only stops the page scrolling); selection is the checkbox. |
-| 9 | Navigate to the "Bulk actions" toolbar above the table (Shift+Tab, or browse mode up). | Toolbar "Bulk actions", "1 selected", button "Assign to me". | **Known gap**: the count is plain text, not a live region. Selecting does not speak "1 selected". Record whether the reader says anything when the toolbar appears. |
-| 10 | Tab to "Select all rows on this page", Space. | Checkbox named "Select all rows on this page", state checked (it was "mixed"/"half checked" before). | Only the checkbox state is spoken, not "8 selected" (same gap as step 9). |
+| 9 | Right after step 8, listen; then navigate to the "Bulk actions" toolbar above the table (Shift+Tab, or browse mode up). | The new count, "1 selected", spoken when the row is selected; then toolbar "Bulk actions", "1 selected", button "Assign to me". | **Known issue**: the count is plain text, not a live region, so it is likely not spoken on selection. If it is not, item 7 fails. |
+| 10 | Tab to "Select all rows on this page", Space. | Checkbox named "Select all rows on this page", state checked (it was "mixed"/"half checked" before), and the new count "8 selected". | Same known issue as step 9. |
 | 11 | Turn on OS reduce motion, reload, repeat step 3. | Rows reorder without animation; nothing is lost. | |
 
-**Pass** when steps 1–10 convey everything in "Must convey" for the pairing, apart from the known
-gap in steps 9 and 10, which is recorded as a known issue rather than failing the pairing until it is
-fixed (it fails WCAG 4.1.3 only if the product relies on the count being heard).
+**Pass** when steps 1–10 convey everything in "Must convey" for the pairing. While the selection
+count is not announced (steps 9 and 10), record checklist item 7 as `fail` for every pairing that
+does not speak it, and so the pairing as `fail`: the known issue explains the failure, it does not
+excuse it. DataWorkspace is touch-relevant (protocol §1), so VoiceOver iOS and TalkBack are required
+for Stable: run steps 1, 3, 8 and 9 with swipes and double taps.

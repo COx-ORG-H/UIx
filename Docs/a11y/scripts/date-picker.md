@@ -21,7 +21,7 @@ that is not a date shows an alert.
 | 9 | In "Due date", press Down. | The calendar opens on the chosen day, as in step 3. | |
 | 10 | Left, Enter. | The calendar closes; focus back in "Due date"; the new value 19/11/2026 is read. | |
 | 11 | Replace the text with `31/02/2026`, press Enter. | Invalid entry, and the alert saying what is wrong and the expected format. | The alert is `role="alert"`: it should interrupt. Record whether it is spoken twice (once as alert, once as the field's description). |
-| 12 | iOS VoiceOver / TalkBack: open the calendar with a double tap, swipe through days, double tap one. | Each day's full date, unavailable days marked, the chosen day pressed / selected. | |
+| 12 | iOS VoiceOver / TalkBack (required: DatePicker is touch-relevant, protocol §1): open the calendar with a double tap, swipe through days, double tap one. | Each day's full date, unavailable days marked, the chosen day pressed / selected. | |
 
 **Pass** when every "Must convey" item is heard and focus always returns to where the calendar was
 opened from.
