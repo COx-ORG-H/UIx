@@ -6,6 +6,9 @@ name: CI
 
 on:
   pull_request:
+  # The merge queue: each queued PR is tested as master + the PRs ahead of it + itself, so two PRs
+  # that pass alone but break together stop in the queue instead of turning master red.
+  merge_group:
   push:
     branches: [master]
   # Callable as a reusable workflow so release.yml runs THESE exact gate jobs as
