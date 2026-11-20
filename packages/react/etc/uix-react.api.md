@@ -2832,6 +2832,20 @@ export interface FeaturedStageProps extends Omit<HTMLAttributes<HTMLElement>, 't
     visualLabel?: string;
 }
 
+// @public
+export function feedback(kind: FeedbackKind, target?: EventTarget | null): boolean;
+
+// @public
+export const FEEDBACK_EVENT = "uix-feedback";
+
+// @public
+export interface FeedbackEventDetail {
+    kind: FeedbackKind;
+}
+
+// @public
+export type FeedbackKind = 'success' | 'warning' | 'error' | 'selection' | 'limit';
+
 // @public (undocumented)
 export function Field(input: FieldProps): react.JSX.Element;
 
@@ -3413,6 +3427,18 @@ export function formatTimeKey(value: string, locale?: string | readonly string[]
 
 // @public
 export function groupCommandItems(items: readonly CommandPaletteItem[]): CommandPaletteGroup[];
+
+// @public
+export const HAPTIC_PATTERNS: Readonly<Record<FeedbackKind, readonly number[]>>;
+
+// @public
+export const HAPTICS_ATTRIBUTE = "data-haptics";
+
+// @public
+export function hapticsEnabled(): boolean;
+
+// @public
+export function hapticsSupported(): boolean;
 
 // @public
 export function Heartbeat(input: HeartbeatProps): react.JSX.Element;

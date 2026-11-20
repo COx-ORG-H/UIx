@@ -366,6 +366,7 @@ missing or blank.
 <!-- lesson-skip: f515ab40 review findings fixed in place; [hidden] !important vs display transitions is noted in task-tray.css -->
 <!-- lesson-skip: 74b2540d design rule applied (text swaps out-then-in); rule now lives on the Motion page and in text-swap.spec.mjs -->
 <!-- lesson-skip: 357e86ff review follow-ups (clamped timing, re-entry, generated caption); the specimen test named the generator -->
+<!-- lesson-skip: e258d63b review-caught missed cases (edit vs. loaded value, shadow-root target); routine -->
 <!-- lesson-skip: b7c91554 flat tone on text; the flat-tone-text gate named the fix -->
 <!-- lesson-skip: 7848505f review finding; derive-state-in-render is standard React -->
 <!-- lesson-skip: e3de79c7 the contract gate named the values; allowlist + missed-default case, routine -->

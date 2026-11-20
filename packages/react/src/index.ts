@@ -27,6 +27,9 @@ export type {
 export { useDelayedPending } from './hooks/useDelayedPending.js';
 export type { DelayedPendingOptions } from './hooks/useDelayedPending.js';
 export { PENDING_DELAY_MS, PENDING_MIN_VISIBLE_MS, RESULT_HOLD_MS } from './motion-timing.js';
+// Semantic feedback events and opt-in haptics (experimental; phone OS study, Tier 3 item 14)
+export { feedback, hapticsEnabled, hapticsSupported, FEEDBACK_EVENT, HAPTICS_ATTRIBUTE, HAPTIC_PATTERNS } from './feedback.js';
+export type { FeedbackEventDetail, FeedbackKind } from './feedback.js';
 export { useChangeHighlight, flashChanged } from './hooks/useChangeHighlight.js';
 export type { ChangeHighlightOptions } from './hooks/useChangeHighlight.js';
 export { useOptimisticValue } from './hooks/useOptimisticValue.js';
