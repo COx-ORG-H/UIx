@@ -22,6 +22,20 @@
  *                      (Rules for apps: no pulsing, looping or marching on data or status). The
  *                      loaders are LOOP_ALLOW below, by file and selector; motion-allow does not
  *                      exempt this rule. A new loader is a new LOOP_ALLOW line, reviewed as such.
+ *   9. filter-motion   `filter` / `backdrop-filter` in a transition list or a @keyframes block (Linux
+ *                      WebKit's renderer crashes on it). A blur that clears runs per frame in script
+ *                      (motion.ts blurIn).
+ *  10. overshoot-effect an overshooting curve (OVERSHOOT_TOKENS below — the springs and curves that
+ *                      pass 1 — or a literal cubic-bezier()/linear() that leaves 0..1) on anything but
+ *                      geometry: transform, translate, scale, rotate, clip-path. Opacity and colour
+ *                      (color, background-color, border-color, fill, stroke…) clamp at their range, so
+ *                      an overshoot there sticks or flickers (Material 3 Expressive: spatial springs may
+ *                      bounce, effects springs never do). Split the transition: the geometry keeps the
+ *                      spring, the fade or colour takes --uix-ease-out / --uix-ease-glide. Checked on
+ *                      transition shorthands and longhands, animations (by the properties their
+ *                      @keyframes set), a local custom property holding such a curve, and in the
+ *                      React source an inline transition string or a tokenEase() of such a token
+ *                      (script-driven easing runs effects: blurIn's radius).
  *
  * Escape hatch: a comment `motion-allow: <reason>` directly before a declaration exempts that
  * declaration; the reason is printed on every run so it stays visible. Use it rarely.
@@ -32,6 +46,7 @@
  * Run: npm run test:contract     Library: import { checkCss } from './check-motion.mjs'
  */
 import postcss from 'postcss';
+import { readFileSync } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -68,6 +83,40 @@ export const LOOP_ALLOW = [
   { file: 'rich-text.css', selector: /\.ProseMirror-gapcursor\b/, what: 'the text caret', why: 'it marks where typing goes, as every caret blinks' },
 ];
 
+/** A literal curve that leaves 0..1 on its output axis: a cubic-bezier() whose y1 or y2 does, or a linear() with a point that does. */
+export function curveOvershoots(curve) {
+  const cb = /^cubic-bezier\(([^)]*)\)$/i.exec(curve.trim());
+  if (cb) {
+    const [, y1, , y2] = cb[1].split(',').map(Number);
+    return [y1, y2].some((y) => y < 0 || y > 1);
+  }
+  const lin = /^linear\(([^)]*)\)$/i.exec(curve.trim());
+  if (lin) return lin[1].split(',').map((stop) => Number(stop.trim().split(/\s+/)[0])).some((y) => y < 0 || y > 1);
+  return false;
+}
+
+/**
+ * Rule 10's token list, read from the token source so it cannot drift: every --uix-ease-* whose
+ * curve passes 1 (today pop, tooltip, bounce, drawer and the legacy spring; glide stops at 1).
+ */
+export function overshootingTokens(effectJson) {
+  return Object.entries(effectJson)
+    .filter(([name, t]) => name.startsWith('ease-') && typeof t?.$value === 'string' && curveOvershoots(t.$value))
+    .map(([name]) => `--uix-${name}`);
+}
+export const OVERSHOOT_TOKENS = overshootingTokens(
+  JSON.parse(readFileSync(new URL('../tokens/base/effect.json', import.meta.url), 'utf8')),
+);
+/** What an overshooting curve may move: geometry (Material's spatial springs; clip-path is a shape). */
+export const SPATIAL_PROPS = new Set(['transform', 'translate', 'scale', 'rotate', 'clip-path']);
+
+/** The overshooting curve in a value (a token, a local alias of one, or a literal), or null. */
+function overshootIn(value, aliases) {
+  for (const m of value.matchAll(/var\(\s*(--[\w-]+)/g)) if (OVERSHOOT_TOKENS.includes(m[1]) || aliases.has(m[1])) return m[1];
+  for (const m of value.matchAll(/(cubic-bezier|linear)\([^)]*\)/gi)) if (curveOvershoots(m[0])) return m[0];
+  return null;
+}
+
 const stripStrings = (v) => v.replace(/(["'])(?:\\.|(?!\1).)*\1/g, '""');
 const isTimed = (prop) => /^(transition|animation)(-|$)/.test(prop);
 const ancestors = (node) => { const out = []; for (let p = node.parent; p; p = p.parent) out.push(p); return out; };
@@ -94,8 +143,14 @@ function transitionProps(prop, value) {
  * Check one stylesheet. `movingKeyframes` is the set of @keyframes names (across every scanned
  * file) that move; pass the result of `collectMovingKeyframes` over all files.
  */
-export function checkCss(css, file, movingKeyframes = collectMovingKeyframes([css]), loopAllow = LOOP_ALLOW) {
+export function checkCss(css, file, movingKeyframes = collectMovingKeyframes([css]), loopAllow = LOOP_ALLOW, keyframeProps = collectKeyframeProps([css])) {
   const root = postcss.parse(css);
+  // 10. a local custom property that holds an overshooting curve is one (--x-ease: var(--uix-ease-pop))
+  const aliases = new Set();
+  for (let grew = true; grew;) {
+    grew = false;
+    root.walkDecls(/^--/, (d) => { if (!aliases.has(d.prop) && overshootIn(stripStrings(d.value), aliases)) { aliases.add(d.prop); grew = true; } });
+  }
   const problems = [];
   const exemptions = [];
   const stats = { decls: 0, timed: 0, loops: 0, hoverRules: 0 };
@@ -140,6 +195,12 @@ export function checkCss(css, file, movingKeyframes = collectMovingKeyframes([cs
     if (inKeyframes && LAYOUT.has(prop)) report('layout', d, `@keyframes animates layout property '${prop}' — use transform/opacity`);
     if (inKeyframes && /^(-webkit-)?(backdrop-)?filter$/.test(prop)) report('filter-motion', d, `@keyframes animates '${prop}' — Linux WebKit's renderer crashes on it; drive a blur per frame with blurIn (motion.ts)`);
 
+    // 10. an overshooting curve moves geometry only
+    const effects = overshootEffects(d, prop, value, aliases, keyframeProps);
+    if (effects.length) {
+      report('overshoot-effect', d, `${effects.join('; ')} — an overshooting curve may move only ${[...SPATIAL_PROPS].join(', ')}; opacity and colour clamp at their range, so split the transition and give them --uix-ease-out or --uix-ease-glide`);
+    }
+
     // 8. only a loader loops (its reduced-motion pulse included)
     if ((prop === 'animation' || prop === 'animation-iteration-count') && d.parent.type === 'rule' && /\binfinite\b/.test(value)) {
       const base = file.split('/').pop();
@@ -181,6 +242,80 @@ export function checkCss(css, file, movingKeyframes = collectMovingKeyframes([cs
   return { problems, exemptions, stats };
 }
 
+/** The last declaration of one of `props` in the same block as `d`, or null (the cascade takes the last). */
+function sibling(d, props) {
+  let found = null;
+  d.parent.each((n) => { if (n.type === 'decl' && props.includes(n.prop.toLowerCase())) found = n; });
+  return found;
+}
+
+/**
+ * Rule 10 for one declaration: each "<property> on <curve>" where an overshooting curve eases
+ * something that is not geometry. A timing longhand repeats over its property list the way CSS
+ * does; with no list in the same rule it applies to `all`, which is not geometry. An animation is
+ * judged by the properties its @keyframes set (custom properties are skipped: their effect depends
+ * on where they are read).
+ */
+function overshootEffects(d, prop, value, aliases, keyframeProps) {
+  const out = [];
+  const effectsOf = (name) => [...(keyframeProps.get(name) ?? [])].filter((p) => !SPATIAL_PROPS.has(p));
+  const animationNames = (decl) => (decl.prop.toLowerCase() === 'animation-name'
+    ? postcss.list.comma(decl.value).map((s) => s.trim())
+    : postcss.list.comma(stripStrings(decl.value)).map((item) => postcss.list.space(item).find((t) => keyframeProps.has(t)) ?? null));
+  const pairs = (names, curves) => names.forEach((name, i) => {
+    const curve = overshootIn(curves[i % curves.length], aliases);
+    if (curve && name !== null) out.push(`${name} on ${curve}`);
+  });
+
+  if (prop === 'transition') {
+    for (const item of postcss.list.comma(value)) {
+      const curve = overshootIn(item, aliases);
+      const [name] = transitionProps('transition', item);
+      if (curve && !SPATIAL_PROPS.has(name)) out.push(`${name} on ${curve}`);
+    }
+  } else if (prop === 'animation') {
+    for (const item of postcss.list.comma(value)) {
+      const curve = overshootIn(item, aliases);
+      const name = curve && postcss.list.space(item).find((t) => keyframeProps.has(t));
+      const fx = name ? effectsOf(name) : [];
+      if (fx.length) out.push(`@keyframes ${name} animates ${fx.join(', ')} on ${curve}`);
+    }
+  } else if ((prop === 'transition-timing-function' || prop === 'animation-timing-function')
+    && postcss.list.comma(value).some((c) => overshootIn(c, aliases))) {
+    const curves = postcss.list.comma(value);
+    const frames = ancestors(d).find((a) => a.type === 'atrule' && /keyframes$/.test(a.name));
+    if (frames) {
+      const fx = effectsOf(frames.params.trim());
+      if (fx.length) out.push(`a frame of @keyframes ${frames.params.trim()} eases ${fx.join(', ')} on ${curves.map((c) => overshootIn(c, aliases)).find(Boolean)}`);
+    } else if (prop === 'transition-timing-function') {
+      const list = sibling(d, ['transition', 'transition-property']);
+      const names = list ? transitionProps(list.prop.toLowerCase(), stripStrings(list.value)) : ['all'];
+      pairs(names.map((n) => (SPATIAL_PROPS.has(n) ? null : n)), curves);
+    } else {
+      const list = sibling(d, ['animation', 'animation-name']);
+      if (!list) out.push(`${prop} with no animation named in the same rule (name it, so its @keyframes can be checked)`);
+      else pairs(animationNames(list).map((n) => (n && effectsOf(n).length ? `@keyframes ${n} (${effectsOf(n).join(', ')})` : null)), curves);
+    }
+  }
+  return out;
+}
+
+/** The properties each @keyframes sets (custom properties and per-frame timing left out). */
+export function collectKeyframeProps(sources) {
+  const props = new Map();
+  for (const css of sources) {
+    postcss.parse(css).walkAtRules(/keyframes$/, (a) => {
+      const set = props.get(a.params.trim()) ?? new Set();
+      a.walkDecls((d) => {
+        const p = d.prop.toLowerCase();
+        if (!p.startsWith('--') && !/^animation-(timing-function|composition)$/.test(p)) set.add(p);
+      });
+      props.set(a.params.trim(), set);
+    });
+  }
+  return props;
+}
+
 /** Names of @keyframes whose frames move something. */
 export function collectMovingKeyframes(sources) {
   const names = new Set();
@@ -194,12 +329,25 @@ export function collectMovingKeyframes(sources) {
   return names;
 }
 
-/** Literal times in transition/animation strings in TS/TSX source. */
+/**
+ * TS/TSX source: literal times in transition/animation strings (rule 1), and rule 10 on an inline
+ * transition string or a script-driven blur (blurIn: a filter, never geometry) eased by an
+ * overshooting token.
+ */
 export function checkTs(src, file) {
   const problems = [];
+  const none = new Set();
   src.split('\n').forEach((line, i) => {
-    if (/(transition|animation)\w*["'`]?\s*[:=]\s*["'`][^"'`]*(?<![\w.-])\d*\.?\d+m?s\b/i.test(line) && !/motion-allow:/.test(line)) {
+    if (/motion-allow:/.test(line)) return;
+    if (/(transition|animation)\w*["'`]?\s*[:=]\s*["'`][^"'`]*(?<![\w.-])\d*\.?\d+m?s\b/i.test(line)) {
       problems.push(`${file}:${i + 1} [raw-time] literal time in an inline transition/animation — put motion in the stylesheet on tokens`);
+    }
+    for (const m of line.matchAll(/transition["'`]?\s*[:=]\s*(["'`])([^"'`]*)\1/gi)) {
+      const bad = postcss.list.comma(m[2]).filter((item) => overshootIn(item, none) && !SPATIAL_PROPS.has(transitionProps('transition', item)[0]));
+      if (bad.length) problems.push(`${file}:${i + 1} [overshoot-effect] inline '${bad.join(', ')}' — an overshooting curve may move geometry only`);
+    }
+    for (const m of line.matchAll(/\btokenEase\(\s*["'`](--[\w-]+)["'`]/g)) {
+      if (OVERSHOOT_TOKENS.includes(m[1])) problems.push(`${file}:${i + 1} [overshoot-effect] tokenEase('${m[1]}') — script-driven easing runs effects (blurIn's radius), and an effect never overshoots; geometry moves in the stylesheet. Use --uix-ease-soft/-enter/-leave`);
     }
   });
   return problems;
@@ -225,11 +373,13 @@ async function main() {
   ];
   const sources = await Promise.all(cssFiles.map((f) => readFile(f, 'utf8')));
   const moving = collectMovingKeyframes(sources);
+  const keyframeProps = collectKeyframeProps(sources);
+  if (OVERSHOOT_TOKENS.length === 0) { console.error('✗ motion gate found no overshooting --uix-ease-* token in tokens/base/effect.json — check the parser'); process.exit(1); }
   const problems = [];
   const exemptions = [];
   const totals = { decls: 0, timed: 0, loops: 0, hoverRules: 0 };
   cssFiles.forEach((f, i) => {
-    const r = checkCss(sources[i], relative(REPO, f).replace(/\\/g, '/'), moving);
+    const r = checkCss(sources[i], relative(REPO, f).replace(/\\/g, '/'), moving, LOOP_ALLOW, keyframeProps);
     problems.push(...r.problems);
     exemptions.push(...r.exemptions);
     for (const k of Object.keys(totals)) totals[k] += r.stats[k];
