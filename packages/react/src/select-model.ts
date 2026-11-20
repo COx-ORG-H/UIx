@@ -4,7 +4,8 @@
  * filtering and the multi-select value helpers. Unit-tested in select-model.test.mjs.
  */
 import type { ReactNode } from 'react';
-import { foldForSearch } from './search-suggest-model.js';
+import { foldContext, foldKeys, textMatcher } from './locale-text.js';
+import type { FoldContext } from './locale-text.js';
 
 export interface SelectOption {
   value: string;
@@ -123,45 +124,57 @@ export function moveActive(entries: readonly SelectEntry[], from: number, delta:
   return back >= 0 ? (step === 1 ? Math.max(back, from) : Math.min(back, from)) : from;
 }
 
-const fold = (text: string): string => foldForSearch(text).text;
+const fold = (text: string, context: FoldContext): string => foldKeys(text, context)[0]!;
 
 /**
  * Typeahead (APG): the typed buffer matches the start of a label. Repeating one character
  * ("s", "s") cycles through the options that start with it; a longer string ("re") keeps the
  * current option while it still matches. Disabled options are skipped. Returns -1 for no match.
+ * Folded for `locale` like every kit search ("c" reaches "Čačak", "dj" reaches "Đakovo").
  */
-export function typeahead(entries: readonly SelectEntry[], buffer: string, from: number): number {
-  const query = fold(buffer);
+export function typeahead(entries: readonly SelectEntry[], buffer: string, from: number, locale?: string): number {
+  const context = foldContext(locale);
+  const query = fold(buffer, context);
   if (!query || !entries.length) return -1;
   const chars = [...query];
   const repeated = chars.length > 1 && chars.every((c) => c === chars[0]);
   const needle = repeated ? chars[0]! : query;
   const start = repeated || chars.length === 1 ? from + 1 : Math.max(0, from);
+  const startsWith = textMatcher(needle, context, 'startsWith');
   const n = entries.length;
   for (let k = 0; k < n; k += 1) {
     const i = (((start + k) % n) + n) % n;
     const entry = entries[i]!;
-    if (!entry.disabled && fold(entry.option.label).trimStart().startsWith(needle)) return i;
+    if (!entry.disabled && startsWith(entry.option.label.trimStart())) return i;
   }
   return -1;
 }
 
-/** Does the option match a search query (label, value-free keywords and description)? */
-export function selectOptionMatches(option: SelectOption, query: string): boolean {
-  const needle = fold(query).trim();
+/**
+ * Does the option match a search query (label and value-free keywords)? Folded for `locale`
+ * (see `foldForSearch`): "cevapi" finds "Ćevapi", "djordje" finds "Đorđe".
+ */
+export function selectOptionMatches(option: SelectOption, query: string, locale?: string): boolean {
+  const context = foldContext(locale);
+  const needle = fold(query, context).trim();
   if (!needle) return true;
-  return [option.label, ...(option.keywords ?? [])].some((part) => fold(part).includes(needle));
+  return optionMatches(option, textMatcher(query.trim(), context));
 }
 
-/** Keep only the options (and the groups holding them) that match `query`. */
-export function filterSelectItems(items: readonly SelectItem[], query: string): SelectItem[] {
-  if (!fold(query).trim()) return [...items];
+const optionMatches = (option: SelectOption, matches: (text: string) => boolean): boolean =>
+  [option.label, ...(option.keywords ?? [])].some(matches);
+
+/** Keep only the options (and the groups holding them) that match `query`, folded for `locale`. */
+export function filterSelectItems(items: readonly SelectItem[], query: string, locale?: string): SelectItem[] {
+  const context = foldContext(locale);
+  if (!fold(query, context).trim()) return [...items];
+  const matches = textMatcher(query.trim(), context);
   const out: SelectItem[] = [];
   for (const item of items) {
     if (isSelectGroup(item)) {
-      const options = item.options.filter((o) => selectOptionMatches(o, query));
+      const options = item.options.filter((o) => optionMatches(o, matches));
       if (options.length) out.push({ ...item, options });
-    } else if (selectOptionMatches(item, query)) {
+    } else if (optionMatches(item, matches)) {
       out.push(item);
     }
   }

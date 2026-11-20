@@ -7,6 +7,7 @@
  * <Tree> render paths use these, so the two behave identically and keyboard nav works even for
  * rows that are scrolled out of the virtual window (UIX-FIX-05). Unit-tested (tree-model.test.mjs).
  */
+import { foldContext, textMatcher } from './locale-text.js';
 
 /** Minimal shape a node must have; the concrete node (label, icon, …) rides along as `T`. */
 export interface TreeLike<T> {
@@ -100,14 +101,15 @@ export function treeNav<T extends TreeLike<T>>(
         : { selectId: cur.node.id };
     default:
       // Single-char typeahead (UIX-A11Y-2): the next visible node — starting after the
-      // current one, wrapping — whose label starts with the char, case-insensitively.
+      // current one, wrapping — whose label starts with the char, case- and accent-insensitively.
       // Only nodes with a string label (or an explicit typeaheadLabel) participate.
       if (key.length === 1) {
-        const q = key.toLowerCase();
+        // folded like every kit search: "c" reaches "Čvor", "s" reaches "Šifre"
+        const startsWith = textMatcher(key, foldContext(), 'startsWith');
         for (let step = 1; step <= flat.length; step++) {
           const f = flat[(idx + step) % flat.length];
           const label = f.node.typeaheadLabel ?? (typeof f.node.label === 'string' ? f.node.label : undefined);
-          if (label != null && label.toLowerCase().startsWith(q)) return { focusId: f.node.id };
+          if (label != null && startsWith(label)) return { focusId: f.node.id };
         }
       }
       return {};

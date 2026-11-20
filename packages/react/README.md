@@ -591,6 +591,35 @@ await tasks.run('CMDB discovery: Sarajevo DC', async (task) => { /* task.update(
 - **Placement:** `position` `bottom-center` (default, away from the Toaster's corner), `bottom-start` or `bottom-end`. It sits above overlays and below toasts; a modal dialog covers it. `open`/`defaultOpen`/`onOpenChange` control the panel.
 - **Stores:** `createTaskApi(createTaskStore())` gives a separate set (tests, embedded apps); pass its `store` to `<TaskTray store>`.
 
+### Form errors: summary, timing, leaving, conflicts
+
+GOV.UK's error summary with "reward early, punish late" timing over `Field`, a guard before unsaved
+work is left, and a banner when someone else saved first (the UIx enterprise UX study, "First five"
+#2). Docs: Patterns → Form errors. Spec: `Docs/specs/2026-11-20-form-errors.md`.
+
+```tsx
+const form = useFormErrors({ values, validate: (v) => ({ title: v.title.trim() ? undefined : 'Enter a title' }) });
+
+<form noValidate onSubmit={form.handleSubmit(save)}>
+  <ErrorSummary {...form.summary} />                                  // "There is a problem", focus, "Error: " title
+  <Field label="Title" {...form.field('title')}>
+    <Input {...form.control('title')} value={values.title} onChange={...} />
+  </Field>
+</form>
+
+form.setServerErrors({ title: 'An incident with this title is already open' });   // a 400 / 422
+
+const leave = useLeaveGuard({ dirty, saveState, fields: ['Impact'] });  // beforeunload + leave.confirm(proceed, stay)
+<ConflictNotice base={opened} yours={values} theirs={latest} changedBy="Alex" changedAt="14:02" onReload={load} onApply={load} />
+```
+
+- **Timing:** leaving a filled-in field shows its error (politely announced); an empty field waits for submit; a field showing an error clears on the keystroke that fixes it and then waits for the next blur. A failed submit shows every error, silent at the fields, and the summary takes focus.
+- **`ErrorSummary`:** always shown for a failed submit, even one error; entries in form order with the field's own words, linking to the control (`target`; none for a form-level error); following a link focuses the control and scrolls its field into view within any scroller. `role="alert"` sits inside the focus target (GOV.UK v4.4.0). `focusKey` re-focuses; `prefixTitle` (default on) prefixes the page title while it shows.
+- **`Field`:** `errorAnnounce` (`assertive` default, `polite`, `off`) and `errorPrefix` (visually hidden "Error:"), both opt-in; `useFormErrors` passes them.
+- **`useLeaveGuard`:** armed only while `dirty` or a save is `saving` / `failed`; the step is the "Discard changes?" one (`discardPrompt` words) with focus on Keep editing; `fields` names what is at risk. Wire any router to `confirm(proceed, stay)` (React Router: `useBlocker`).
+- **`ConflictNotice`:** a warning banner for a 409 / 412: who and when, "your changes are still here", the fields they changed, Reload latest (theirs with yours kept), Review changes in `DiffViewer` where only fields you both changed need a choice before Apply. `mergeRecordConflict` / `recordConflictChanges` are the model.
+- **Words:** `UixLabelsProvider` `errorSummary`, `leaveGuard`, `conflictNotice`.
+
 ### AI assistance (`AiLabel`, `AiSuggestion`, `Field ai`, `ProposalReview`, `AiOutputCard`, `uix-proposal`)
 
 Every AI value is disclosed, reversible, and, for consequential writes, approved by structure, not

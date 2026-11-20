@@ -1,58 +1,19 @@
 /* Pure text model for SearchSuggest: which parts of a result's title and description a query
  * matched, so the row can emphasise them.
  *
- * Matching folds case and diacritics ("ubersicht" marks "Übersicht", "strasse" marks "Straße")
- * and follows the rule most search-and-jump UIs use: the whole query where it occurs, otherwise
- * each query word where it starts a word ("sla pol" marks "SLA" and "pol" in "SLA policies").
- * The consumer decides WHICH rows match; this only decides what to emphasise inside a row. */
+ * Matching folds case and diacritics with `foldForSearch` ("ubersicht" marks "Übersicht",
+ * "strasse" marks "Straße", "djordje" marks "Đorđe") and follows the rule most search-and-jump
+ * UIs use: the whole query where it occurs, otherwise each query word where it starts a word
+ * ("sla pol" marks "SLA" and "pol" in "SLA policies"). The consumer decides WHICH rows match;
+ * this only decides what to emphasise inside a row. */
+
+import { foldContext, foldKeys, foldVariants } from './locale-text.js';
+import type { FoldOptions } from './locale-text.js';
 
 /** One run of a result's text, emphasised or not. */
 export interface SearchSegment {
   text: string;
   match: boolean;
-}
-
-/** Text folded for matching, with a map back to the original characters. */
-export interface FoldedText {
-  /** The folded text: lower case, diacritics stripped, ß → ss. */
-  text: string;
-  /** For each index of `text`, the start index of the original character it came from. */
-  source: number[];
-  /** For each index of `text`, the end index (exclusive) of that original character. */
-  sourceEnd: number[];
-}
-
-const COMBINING_MARK = /\p{M}/u;
-
-/**
- * Letters that are not a base letter plus a combining mark, so NFD leaves them alone: the Bosnian,
- * Croatian and Serbian đ, the Danish and Norwegian ø, the Polish ł, the dotless ı. Each folds to the
- * letter people type for it ("dorde" finds "Đorđe"). One letter each, so the index map stays exact.
- */
-const STROKED: Readonly<Record<string, string>> = { 'đ': 'd', 'ø': 'o', 'ł': 'l', 'ı': 'i', 'ħ': 'h', 'ŧ': 't' };
-
-/** Fold `text` for matching and keep a map back to the original indices. */
-export function foldForSearch(text: string): FoldedText {
-  let folded = '';
-  const source: number[] = [];
-  const sourceEnd: number[] = [];
-  let index = 0;
-  for (const char of text) {
-    // Lower-case BEFORE decomposing: 'İ'.toLowerCase() is 'i' + a combining dot, which the mark
-    // filter below must still see and drop.
-    const lower = char.toLowerCase();
-    const base = char === 'ß' || char === 'ẞ' ? 'ss' : STROKED[lower] ?? lower.normalize('NFD');
-    for (const part of base) {
-      if (COMBINING_MARK.test(part)) continue;
-      folded += part;
-      for (let i = 0; i < part.length; i += 1) {
-        source.push(index);
-        sourceEnd.push(index + char.length);
-      }
-    }
-    index += char.length;
-  }
-  return { text: folded, source, sourceEnd };
 }
 
 type Range = [start: number, end: number];
@@ -91,16 +52,26 @@ function merge(ranges: Range[]): Range[] {
   return out;
 }
 
-/** Split `text` into matched and unmatched segments for `query`. */
-export function searchSegments(text: string, query: string): SearchSegment[] {
-  const foldedQuery = foldForSearch(query).text;
-  if (!text || !foldedQuery.trim()) return [{ text, match: false }];
-  const folded = foldForSearch(text);
-  const ranges = merge(
-    foldedRanges(folded.text, foldedQuery).map(
-      ([start, end]): Range => [folded.source[start] ?? 0, folded.sourceEnd[end - 1] ?? text.length],
-    ),
-  );
+/**
+ * Split `text` into matched and unmatched segments for `query`, folded for `locale` (see
+ * `foldForSearch`): the text's main spelling first, then its other one ("dorde" marks "Đorđe").
+ */
+export function searchSegments(text: string, query: string, locale?: string, options?: FoldOptions): SearchSegment[] {
+  if (!text || !query.trim()) return [{ text, match: false }];
+  const context = foldContext(locale, options);
+  const queries = foldKeys(query, context).filter((q) => q.trim());
+  if (queries.length === 0) return [{ text, match: false }];
+  let ranges: Range[] = [];
+  for (const folded of foldVariants(text, context)) {
+    for (const foldedQuery of queries) {
+      ranges = foldedRanges(folded.text, foldedQuery).map(
+        ([start, end]): Range => [folded.source[start] ?? 0, folded.sourceEnd[end - 1] ?? text.length],
+      );
+      if (ranges.length) break;
+    }
+    if (ranges.length) break;
+  }
+  ranges = merge(ranges);
   if (ranges.length === 0) return [{ text, match: false }];
   const out: SearchSegment[] = [];
   let cursor = 0;

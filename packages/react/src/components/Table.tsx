@@ -303,13 +303,21 @@ export function Mark({ children, className, ...props }: MarkProps) {
 export interface HighlightedProps {
   text: string;
   query: string;
+  /**
+   * The locale the match folds in (see `foldForSearch`), e.g. `sr-Latn` so Latin marks Cyrillic.
+   * `Highlighted` is server-safe and does not read the `UixLabelsProvider`; pass its locale.
+   */
+  locale?: string;
 }
 
-/** Render `text` with case-insensitive matches of `query` wrapped in <mark>. */
-export function Highlighted({ text, query }: HighlightedProps) {
+/**
+ * Render `text` with the matches of `query` wrapped in <mark>, folded like `searchRows`: case,
+ * diacritics, đ as "dj" or "d".
+ */
+export function Highlighted({ text, query, locale }: HighlightedProps) {
   return (
     <>
-      {highlightSegments(text, query).map((seg, i) =>
+      {highlightSegments(text, query, locale).map((seg, i) =>
         seg.match ? <mark key={i} className="uix-mark">{seg.text}</mark> : <span key={i}>{seg.text}</span>,
       )}
     </>
