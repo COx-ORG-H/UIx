@@ -102,8 +102,17 @@ export function MotionList<T>({ items, getKey, renderItem, as = 'ul', onExited, 
     const byKey = new Map(entries.map((e) => [String(e.key), e]));
     const elements = Array.from(container.querySelectorAll<HTMLElement>(':scope > [data-uix-key]'));
 
-    // Leaving items: out of the tab order (set directly: React 18 drops a boolean `inert` prop).
-    for (const el of elements) if (byKey.get(el.getAttribute('data-uix-key') as string)?.exiting) el.setAttribute('inert', '');
+    // Leaving items: out of the tab order (set directly: React 18 drops a boolean `inert` prop). An
+    // item whose key comes back before it has gone keeps its element, so the list takes back the
+    // inert it set (and only that one: [data-uix-made-inert] marks it).
+    for (const el of elements) {
+      if (byKey.get(el.getAttribute('data-uix-key') as string)?.exiting) {
+        if (!el.hasAttribute('inert')) { el.setAttribute('inert', ''); el.setAttribute('data-uix-made-inert', ''); }
+      } else if (el.hasAttribute('data-uix-made-inert')) {
+        el.removeAttribute('inert');
+        el.removeAttribute('data-uix-made-inert');
+      }
+    }
 
     // Focus: only if it was inside the list before this commit. On an item that is leaving, it
     // moves to the next item still there (else the previous one); on a moved item, it stays.

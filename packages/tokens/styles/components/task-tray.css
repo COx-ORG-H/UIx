@@ -52,13 +52,14 @@
     border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg);
     background: var(--uix-surface-2); color: var(--uix-text); box-shadow: var(--uix-shadow-popover);
     transform-origin: 50% 100%;
-    transition: opacity var(--uix-dur) var(--uix-ease-out), transform var(--uix-dur) var(--uix-ease-out),
-                display var(--uix-dur) allow-discrete;
+    transition: opacity var(--uix-dur) var(--uix-ease-out), transform var(--uix-dur) var(--uix-ease-out);
   }
   .uix-task-tray[data-position="bottom-start"] .uix-task-tray__panel { transform-origin: 0 100%; }
   .uix-task-tray[data-position="bottom-end"] .uix-task-tray__panel { transform-origin: 100% 100%; }
   @starting-style { .uix-task-tray__panel:not([hidden]) { opacity: 0; transform: translateY(var(--uix-space-2)) scale(.96); } }
-  .uix-task-tray__panel[hidden] { opacity: 0; transform: translateY(var(--uix-space-2)) scale(.96); transition-duration: var(--uix-dur-exit); }
+  /* closing: React keeps the panel shown for --uix-dur-exit with [data-closing], then sets hidden
+     (the kit's [hidden] is display: none !important, which no display transition outlasts) */
+  .uix-task-tray__panel[data-closing] { opacity: 0; transform: translateY(var(--uix-space-2)) scale(.96); pointer-events: none; transition-duration: var(--uix-dur-exit); }
 
   .uix-task-tray__head {
     display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-2);

@@ -298,3 +298,70 @@ test('TaskTray: UixLabelsProvider translates the landmark, the counts and the an
     assert.match(live(host), /Fehlgeschlagen: Export\. Zeitüberschreitung$/, 'the translated state names the ending');
   } finally { unmount(); }
 });
+
+test('store: a generated id never takes a caller\'s id; a dismissed running task can still be cancelled', () => {
+  const t = ui.createTaskApi(ui.createTaskStore());
+  const probe = t.start('Probe');
+  const next = `uix-task-${Number(probe.id.split('-').pop()) + 1}`;
+  const mine = t.start('Mine', { id: next });
+  const auto = t.start('Auto');
+  assert.notEqual(auto.id, next);
+  assert.equal(t.store.get(next).status, 'running', 'the caller\'s task was not restarted');
+  assert.equal(mine.signal.aborted, false);
+
+  const calls = [];
+  const hidden = t.start('Bulk update', { onCancel: () => calls.push('cancel') });
+  t.dismiss(hidden.id);
+  assert.equal(t.store.get(hidden.id), undefined);
+  hidden.cancel();
+  hidden.cancel();
+  assert.equal(hidden.signal.aborted, true, 'cancel still stops dismissed work');
+  assert.deepEqual(calls, ['cancel']);
+  const done = t.start('Export');
+  t.dismiss(done.id);
+  done.complete();
+  assert.equal(t.store.get(done.id), undefined, 'ending dismissed work adds no row');
+});
+
+test('run: a success or error callback that throws still ends the task', async () => {
+  const t = ui.createTaskApi(ui.createTaskStore());
+  await t.run('Export', async () => 1, { success: () => { throw new Error('format'); } });
+  await t.run('Import', async () => { throw null; }, { error: (e) => e.message }).catch(() => {});
+  await new Promise((r) => setTimeout(r, 0));
+  assert.deepEqual(t.store.getSnapshot().map((r) => [r.title, r.status]), [['Import', 'failed'], ['Export', 'done']]);
+});
+
+test('TaskTray: a Retry that restarts the same id keeps its new row, focusable; the panel fades before it hides', () => {
+  const restore = useFakeTimers();
+  const t = ui.createTaskApi(ui.createTaskStore());
+  const { host, unmount } = mount(h(ui.TaskTray, { store: t.store, defaultOpen: true }));
+  try {
+    act(() => {
+      t.start('Import users.csv', { id: 'import' }).fail({
+        message: '12 rows invalid',
+        action: { label: 'Retry', onClick: () => t.start('Import users.csv', { id: 'import', onCancel: () => {} }) },
+      });
+    });
+    click(rows(host)[0].querySelector('.uix-task-tray__btn--action'));
+    tick(0);
+    assert.equal(t.store.get('import')?.status, 'running', 'the restarted run stays');
+    assert.equal(rows(host).length, 1);
+
+    // a row dismissed and back before its exit ends is not left inert
+    act(() => t.store.finish('import', 'done'));
+    act(() => t.dismiss('import'));
+    act(() => { t.start('Import users.csv', { id: 'import', onCancel: () => {} }); });
+    const row = host.querySelector('.uix-task-tray__task[data-uix-key="import"]');
+    assert.equal(row.hasAttribute('inert'), false);
+    assert.equal(row.hasAttribute('data-uix-exiting'), false);
+
+    const panel = host.querySelector('.uix-task-tray__panel');
+    key(row.querySelector('button'), 'Escape');
+    assert.equal(panel.hidden, false, 'still shown while it closes');
+    assert.ok(panel.hasAttribute('data-closing'));
+    assert.ok(panel.hasAttribute('inert'), 'nothing in a closing panel takes focus');
+    tick(200);
+    assert.equal(panel.hidden, true);
+    assert.equal(panel.hasAttribute('inert'), false);
+  } finally { unmount(); restore(); }
+});

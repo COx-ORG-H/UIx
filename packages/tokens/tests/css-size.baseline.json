@@ -532,9 +532,9 @@
       "brotli": 1337
     },
     "styles/components/task-tray.css": {
-      "raw": 10038,
-      "gzip": 2605,
-      "brotli": 2209
+      "raw": 10192,
+      "gzip": 2679,
+      "brotli": 2273
     },
     "styles/components/text-diff.css": {
       "raw": 5267,

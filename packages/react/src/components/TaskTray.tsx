@@ -96,7 +96,7 @@ function summarize(records: readonly TaskRecord[]): Summary {
 const FOCUSABLE = 'a[href], button:not(:disabled)';
 
 /** Removed, or about to be: in a leaving row or a collapsed panel. */
-const gone = (el: Element) => !el.isConnected || !!el.closest('[data-uix-exiting], [hidden]');
+const gone = (el: Element) => !el.isConnected || !!el.closest('[data-uix-exiting], [hidden], [data-closing]');
 
 const fractionOf = (r: TaskRecord) => Math.max(0, Math.min(1, (r.value ?? 0) / r.max));
 
@@ -128,9 +128,16 @@ function TaskRow({ record, store, labels, ...rest }: { record: TaskRecord; store
     : record.message ?? (record.status === 'cancelled' ? record.step : undefined);
   const { action } = record;
   const runAction = () => {
+    const { id, run } = record;
     action?.onClick?.();
-    // after the click's default action, so a link still navigates or downloads before it goes
-    if (action && !action.keep) setTimeout(() => store.dismiss(record.id), 0);
+    // After the click's default action, so a link still navigates or downloads before it goes. Only
+    // this run: a Retry that restarted the task under the same id keeps its new row.
+    if (action && !action.keep) {
+      setTimeout(() => {
+        const now = store.get(id);
+        if (now && now.run === run && now.status !== 'running') store.dismiss(id);
+      }, 0);
+    }
   };
   return (
     <li {...rest} className="uix-task-tray__task" data-status={record.status} aria-busy={running || undefined}>
@@ -227,6 +234,26 @@ export function TaskTray({
   const pillRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   useEffect(() => { watchInputModality(); }, []);
+
+  // Closing plays out before the panel is hidden: [data-closing] shrinks and fades it over
+  // --uix-dur-exit (the kit's [hidden] is display: none !important, which no transition outlasts).
+  // While it closes it is inert, so nothing in it can take focus.
+  const [closing, setClosing] = useState(false);
+  const wasOpen = useRef(open);
+  useEffect(() => {
+    const was = wasOpen.current;
+    wasOpen.current = open;
+    if (open) { setClosing(false); return undefined; }
+    if (!was) return undefined;
+    setClosing(true);
+    const timer = window.setTimeout(() => setClosing(false), tokenMs('--uix-dur-exit', 110, panelRef.current));
+    return () => window.clearTimeout(timer);
+  }, [open]);
+  useIsomorphicLayoutEffect(() => {
+    const panel = panelRef.current;
+    if (!panel) return;
+    if (closing) panel.setAttribute('inert', ''); else panel.removeAttribute('inert');
+  }, [closing]);
 
   // The pill leaves visibly: with the last task gone it stays for the exit (--uix-dur-exit), showing
   // what it showed last, then the landmark unmounts.
@@ -376,7 +403,7 @@ export function TaskTray({
           </span>
           <ChevronUpIcon className="uix-task-tray__chevron" aria-hidden="true" />
         </button>
-        <div ref={panelRef} id={panelId} className="uix-task-tray__panel" role="group" aria-labelledby={headingId} hidden={!open || leaving}>
+        <div ref={panelRef} id={panelId} className="uix-task-tray__panel" role="group" aria-labelledby={headingId} hidden={(!open && !closing) || leaving} data-closing={closing || undefined}>
           <div className="uix-task-tray__head">
             <p className="uix-task-tray__heading" id={headingId}>{name}</p>
             {finished > 0 && (

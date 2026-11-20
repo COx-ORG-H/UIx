@@ -160,7 +160,17 @@ export function createTaskStore(): TaskStore {
 
   const finish: TaskStore['finish'] = (id, status, result = {}) => {
     const record = records.find((r) => r.id === id);
-    if (!record || record.status !== 'running') return;
+    if (!record) {
+      // a running task that was dismissed: it has no row, but cancel still stops the work, and its
+      // ending releases what the store held for it
+      const controller = controllers.get(id);
+      const onCancel = cancelHandlers.get(id);
+      controllers.delete(id);
+      cancelHandlers.delete(id);
+      if (status === 'cancelled') { controller?.abort(); onCancel?.(); }
+      return;
+    }
+    if (record.status !== 'running') return;
     if (status === 'cancelled') {
       const controller = controllers.get(id);
       const onCancel = cancelHandlers.get(id);
@@ -185,7 +195,9 @@ export function createTaskStore(): TaskStore {
   };
 
   const start: TaskStore['start'] = (title, options = {}) => {
-    const id = options.id ?? `uix-task-${++counter}`;
+    let id = options.id;
+    // a generated id never lands on one a caller chose (or one still held by dismissed work)
+    while (id === undefined || (options.id === undefined && (records.some((r) => r.id === id) || controllers.has(id)))) id = `uix-task-${++counter}`;
     const existing = records.find((r) => r.id === id);
     if (existing?.status === 'running') {
       // restarting a running task: the old run is over
@@ -263,7 +275,9 @@ export interface TaskApi {
   store: TaskStore;
 }
 
-const toResult = <V>(spec: string | TaskResult | ((value: V) => string | TaskResult) | undefined, value: V): TaskResult => {
+type ResultSpec<V> = string | TaskResult | ((value: V) => string | TaskResult);
+
+const toResult = <V>(spec: ResultSpec<V> | undefined, value: V): TaskResult => {
   const out = typeof spec === 'function' ? spec(value) : spec;
   return typeof out === 'string' ? { message: out } : out ?? {};
 };
@@ -278,10 +292,15 @@ export function createTaskApi(store: TaskStore): TaskApi {
     } catch (thrown) {
       promise = Promise.reject(thrown);
     }
+    // A success or error callback that throws must not leave the task running: the work did
+    // succeed (or fail), so the task ends that way without the callback's line.
+    const settle = <V>(spec: ResultSpec<V> | undefined, value: V): TaskResult => {
+      try { return toResult(spec, value); } catch { return {}; }
+    };
     promise.then(
-      (value) => task.complete(toResult(success, value)),
-      (reason: unknown) => { if (!task.signal.aborted) task.fail(toResult(error, reason)); },
-    );
+      (value) => task.complete(settle(success, value)),
+      (reason: unknown) => { if (!task.signal.aborted) task.fail(settle(error, reason)); },
+    ).catch(() => {});
     return promise;
   }
   return {
