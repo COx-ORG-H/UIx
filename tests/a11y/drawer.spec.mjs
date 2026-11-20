@@ -37,7 +37,7 @@ const openPanel = async (page, button, id) => {
   await expect.poll(async () => {
     const { modal, animating, rect } = await dialog.evaluate((d) => {
       const { x, y, width, height } = d.getBoundingClientRect();
-      return { modal: d.matches(':modal'), animating: d.getAnimations({ subtree: true }).length > 0, rect: { x, y, width, height } };
+      return { modal: d.matches(':modal'), animating: d.getAnimations({ subtree: true }).filter((a) => a.timeline === document.timeline).length > 0, rect: { x, y, width, height } };
     });
     const key = JSON.stringify(rect);
     const settled = modal && !animating && rect.width > 0 && key === last;

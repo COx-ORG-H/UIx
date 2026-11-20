@@ -30,7 +30,7 @@ const read = (page, id) => page.locator(`#${id}`).evaluate((link) => {
   };
 });
 
-const settle = (page) => page.evaluate(() => Promise.allSettled(document.getAnimations().map((a) => a.finished)));
+const settle = (page) => page.evaluate(() => Promise.allSettled(document.getAnimations().filter((a) => a.timeline === document.timeline).map((a) => a.finished)));
 
 test('at rest: the full German label, the count in the star\'s place, the star hidden', async ({ page }) => {
   const g = await read(page, 'row-count');

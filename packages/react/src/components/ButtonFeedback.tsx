@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { feedback } from '../feedback.js';
 import { useDelayedPending } from '../hooks/useDelayedPending.js';
 import { useUixLabels } from '../labels-context.js';
 import { RESULT_HOLD_MS } from '../motion-timing.js';
@@ -62,6 +63,7 @@ export function ButtonFeedback({ loading, loadingDelay, result, resultLabels, ch
   const [queued, setQueued] = useState<ButtonResult | null>(null);
   const [shown, setShown] = useState<{ kind: ButtonResult; n: number } | null>(null);
   const previous = useRef({ result: result ?? null, loading });
+  const reported = useRef<typeof shown>(null);
   useEffect(() => {
     const before = previous.current;
     previous.current = { result: result ?? null, loading };
@@ -79,6 +81,12 @@ export function ButtonFeedback({ loading, loadingDelay, result, resultLabels, ch
   }, [queued, busy, loading]);
   useEffect(() => {
     if (!shown) return undefined;
+    // the moment the result is seen and announced (experimental feedback events); once per
+    // result, also when strict mode runs this effect twice
+    if (reported.current !== shown) {
+      reported.current = shown;
+      feedback(shown.kind, markerRef.current);
+    }
     const timer = setTimeout(() => setShown(null), RESULT_HOLD_MS);
     return () => clearTimeout(timer);
   }, [shown]);

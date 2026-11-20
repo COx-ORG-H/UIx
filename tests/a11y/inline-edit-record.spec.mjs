@@ -24,7 +24,7 @@ const open = async (page, testInfo, viewport) => {
 const record = (page) => page.evaluate(() => window.__record);
 const titleView = (page) => page.locator('#record').getByRole('button', { name: /Titel bearbeiten$/ });
 const axe = async (page, selector) => {
-  await expect.poll(() => page.evaluate(() => document.getAnimations().length)).toBe(0);
+  await expect.poll(() => page.evaluate(() => document.getAnimations().filter((a) => a.timeline === document.timeline).length)).toBe(0);
   const results = await new AxeBuilder({ page }).include(selector).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
   return results.violations.filter((v) => GATED.has(v.impact)).map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`);
 };

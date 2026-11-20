@@ -1,5 +1,7 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 3a34e535 routine: Qodo's low finding (makeRoom switched off mid-drag left rows shifted); one cleanup branch, pinned by a jsdom test -->
+<!-- lesson-skip: 30e903de routine review fixes on unreleased makeRoom (late consumer, removed row, second pointer, resize, order change mid-drag), each named by Qodo and pinned by jsdom or Chromium tests; the jsdom getComputedStyle gap is the 727ea02 family -->
 <!-- lesson-skip: cc6f28ba routine third-round review fix on the opt-in experiment (label-forwarded click), pinned by a spec -->
 <!-- lesson-skip: f5f6c3e5 routine second-round review fix on the opt-in experiment (click attribution), pinned by a spec -->
 <!-- lesson-skip: 8dbda6b6 missed edge cases in an opt-in experiment, caught by review -->
@@ -103,6 +105,10 @@
 <!-- lesson-skip: 0dd4e899 routine review fixes from Qodo on #291 (release a running morph before an instant change, guard the parts lookup, unlayered reduced-motion end, a spec wait for the deferred commit); each pinned by a jsdom test or spec; the deferred-commit wait is the 5805c3f4 entry -->
 <!-- lesson-skip: 4b192a18 routine: a fallback could run an update twice if the engine threw after calling it; Qodo's risk note named it, pinned by a jsdom test -->
 <!-- lesson-skip: 38dc8ac3 routine: compare() escapes its text, so <code> showed literally; found by looking at the 390 px shot -->
+
+### 2026-11-20 · more than one mask layer, and waiting on scroll-driven animations · `5923df5a`
+- **Rule:** give an element one `mask-image` layer only; WebKit 26.5's renderer crashes on two or more (even two solid layers composited with `add`), and it parses `mask-clip: no-clip` but ignores it. A mask fades everything in its box, so put it on a scroller with no border or shadow.  **Why:** WebKit renderer bug, found by bisecting a page that died under axe.  **Gate:** ⚠ TODO a contract rule that rejects a comma-separated `mask-image`; meanwhile the WebKit project runs axe on overlays.  **Tag:** webkit, mask, crash
+- **Rule:** a "wait until nothing animates" helper counts only `a.timeline === document.timeline`; an animation on a scroll timeline follows the scroll, never a clock, and stays `running` for as long as its element exists.  **Why:** scroll-driven animations show up in `getAnimations()` like any other.  **Gate:** tests/a11y/settle.mjs (shared helpers).  **Tag:** testing, animation-timeline
 
 ### 2026-11-20 · a token that reads variables set further down the tree · `802946fb`
 - **Rule:** a custom property whose value uses `var()` of something a container sets (`--uix-radius-inner` reads `--uix-radius-outer`) must be declared on the element that reads it: `:where(*)` in tokens.css, `@theme inline` in Tailwind v4. Never declare it on `:root` or in a plain `@theme` block.
@@ -366,5 +372,9 @@ missing or blank.
 <!-- lesson-skip: f515ab40 review findings fixed in place; [hidden] !important vs display transitions is noted in task-tray.css -->
 <!-- lesson-skip: 74b2540d design rule applied (text swaps out-then-in); rule now lives on the Motion page and in text-swap.spec.mjs -->
 <!-- lesson-skip: 357e86ff review follow-ups (clamped timing, re-entry, generated caption); the specimen test named the generator -->
+<!-- lesson-skip: e258d63b review-caught missed cases (edit vs. loaded value, shadow-root target); routine -->
 <!-- lesson-skip: b7c91554 flat tone on text; the flat-tone-text gate named the fix -->
 <!-- lesson-skip: 7848505f review finding; derive-state-in-render is standard React -->
+<!-- lesson-skip: e3de79c7 the contract gate named the values; allowlist + missed-default case, routine -->
+<!-- lesson-skip: 9f4490fb pseudo-element margin missed the border-box reset; the 1 px visual diff pointed at it -->
+<!-- lesson-skip: 6a8ed528 routine: two table variants (card mode, bottom caption) missed by the edge exceptions; found in review -->

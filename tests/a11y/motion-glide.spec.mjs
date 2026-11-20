@@ -76,7 +76,7 @@ test('the glide layer never makes a list scroll (no overflow of its own)', async
   // rows arriving 8 px from the inline end overflow for a moment: the list must clip sideways, so no
   // classic scrollbar ever appears (it shifted the rows mid-click in Linux WebKit)
   expect(await page.locator('.uix-select__listbox').evaluate((el) => getComputedStyle(el).overflowX)).toBe('hidden');
-  await expect.poll(() => page.locator('.uix-select__popup').evaluate((el) => el.getAnimations({ subtree: true }).filter((a) => a.playState === 'running').length)).toBe(0);
+  await expect.poll(() => page.locator('.uix-select__popup').evaluate((el) => el.getAnimations({ subtree: true }).filter((a) => a.timeline === document.timeline).filter((a) => a.playState === 'running').length)).toBe(0);
   const list = await size('.uix-select__listbox');
   for (const o of ['Netzwerk', 'Telefonie', 'Service Desk']) await page.locator('.uix-select__popup [role="option"]', { hasText: o }).hover();
   expect(await size('.uix-select__listbox')).toBe(list);

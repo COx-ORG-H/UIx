@@ -64,7 +64,7 @@ test('in a popover at 320 px: the editor fits, Escape closes it, and axe passes'
     await page.locator(`#chip-${id} > .uix-chip`).click();
     const pop = page.locator(`#pop-${id}`);
     await expect(pop).toBeVisible();
-    await expect.poll(() => page.evaluate(() => document.getAnimations().length)).toBe(0);
+    await expect.poll(() => page.evaluate(() => document.getAnimations().filter((a) => a.timeline === document.timeline).length)).toBe(0);
     const fits = await pop.evaluate((el) => { const r = el.getBoundingClientRect(); return r.left >= 0 && r.right <= document.documentElement.clientWidth; });
     expect(fits, id).toBe(true);
     const results = await new AxeBuilder({ page }).include(`#pop-${id}`).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
