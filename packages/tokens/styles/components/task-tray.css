@@ -39,6 +39,8 @@
   }
   .uix-task-tray__pill:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
   .uix-task-tray__summary { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .uix-task-tray__count { white-space: nowrap; }
+  .uix-task-tray__sep { color: var(--uix-text-muted); font-weight: 400; }
   .uix-task-tray__chevron { flex: none; width: var(--uix-icon-sm); height: var(--uix-icon-sm); color: var(--uix-text-muted);
     transition: transform var(--uix-dur) var(--uix-ease-out); }
   .uix-task-tray[data-open] .uix-task-tray__chevron { transform: rotate(180deg); }
