@@ -181,7 +181,7 @@ function matchWith(row: Row, f: ColumnFilter, text: ((text: string) => boolean) 
 export function applyFilters<T extends Row>(rows: readonly T[], filters: readonly ColumnFilter[], locale?: string): T[] {
   if (!filters.length) return rows.slice();
   const tests = filters.map((f) => textTest(f, locale));
-  return rows.filter((r) => filters.every((f, i) => matchWith(r, f, tests[i]!)));
+  return rows.filter((r) => filters.every((f, i) => matchWith(r, f, tests[i] ?? null)));
 }
 
 /* ── full-text search + highlight ────────────────────────────────────────────── */
