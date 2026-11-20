@@ -87,7 +87,7 @@
   .uix-task-tray__task > .uix-task-tray__mark { margin-top: 2px; }
   .uix-task-tray__ring { border-radius: 50%; background: conic-gradient(var(--uix-accent) calc(var(--val, 0) * 360deg), var(--uix-bg-active) 0); }
   .uix-task-tray__ring::after { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: var(--uix-surface-2); }
-  .uix-task-tray__mark[data-mark="done"] { color: var(--uix-success); }
+  .uix-task-tray__mark[data-mark="done"] { color: var(--uix-success-text); }
   .uix-task-tray__mark[data-mark="done"] svg { width: 16px; height: 16px; }
   .uix-task-tray__check { stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
     stroke-dasharray: 1; animation: uix-check-draw var(--uix-dur-draw) var(--uix-ease-leave) both; }
