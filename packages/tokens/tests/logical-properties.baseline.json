@@ -6,17 +6,13 @@
       "left": 1,
       "right": 1
     },
-    "components/attachment.css": {
-      "margin-left": 1
-    },
     "components/avatar.css": {
       "left": 1,
       "margin-left": 2,
       "right": 5
     },
     "components/builder-canvas.css": {
-      "border-right": 2,
-      "text-align: left": 1
+      "border-right": 2
     },
     "components/button.css": {
       "border-bottom-left-radius": 1,
@@ -35,9 +31,6 @@
     "components/color-picker.css": {
       "left": 1
     },
-    "components/command-palette.css": {
-      "margin-left": 2
-    },
     "components/comments.css": {
       "border-left": 1
     },
@@ -49,17 +42,13 @@
       "border-left-color": 3,
       "border-right": 2
     },
-    "components/drawer.css": {
-      "margin-left": 1
-    },
     "components/editorial-home.css": {
       "border-left": 4,
       "left": 6,
       "margin-right": 2,
       "padding-left": 2,
       "padding-right": 2,
-      "right": 4,
-      "text-align: left": 2
+      "right": 4
     },
     "components/file-kit.css": {
       "border-left": 1,
@@ -67,18 +56,10 @@
       "left": 2,
       "right": 4
     },
-    "components/file-upload.css": {
-      "margin-left": 1,
-      "padding-left": 1
-    },
     "components/flow.css": {
       "border-right": 2,
       "left": 2,
-      "right": 2,
-      "text-align: left": 1
-    },
-    "components/form.css": {
-      "padding-left": 1
+      "right": 2
     },
     "components/inbox.css": {
       "border-right": 1
@@ -92,9 +73,6 @@
     "components/insight-card.css": {
       "left": 1
     },
-    "components/kanban.css": {
-      "margin-left": 1
-    },
     "components/kbd.css": {
       "padding-left": 1
     },
@@ -105,56 +83,36 @@
       "left": 2,
       "right": 3
     },
-    "components/list.css": {
-      "margin-left": 1
-    },
     "components/menu.css": {
-      "margin-left": 2,
-      "padding-left": 1,
-      "text-align: left": 1
+      "padding-left": 1
     },
     "components/metric-input.css": {
       "border-bottom-right-radius": 2,
       "border-top-right-radius": 2
     },
-    "components/modal.css": {
-      "margin-left": 1
-    },
     "components/org-chart.css": {
       "border-left": 6,
       "left": 8,
-      "right": 3,
-      "text-align: left": 1
-    },
-    "components/peek.css": {
-      "margin-left": 2
+      "right": 3
     },
     "components/pipeline.css": {
       "left": 1,
-      "margin-left": 1,
-      "right": 1,
-      "text-align: left": 1
+      "right": 1
     },
     "components/print-layout.css": {
       "margin-right": 1
     },
-    "components/prose.css": {
-      "border-left": 1,
-      "padding-left": 3,
-      "text-align: left": 1
-    },
     "components/relationship-graph.css": {
       "left": 4,
       "padding-right": 1,
-      "right": 2,
-      "text-align: left": 2
+      "right": 2
     },
     "components/rich-text.css": {
       "border-left": 1,
       "float: left": 1,
-      "margin-left": 5,
+      "margin-left": 3,
       "margin-right": 3,
-      "padding-left": 2
+      "padding-left": 1
     },
     "components/rule-builder.css": {
       "border-left": 1
@@ -174,7 +132,6 @@
       "margin-right": 3,
       "padding-right": 1,
       "right": 11,
-      "text-align: left": 9,
       "text-align: right": 4
     },
     "components/scheduling-timeline.css": {
@@ -197,19 +154,13 @@
       "right": 2
     },
     "components/select.css": {
-      "margin-left": 1,
       "padding-right": 1
     },
     "components/sidebar.css": {
-      "margin-left": 2,
-      "right": 1,
-      "text-align: left": 2
+      "right": 1
     },
     "components/spinner.css": {
       "border-right-color": 2
-    },
-    "components/states.css": {
-      "text-align: left": 1
     },
     "components/steps.css": {
       "left": 2
@@ -227,7 +178,6 @@
       "padding-left": 1,
       "padding-right": 1,
       "right": 3,
-      "text-align: left": 2,
       "text-align: right": 3
     },
     "components/tabs.css": {
@@ -244,8 +194,7 @@
       "right": 3
     },
     "components/tooltip.css": {
-      "left": 1,
-      "padding-left": 1
+      "left": 1
     },
     "components/tree.css": {
       "border-left": 1,
