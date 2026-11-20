@@ -4,13 +4,14 @@
  *     elements under one key), and back;
  *   - #workspace: a DataWorkspace with Maximize in its More menu;
  *   - #canvas: an editable DashboardCanvas (a pointer drop morphs the cards it pushes).
- * window.__vt records each start of the list demo: whether it animated, and how many finished. */
+ * window.__vt records each start of the list demo: whether it animated, and how many finished;
+ * window.__records.go starts one from the spec (a second start in the middle of a morph). */
 import { StrictMode, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Button, DashboardCanvas, DataWorkspace, useViewTransition } from '../../packages/react/src/index.js';
 import type { DashboardCanvasItem, DataWorkspaceColumn } from '../../packages/react/src/index.js';
 
-declare global { interface Window { __vt: { animated: boolean[]; finished: number } } }
+declare global { interface Window { __vt: { animated: boolean[]; finished: number }; __records: { go: (next: string | null) => void } } }
 window.__vt = { animated: [], finished: 0 };
 
 type Ticket = { id: string; title: string; detail: string };
@@ -46,6 +47,8 @@ function Records() {
     window.__vt.animated.push(result.animated);
     void result.finished.then(() => { window.__vt.finished += 1; });
   };
+  // the spec starts a second change in the middle of a morph through this
+  window.__records = { go };
   const ticket = TICKETS.find((t) => t.id === open);
   return (
     <section id="records" aria-label="Meldungen">

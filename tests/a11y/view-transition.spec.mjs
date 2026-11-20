@@ -5,7 +5,9 @@
  *     and the hook takes its mark and its names back afterwards;
  *   - the keyboard, reduced motion (the OS or data-motion="reduce") and a browser without the API
  *     get the change at once;
- *   - rapid repeat clicks and a click in the middle of a morph land, and nothing is left behind;
+ *   - repeat clicks never leave anything behind; a click elsewhere in the middle of a morph lands
+ *     (the morphing part itself takes clicks again once it settles: the browser draws it from the
+ *     held picture meanwhile), and a second start ends the running one;
  *   - DataWorkspace's Maximize morphs from the pointer and Escape restores at once;
  *   - a DashboardCanvas pointer drop morphs the cards, on the canvas itself where the engine can.
  * The hook's contract is unit-tested in packages/react/src/view-transition-dom.test.mjs. */
@@ -42,8 +44,8 @@ const watch = async (page, ms = 1500) => {
         for (const a of document.getAnimations()) {
           const pseudo = a.effect?.pseudoElement ?? '';
           if (!pseudo.startsWith('::view-transition')) continue;
-          const timing = a.effect.getComputedTiming();
-          const entry = { pseudo, duration: timing.duration, easing: timing.easing };
+          // a CSS animation's timing function is on its keyframes; the effect's own easing is linear
+          const entry = { pseudo, duration: a.effect.getComputedTiming().duration, easing: a.effect.getKeyframes()[0]?.easing ?? '' };
           (pseudo.startsWith('::view-transition-group') ? seen.groups : seen.images).push(entry);
         }
         if (seen.root && !marked) { seen.cleared = true; finish(); return; }
@@ -76,7 +78,10 @@ test('a pointer opens the row into its detail on the glide spring, then takes it
       expect(g.duration).toBe(280);
       expect(g.easing).toMatch(/^linear\(/);
     }
-    for (const image of run.images.filter((i) => i.pseudo.includes('uix-vt-'))) expect(image.duration).toBe(160);
+    for (const image of run.images.filter((i) => i.pseudo.includes('uix-vt-'))) {
+      expect(image.duration).toBe(160);
+      expect(image.easing).toMatch(/^cubic-bezier\(/);
+    }
   }
   expect(Math.max(0, ...run.groups.map((g) => g.duration)), 'nothing runs past about 300 ms').toBeLessThanOrEqual(300);
   await page.locator('#back').click();
@@ -125,35 +130,54 @@ test('without the View Transitions API the change happens at once', async ({ pag
   await expect(page.locator('[data-uix-view-transition]')).toHaveCount(0);
 });
 
-test('rapid repeat clicks, and a click in the middle of a morph, land; nothing is left behind', async ({ page }) => {
+test('repeat clicks leave nothing behind; a click elsewhere mid-morph lands; a second start ends the first', async ({ page }) => {
   await open(page);
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
-  // five changes as fast as the pointer can make them: each click lands on the live page under the
-  // held picture, and a new start ends the running one
-  for (let i = 0; i < 5; i++) {
-    const target = page.locator(i % 2 ? '#back' : '[data-open="INC-0413"]');
-    await target.waitFor();
-    const box = await target.boundingBox();
-    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-  }
+  // five changes, each click as soon as its control can take one
+  for (let i = 0; i < 5; i++) await page.locator(i % 2 ? '#back' : '[data-open="INC-0413"]').click();
   await expect(page.locator('#detail'), 'five clicks from the list end on the detail').toBeVisible();
-  await expect(page.locator('[data-uix-view-transition]')).toHaveCount(0);
-  await expect.poll(() => page.evaluate(() => document.querySelectorAll('[style*="view-transition"]').length)).toBe(0);
-  const { animated } = await vt(page);
-  expect(animated).toHaveLength(5);
   await expect.poll(async () => (await vt(page)).finished, 'every start settles').toBe(5);
-
-  // a click while the mark is on: wait until a morph is running, then press Back underneath it
-  const seen = await watch(page);
-  await page.locator('#back').click();
-  await page.waitForFunction(() => document.documentElement.hasAttribute('data-uix-view-transition') || !!document.querySelector('#list'));
-  const row = page.locator('[data-open="INC-0412"]');
-  const box = await row.boundingBox();
-  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-  await expect(page.locator('#detail')).toContainText('INC-0412');
-  await seen();
+  expect((await vt(page)).animated).toEqual([true, true, true, true, true]);
   await expect(page.locator('[data-uix-view-transition]')).toHaveCount(0);
+  expect(await page.evaluate(() => document.querySelectorAll('[style*="view-transition"]').length)).toBe(0);
+
+  // a click outside the morphing part while it runs: the held picture lets the pointer through.
+  // The glide is stretched to 2 s here so "while it runs" does not depend on the machine's speed.
+  await page.locator('#back').click();
+  await expect(page.locator('#list')).toBeVisible();
+  await expect(page.locator('[data-uix-view-transition]')).toHaveCount(0);
+  await page.evaluate(() => document.documentElement.style.setProperty('--uix-dur-glide', '2000ms'));
+  await page.evaluate(async () => {
+    document.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    document.querySelector('[data-open="INC-0412"]').click();
+    // the live page has the new layout once the detail is there; the morph still runs
+    await new Promise((resolve) => { const t = () => (document.documentElement.hasAttribute('data-uix-view-transition') && document.querySelector('#detail') ? resolve() : requestAnimationFrame(t)); t(); });
+  });
+  const more = await page.locator('#workspace').getByRole('button', { name: 'More' }).boundingBox();
+  const markedAtClick = await page.evaluate(() => document.documentElement.hasAttribute('data-uix-view-transition'));
+  await page.mouse.click(more.x + more.width / 2, more.y + more.height / 2);
+  await expect(page.getByRole('menuitemcheckbox', { name: 'Maximize' }), 'the menu opened under the morph').toBeVisible();
+  expect(markedAtClick, 'the click was made while the morph ran').toBe(true);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#detail')).toContainText('INC-0412');
+  await expect(page.locator('[data-uix-view-transition]')).toHaveCount(0);
+
+  // a second start in the middle of a morph ends the first where it is and lands on the newest state
+  await page.locator('#back').click();
+  await expect(page.locator('#list')).toBeVisible();
+  await expect(page.locator('[data-uix-view-transition]')).toHaveCount(0);
+  const before = (await vt(page)).finished;
+  await page.evaluate(async () => {
+    document.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    window.__records.go('INC-0415');
+    await new Promise((resolve) => { const t = () => (document.documentElement.hasAttribute('data-uix-view-transition') && document.querySelector('#detail') ? resolve() : requestAnimationFrame(t)); t(); });
+    window.__records.go(null);
+  });
+  await expect(page.locator('#list')).toBeVisible();
+  await expect.poll(async () => (await vt(page)).finished - before, 'both starts settle').toBe(2);
+  await expect(page.locator('[data-uix-view-transition]')).toHaveCount(0);
+  expect(await page.evaluate(() => document.querySelectorAll('[style*="view-transition"]').length)).toBe(0);
   expect(errors).toEqual([]);
 });
 

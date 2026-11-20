@@ -117,30 +117,23 @@
      overlays (Modal, Drawer, Peek, Popover and Menu, Select) when a key press led to it. */
   :is([data-uix-instant], [data-uix-key-opened]), :is([data-uix-instant], [data-uix-key-opened])::backdrop { transition: none !important; animation: none !important; }
 
-  /* View transitions (useViewTransition): an occasional surface morphing from one state to the next,
-     on the glide spring (280 ms, no overshoot). [data-uix-view-transition] is on the transition's root
-     (the html element, or the scope of an element-scoped one) only while a kit transition runs, so a
-     product's own view transitions keep their timing. The held picture lets the pointer through to the
-     live page underneath: a click mid-morph lands, and a new start ends the running one. Only the
-     browser's own geometry and cross-fade run here; nothing animates filter.
-     The root takes no picture of its own: only the named parts morph, and the rest of the page stays
-     live and changes at once, as without a transition. (A picture of the whole page cross-fades
-     everything that shifts, and shows each heading twice on its way.) */
+  /* View transitions (useViewTransition): an occasional surface morphs between two states. The mark is
+     on the transition's root only while a kit transition runs, so a product's own keep their timing.
+     The root takes no picture: only the named parts morph, and the rest of the page changes at once
+     (a whole-page picture cross-fades everything that shifts). The pointer passes the held picture,
+     so a click elsewhere mid-morph lands. The box glides; the pictures swap faster, on one curve both
+     ways so they always add up to one. Nothing animates filter. */
   [data-uix-view-transition] { view-transition-name: none; }
   [data-uix-view-transition]::view-transition { pointer-events: none; }
   [data-uix-view-transition]::view-transition-group(*) { animation-duration: var(--uix-dur-glide); animation-timing-function: var(--uix-ease-glide); }
-  /* the content swaps in the first half of the glide (one curve both ways, so the two pictures always
-     add up to one and the box never thins out), and the doubled moment is short */
   [data-uix-view-transition]::view-transition-old(*),
   [data-uix-view-transition]::view-transition-new(*) { animation-duration: var(--uix-dur); animation-timing-function: var(--uix-ease-out); }
-  /* A part's box grows or shrinks; its two pictures never scale. Each stays at its own size in the
-     box's top corner and the box clips them, so a row opens into its detail like a container rather
-     than a zoomed screenshot (text scaled 3× on its way is blurry and doubled). Kept apart from the
-     rules above: an engine without view-transition-class drops only this one. */
+  /* the pictures never scale: each keeps its size in the box's corner and the box clips them (a container
+     opening, not a zoomed screenshot). Its own rule: an engine without view-transition-class drops only this */
   [data-uix-view-transition]::view-transition-group(*.uix-morph) { overflow: clip; }
   [data-uix-view-transition]::view-transition-old(*.uix-morph),
   [data-uix-view-transition]::view-transition-new(*.uix-morph) { inline-size: auto; block-size: auto; inset-inline-start: 0; }
-  /* reduced motion switched on mid-morph: the transition ends at once (the hook never starts one under it) */
+  /* reduced motion turned on mid-morph ends it at once (the hook never starts one under it) */
   @media (prefers-reduced-motion: reduce) {
     [data-uix-view-transition]::view-transition-group(*),
     [data-uix-view-transition]::view-transition-old(*),

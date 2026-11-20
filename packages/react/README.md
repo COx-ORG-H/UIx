@@ -329,6 +329,13 @@ const star = useOptimisticValue(view.starred, (next) => api.star(view.id, next),
   option on a click (160 ms); a keyboard change and reduced motion jump. Server HTML, forced
   colours and Segmented's link mode keep each option's own mark. `useSlidingIndicator` is the
   hook behind it.
+- **`useViewTransition()`**: an occasional surface morphs between two states with the browser's
+  View Transitions API. `start(update, { parts, scope, className })` runs `update` in `flushSync`
+  while the old picture is held; `parts` (read before and after) pairs elements by key, so a row
+  can open into its detail. The box glides on the glide spring (280 ms); the pictures swap in
+  160 ms and never scale. The keyboard, reduced motion and a browser without the API get the
+  change at once; a second start ends the running one. DataWorkspace's Maximize (from the
+  pointer) and a DashboardCanvas pointer drop use it. Never on the Peek, a row or a tab.
 - **CollapsibleSection** opening fades the body in and settles it 4 px (on `::details-content`,
   where supported); an already open section, a keyboard open and closing are instant.
 
