@@ -16,6 +16,7 @@ import { Plugin, PluginKey } from '@tiptap/pm/state';
 import type { Node as PMNode } from '@tiptap/pm/model';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import { cx } from '../cx.js';
+import { feedback } from '../feedback.js';
 import { computePosition } from '../overlay-position.js';
 import { formatLabel } from '../emoji-model.js';
 import { canRenderEmoji, emojiImageSrc, emojiPattern, normalizeEmojiImageBaseUrl } from '../emoji-image.js';
@@ -282,6 +283,16 @@ const popoverOpen = (el: Element): boolean => {
   try { return el.matches(':popover-open'); } catch { return false; }
 };
 
+/** `limit` feedback (experimental) the moment the text goes over `maxLength`, when the counter
+ * turns red and the field invalid; not on the first render, not again while it stays over. */
+function useLimitFeedback(over: boolean, counterId: string) {
+  const was = useRef(over);
+  useEffect(() => {
+    if (over && !was.current) feedback('limit', document.getElementById(counterId));
+    was.current = over;
+  }, [over, counterId]);
+}
+
 const isMac = (): boolean => typeof navigator !== 'undefined' && /mac|iphone|ipad/i.test(navigator.platform || navigator.userAgent);
 
 /** The loading/error stand-in: a plain Textarea with the same value and ARIA, and the composer bar. */
@@ -293,6 +304,7 @@ export function RichTextEditorFallback(props: RichTextEditorProps) {
   const labels = { ...DEFAULT_RICH_TEXT_LABELS, ...labelOverrides };
   const counterId = useId();
   const over = maxLength !== undefined && value.length > maxLength;
+  useLimitFeedback(over, counterId);
   const counter = maxLength !== undefined ? (
     <span id={counterId} className="uix-rich-text__counter" data-over={over || undefined}>
       {formatLabel(labels.characterCount, { count: value.length, max: maxLength })}
@@ -734,6 +746,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
   }, [editor, disabled, readOnly]);
 
   const over = maxLength !== undefined && markdown.length > maxLength;
+  useLimitFeedback(over, counterId);
   const invalid = props['aria-invalid'] || over;
   const describedBy = [props['aria-describedby'], maxLength !== undefined ? counterId : undefined, status ? statusId : undefined]
     .filter(Boolean).join(' ') || undefined;
