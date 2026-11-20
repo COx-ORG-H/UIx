@@ -122,6 +122,12 @@ export const srCyrl: UixLabelPack = {
   },
   toast: {
     dismiss: 'Затвори',
+    undoShortcut: 'Поништи последњу радњу',
+    undone: (message) => (message ? `Поништено: ${message}` : 'Поништено'),
+    remaining: (seconds) => `${seconds} с`,
+    count: (count) => `×${count}`,
+    held: (count) => countLabel({ one: '{count} обавештење чека', few: '{count} обавештења чекају', other: '{count} обавештења чека' }, count, 'sr-Cyrl').replace('{count}', String(count)),
+    showHeld: 'Прикажи',
   },
   toaster: {
     region: 'Обавештења',
