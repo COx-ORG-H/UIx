@@ -106,6 +106,9 @@
 <!-- lesson-skip: 4b192a18 routine: a fallback could run an update twice if the engine threw after calling it; Qodo's risk note named it, pinned by a jsdom test -->
 <!-- lesson-skip: 38dc8ac3 routine: compare() escapes its text, so <code> showed literally; found by looking at the 390 px shot -->
 
+### 2026-11-20 · API reports of a new subpath entry · `069c7450`
+- **Rule:** after adding an entry point, run `npm run test:api` (what CI runs), not only `test:api:update`: the `--local` update prints API Extractor warnings and exits 0, CI fails on them. A `{@link X}` in a doc comment that the new entry reaches must name something that entry exports, or it is `ae-unresolved-link`.  **Why:** `--local` downgrades warnings; a link that resolves from the root entry does not from a subpath.  **Gate:** CI `gates` → `test:api`.  **Tag:** api-extractor, entry-points, tsdoc
+
 ### 2026-11-20 · more than one mask layer, and waiting on scroll-driven animations · `5923df5a`
 - **Rule:** give an element one `mask-image` layer only; WebKit 26.5's renderer crashes on two or more (even two solid layers composited with `add`), and it parses `mask-clip: no-clip` but ignores it. A mask fades everything in its box, so put it on a scroller with no border or shadow.  **Why:** WebKit renderer bug, found by bisecting a page that died under axe.  **Gate:** ⚠ TODO a contract rule that rejects a comma-separated `mask-image`; meanwhile the WebKit project runs axe on overlays.  **Tag:** webkit, mask, crash
 - **Rule:** a "wait until nothing animates" helper counts only `a.timeline === document.timeline`; an animation on a scroll timeline follows the scroll, never a clock, and stays `running` for as long as its element exists.  **Why:** scroll-driven animations show up in `getAnimations()` like any other.  **Gate:** tests/a11y/settle.mjs (shared helpers).  **Tag:** testing, animation-timeline
