@@ -5,7 +5,7 @@
  *   - the policy is one click away from Status pill, Alert, Stat tile, SchedulingCalendar and
  *     SchedulingTimeline. Markup rules are pinned in packages/tokens/docs/docs.test.js. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 async function open(page, theme, hash = 'status-colour') {
   await page.addInitScript((t) => { try { localStorage.setItem('uix-theme', t); } catch { /* private */ } }, theme);

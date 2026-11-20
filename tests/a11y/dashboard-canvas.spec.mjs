@@ -10,7 +10,7 @@
  *   - axe in both themes.
  * The class contract and the keyboard model are in packages/react/src/dashboard-canvas-dom.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/dashboard-canvas/harness.html';
 const GATED = new Set(['serious', 'critical']);

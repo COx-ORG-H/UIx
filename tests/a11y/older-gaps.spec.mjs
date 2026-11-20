@@ -6,7 +6,7 @@
  * radio arrow keys, layout at 320 px, and an axe scan of every section in light and dark.
  * Harness: tests/older-gaps/harness.tsx, bundled from source in globalSetup. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { settleAnimations, settleOverlay } from './settle.mjs';
 
 const HARNESS = '/tests/older-gaps/harness.html';

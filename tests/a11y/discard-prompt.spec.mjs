@@ -11,7 +11,7 @@
  * abuse protection), which only a real browser shows: the repeated-Escape test is that case.
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { settleOverlay } from './settle.mjs';
 
 const HARNESS = '/tests/discard-prompt/harness.html';
