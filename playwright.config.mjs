@@ -16,7 +16,7 @@ const PORT = 4178;
  * The specs that also run in Firefox and WebKit (CI's select-cross-browser job runs exactly these;
  * tests/a11y/cross-browser-config.spec.mjs keeps the two lists equal).
  */
-export const CROSS_BROWSER_SPECS = ['select', 'stat-row', 'description-list', 'discard-prompt', 'search-bar', 'shortcut'];
+export const CROSS_BROWSER_SPECS = ['select', 'stat-row', 'description-list', 'discard-prompt', 'search-bar', 'shortcut', 'view-transition'];
 const CROSS_BROWSER_MATCH = new RegExp(String.raw`[\\/](${CROSS_BROWSER_SPECS.join('|')})\.spec\.mjs$`);
 const BASE = `http://localhost:${PORT}/packages/tokens/`;
 

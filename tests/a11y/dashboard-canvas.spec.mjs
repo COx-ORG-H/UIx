@@ -82,6 +82,9 @@ async function dragHandle(page, id, kind, dCols, dRows, { escape = false } = {})
   await expect(page.locator('#editable .uix-dashboard-canvas__preview')).toBeVisible();
   if (escape) await handle.press('Escape');
   await page.mouse.up();
+  // a pointer drop morphs (useViewTransition): the new layout commits once the browser holds the
+  // old picture, a frame later, and the morph ends within --uix-dur-glide
+  await expect(page.locator('[data-uix-view-transition]')).toHaveCount(0);
 }
 
 test('dragging the move handle snaps to a cell and pushes what it lands on down', async ({ page }) => {

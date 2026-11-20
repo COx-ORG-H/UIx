@@ -4,6 +4,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, HTMLAttributes, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { settleDrop } from '../hooks/useKeyboardGrab.js';
+import { useViewTransition } from '../hooks/useViewTransition.js';
 import { fillLabel } from '../fill-label.js';
 import { GripVerticalIcon, Maximize2Icon } from '../icons/components.js';
 import {
@@ -125,6 +126,10 @@ function measure(grid: HTMLElement): { colPitch: number; rowPitch: number } {
  * Below 36rem of its own width the canvas is one column in reading order (row by row, left to
  * right), each item keeping its height, and the handles step aside: the item menu remains.
  *
+ * After a pointer drop, the cards that moved glide to their new places on the glide spring
+ * (`useViewTransition`, scoped to the canvas where the browser can); arrow-key steps, reduced
+ * motion and a browser without view transitions jump.
+ *
  * Owns interaction, never persistence: the product stores `items` and passes them back.
  *
  * ```tsx
@@ -154,6 +159,7 @@ export function DashboardCanvas<T extends DashboardCanvasItem>({
   const instructionsId = useId();
   const gridRef = useRef<HTMLDivElement | null>(null);
   const dragRef = useRef<Drag | null>(null);
+  const morph = useViewTransition();
   const [preview, setPreview] = useState<{ id: string; kind: 'move' | 'resize'; placement: DashboardCanvasPlacement } | null>(null);
   const [announcement, setAnnouncement] = useState('');
   const layout = useMemo(() => normalizeCanvas(items), [items]);
@@ -246,7 +252,14 @@ export function DashboardCanvas<T extends DashboardCanvasItem>({
       dragRef.current = null;
       setPreview(null);
       const changed = last.col !== origin.col || last.row !== origin.row || last.w !== origin.w || last.h !== origin.h;
-      if (drop && moved && changed) commit(item.id, last, kind, 'pointer');
+      if (!(drop && moved && changed)) return;
+      // A pointer drop is an occasional edit, so the cards it pushes travel to their new places
+      // instead of jumping (a view transition, scoped to the canvas where the browser can).
+      // Keyboard steps stay instant.
+      const grid = gridRef.current;
+      const cards = () => Array.from(grid?.children ?? [], (el) => [(el as HTMLElement).dataset.canvasId ?? '', el] as const)
+        .filter(([id]) => id !== '');
+      morph(() => commit(item.id, last, kind, 'pointer'), { scope: grid, parts: cards });
     };
     const onUp = (up: PointerEvent) => { if (up.pointerId === drag.pointerId) finish(true); };
     const onCancel = (cancel: PointerEvent) => { if (cancel.pointerId === drag.pointerId) finish(false); };
