@@ -11,6 +11,11 @@
       "gzip": 1921,
       "brotli": 1567
     },
+    "styles/components/ai-assistance.css": {
+      "raw": 10670,
+      "gzip": 2379,
+      "brotli": 1981
+    },
     "styles/components/alert.css": {
       "raw": 2451,
       "gzip": 936,

@@ -353,6 +353,11 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-crm-itsm",
     "selector": ".uix-attachments"
   },
+  "ai-assistance": {
+    "route": "examples-crm-itsm",
+    "selector": ".uix-proposal",
+    "container": "[data-ai-example]"
+  },
   "file-kit": {
     "route": "examples-crm-itsm",
     "selector": ".uix-file-drop",
