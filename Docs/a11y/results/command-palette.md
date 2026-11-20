@@ -55,6 +55,7 @@ Nobody has run a pairing yet. The rows below are NVDA's own speech from the auto
 
 ## Known issues
 
+- NVDA (automated run 44733256135): clearing the query spoke the intermediate counts ("3 results", "4 results") and then the new active option's group ("ACTIONS, grouping"), but not the final "6 results". The polite count lost to the active-option change. Needs a human NVDA pass to confirm.
 - Active-option speech through `aria-activedescendant` is unverified on VoiceOver macOS, where support has varied (script step 3).
 
 ## Summary

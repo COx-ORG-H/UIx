@@ -43,7 +43,10 @@ export const AT_STATUS = [
   {
     id: 'command-palette', name: 'CommandPalette', protocol: 2, version: '2.70.0', date: '2026-11-20', tester: 'none',
     results: { ...notRun, 'automated-tree': 'pass', 'nvda-guidepup': 'pass' },
-    knownIssues: ['Active-option speech through aria-activedescendant is unverified on VoiceOver macOS.'],
+    knownIssues: [
+      "NVDA (automated): clearing the query speaks the new active option's group, not the final result count.",
+      'Active-option speech through aria-activedescendant is unverified on VoiceOver macOS.',
+    ],
   },
   {
     id: 'combobox', name: 'Combobox, EntityPicker', protocol: 2, version: '2.70.0', date: '2026-11-20', tester: 'none',
@@ -59,7 +62,7 @@ export const AT_STATUS = [
     id: 'date-picker', name: 'DatePicker', touch: true, protocol: 2, version: '2.70.0', date: '2026-11-20', tester: 'none',
     results: { ...notRun, 'automated-tree': 'pass', 'nvda-guidepup': 'fail' },
     knownIssues: [
-      'NVDA (automated): the focused day in the calendar is spoken as "toggle button, not pressed", without its date.',
+      "NVDA (automated): the calendar's arrow keys do nothing in browse mode, NVDA's default there (the days are a group of buttons, not a grid); a user must switch to focus mode first.",
       'Today is aria-current="date"; whether readers say so is unverified.',
     ],
   },

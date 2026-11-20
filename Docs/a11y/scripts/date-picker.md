@@ -12,7 +12,7 @@ that is not a date shows an alert.
 |---|----|-------------|-----------|
 | 1 | Tab into "Due date". | Edit "Due date", its value 20/11/2026, the hint "Weekdays only". | |
 | 2 | Tab to the calendar button. | Button "Change date, Friday, 20 November 2026", collapsed (it has a dialog popup). | |
-| 3 | Enter. | Dialog "Calendar"; focus on "Friday, 20 November 2026", pressed (chosen). | NVDA / JAWS may switch to focus mode; the day buttons must still be reached with arrows. |
+| 3 | Enter. | Dialog "Calendar"; focus on "Friday, 20 November 2026", pressed (chosen). | **Known issue**: NVDA stays in browse mode here (the days are buttons in a group, not a grid), so the arrows in steps 4–7 move NVDA's cursor, not the day. Try them first as they are and record what happens (that is the result for item 5); then press NVDA+Space (JAWS: Enter / Insert+Z as needed) and repeat, and record that too. |
 | 4 | Left. | "Thursday, 19 November 2026". | |
 | 5 | Left again (to 18 November). | "Wednesday, 18 November 2026" and that it is today ("current date"). | Support for `aria-current="date"` varies: record what is heard. |
 | 6 | Right three times (to 21 November). | "Saturday, 21 November 2026", unavailable / dimmed. | Unavailable days still take focus; they must say they cannot be chosen. |

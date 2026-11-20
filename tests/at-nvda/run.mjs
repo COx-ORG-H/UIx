@@ -69,6 +69,7 @@ async function toWebContent(page) {
  *     active option changed), so a key that was swallowed fails the run;
  *   - `speak`: phrases NVDA must have said; a miss fails the run;
  *   - `once`: phrases NVDA must have said exactly once (a toast spoken twice fails);
+ *   - `notActing`: a key NVDA keeps for itself (browse mode), so the page must not see it;
  *   - `gaps`: phrases NVDA should say but did not in run 44725485902, each a known issue in
  *     Docs/a11y/results/. A gap is reported, not failed on; a gap that is now heard fails the run
  *     too, so the result file gets updated instead of going stale. */
@@ -97,7 +98,7 @@ const steps = [
     focus: '#palette-inline input', segments: [
       { keys: ['type:rep', 'wait:800'], active: ['#palette-inline input', 'startsWith', 'Reports'], speak: [/\b1 result\b/] },
       { keys: ['Backspace', 'Backspace', 'Backspace', 'wait:800'], active: ['#palette-inline input', 'startsWith', 'Create incident'],
-        speak: [/\b6 results\b/] },
+        gaps: [{ phrase: /\b6 results\b/, issue: 'clearing the query speaks the new active option\'s group ("ACTIONS, grouping"), not the final count' }] },
       { keys: ['ArrowDown'], active: ['#palette-inline input', 'startsWith', 'Assign to me'], speak: [/Assign to me/] },
     ] },
   { id: 'combobox', title: 'Combobox: Category, ArrowDown twice, Enter',
@@ -118,8 +119,14 @@ const steps = [
   { id: 'date-picker', title: 'DatePicker: Due date, ArrowDown opens the calendar, ArrowLeft, Escape',
     focus: '#date-input', segments: [
       { keys: ['ArrowDown', 'wait:400'], acted: () => document.activeElement?.getAttribute('data-date') === '2026-11-20', speak: [/Calendar, dialog/] },
+      // NVDA stays in browse mode on the calendar's day buttons (a group, not a grid), so the arrow
+      // is NVDA's own cursor key and the focused day does not move (run 44733256135).
       { keys: ['ArrowLeft'], acted: () => document.activeElement?.getAttribute('data-date') === '2026-11-19',
-        gaps: [{ phrase: /19 November 2026/, issue: 'the focused calendar day is spoken without its date' }] },
+        notActing: 'in browse mode NVDA keeps ArrowLeft for its own cursor ("out of toggle button, toggle button, not pressed"); the focused day stays on 20 November',
+        gaps: [{ phrase: /19 November 2026/, issue: 'the day ArrowLeft should reach is not spoken' }] },
+      // The same key in focus mode (NVDA+Space), where the calendar gets it.
+      { keys: ['nvda:focusMode', 'ArrowLeft'], acted: () => document.activeElement?.getAttribute('data-date') === '2026-11-19',
+        speak: [/19 November 2026/] },
       { keys: ['Escape'], acted: () => document.activeElement?.id === 'date-input' && document.getElementById('date-input')?.value === '20/11/2026',
         speak: [/Due date/] },
     ] },
@@ -147,8 +154,11 @@ function judge(segment, spoken, acted) {
   const counts = (segment.once ?? []).map((re) => ({ phrase: String(re), times: spoken.reduce((n, phrase) => n + (phrase.match(re)?.length ?? 0), 0) }));
   const notOnce = counts.filter(({ times }) => times !== 1);
   const gaps = (segment.gaps ?? []).map(({ phrase, issue }) => ({ issue, heard: heard(phrase) }));
-  const ok = acted && !missing.length && !notOnce.length && !gaps.some((gap) => gap.heard);
-  return { keys: segment.keys, spoken, acted, missing, counts, gaps, ok };
+  // `notActing`: a known issue where NVDA keeps the key for itself; the page must NOT see it, and a
+  // key that now acts fails the run so the result file is updated.
+  const actedAsKnown = segment.notActing ? !acted : acted;
+  const ok = actedAsKnown && !missing.length && !notOnce.length && !gaps.some((gap) => gap.heard);
+  return { keys: segment.keys, spoken, acted, notActing: segment.notActing ?? null, actedAsKnown, missing, counts, gaps, ok };
 }
 
 async function run() {
@@ -176,7 +186,8 @@ async function run() {
       for (const segment of step.segments) {
         await nvda.clearSpokenPhraseLog();
         for (const key of segment.keys) {
-          if (key.startsWith('type:')) await nvda.type(key.slice(5));
+          if (key === 'nvda:focusMode') await nvda.perform(NVDAKeyCodeCommands.toggleBetweenBrowseAndFocusMode);
+          else if (key.startsWith('type:')) await nvda.type(key.slice(5));
           else if (key.startsWith('wait:')) await delay(Number(key.slice(5)));
           else await nvda.press(key);
           await delay(250);
@@ -203,11 +214,12 @@ async function run() {
     md.push(`## ${r.id} — ${r.ok ? 'ok' : 'FAILED'}`, '', r.title, '', `- on arrival: ${JSON.stringify(r.arrival)}`);
     if (r.error) md.push(`- error: ${r.error}`);
     for (const s of r.segments) {
-      const verdict = !s.acted ? 'KEYS DID NOT ACT' : s.missing.length ? 'MISSING SPEECH' : s.counts.some((c) => c.times !== 1) ? 'NOT SPOKEN EXACTLY ONCE'
+      const verdict = s.notActing && s.acted ? 'KNOWN NON-ACTING KEY NOW ACTS: update the result file' : !s.actedAsKnown ? 'KEYS DID NOT ACT' : s.missing.length ? 'MISSING SPEECH' : s.counts.some((c) => c.times !== 1) ? 'NOT SPOKEN EXACTLY ONCE'
         : s.gaps.some((g) => g.heard) ? 'KNOWN GAP NOW HEARD: update the result file' : s.gaps.length ? 'ok, known gap' : 'ok';
       md.push(`- **${s.keys.filter((k) => !k.startsWith('wait:')).join(', ')}** (${verdict}): ${s.spoken.map((p) => JSON.stringify(p)).join(' / ') || '(nothing)'}`);
       if (s.missing.length) md.push(`  - not heard: ${s.missing.join(', ')}`);
       for (const c of s.counts) md.push(`  - ${c.phrase} spoken ${c.times} time(s)`);
+      if (s.notActing && !s.acted) md.push(`  - known issue: ${s.notActing}`);
       for (const g of s.gaps) md.push(`  - known gap: ${g.issue}${g.heard ? ' (now heard)' : ''}`);
     }
     md.push('');

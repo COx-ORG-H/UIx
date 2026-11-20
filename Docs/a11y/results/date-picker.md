@@ -55,7 +55,7 @@ Nobody has run a pairing yet. The rows below are NVDA's own speech from the auto
 
 ## Known issues
 
-- NVDA (automated run 44725485902): with the calendar open, NVDA said "Calendar, dialog" and, after ArrowLeft, "out of toggle button, toggle button, not pressed": the focused day's name ("Thursday, 19 November 2026") was not spoken. Needs a human NVDA pass to confirm; if it holds, it fails item 1 for NVDA.
+- **NVDA cannot arrow through the calendar in browse mode** (automated runs 44725485902 and 44733256135). The days are a `group` of buttons, not an APG `grid`, so opening the calendar leaves NVDA in browse mode: ArrowLeft moves NVDA's own cursor ("out of toggle button, toggle button, not pressed") and the focused day stays on 20 November. A user has to switch to focus mode (NVDA+Space) first; the lane checks that the arrows then work. Likely fix: the APG date-picker grid (`role="grid"`, rows, `gridcell`s), which NVDA and JAWS put in focus mode on their own. Design change: needs a ticket and a human NVDA + JAWS pass first. Fails item 5 for NVDA as things stand.
 - Whether readers say that 18 November is today (`aria-current="date"`) is unverified (script step 5).
 - Unavailable days take focus by design and must be announced as unavailable (script step 6).
 

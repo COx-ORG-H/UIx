@@ -30,9 +30,9 @@ either: it tells the product's tester where to look first.
 |-----------|-------------------------------|-------------------------|-------------------------|---------------------------|
 | Button | yes | not run | NVDA + Firefox, JAWS + Chrome (protocol 1, 2.6.0) | Confirm the 2026-07-03 record is a real run (it doubles as the protocol's worked example); add NVDA + Chrome; test the product's own buttons |
 | DataWorkspace | yes | fail: a focused row is spoken as "row" | none | Human NVDA + Chrome, JAWS + Chrome, VoiceOver iOS, TalkBack (touch-relevant); resolve or disprove the row-focus and selection-count findings |
-| CommandPalette | yes | pass | none | Human NVDA + Chrome and JAWS + Chrome |
+| CommandPalette | yes | pass, with a known gap (the final count after clearing is not spoken) | none | Human NVDA + Chrome and JAWS + Chrome |
 | Combobox, EntityPicker | yes | fail: EntityPicker option and count not spoken | none | Human NVDA + Chrome and JAWS + Chrome; confirm the EntityPicker finding |
-| DatePicker | yes | fail: the focused day is spoken without its date | none | Human NVDA + Chrome, JAWS + Chrome, VoiceOver iOS, TalkBack (touch-relevant); confirm the day-name finding |
+| DatePicker | yes | fail: the calendar's arrows do nothing in NVDA's browse mode | none | Human NVDA + Chrome, JAWS + Chrome, VoiceOver iOS, TalkBack (touch-relevant); confirm the day-name finding |
 | DiffViewer | yes | fail: the new pressed state is not spoken | none | Human NVDA + Chrome and JAWS + Chrome; confirm the pressed-state finding |
 | Toast and live regions | yes | pass | none | Human NVDA + Chrome and JAWS + Chrome |
 
@@ -58,8 +58,12 @@ pairings for all six (12 runs) plus the two mobile pairings for DataWorkspace an
   grid / treegrid row model or focus on a named cell. Design change, needs a ticket.
 - **DataWorkspace selection count** is not a live region. Small, but changes what every product
   hears: needs a ticket and a decision on the wording.
-- **DatePicker day names**, **EntityPicker options and count**, **DiffViewer pressed state**: seen in
-  one automated NVDA run; a person confirms first, then each gets a ticket.
+- **DatePicker calendar in NVDA browse mode**: the days are a group of buttons, so NVDA keeps the
+  arrow keys and a user must switch to focus mode. The APG grid pattern is the likely fix; design
+  change, needs a ticket.
+- **EntityPicker options and count**, **Combobox group label instead of the option**, **DiffViewer
+  pressed state**, **CommandPalette final count**: seen in automated NVDA runs; a person confirms
+  first, then each gets a ticket.
 - **EntityPicker "1 results"**: covered by the plural-aware labels work package.
 - Fixed in #302: a polite toast spoken twice under React StrictMode.
 
