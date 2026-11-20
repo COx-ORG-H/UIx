@@ -1,6 +1,7 @@
 # UIx engineering lessons
 
 <!-- lesson-skip: 0f42b0d0 routine review fixes on unreleased rule 10 (cascade-order fold, cross-file aliases, inline TS animations) and a comment over the css-size tolerance the gate named; each pinned by a check-motion test -->
+<!-- lesson-skip: 4eeb9a70 routine third-round review fixes on unreleased rule 10; replaced cascade emulation with a stricter same-rule contract, pinned by check-motion tests -->
 <!-- lesson-skip: d03e5925 routine second-round review fixes on unreleased rule 10 (cascade winner, !important, inherit, formatted calls); each pinned by a check-motion test -->
 <!-- lesson-skip: 51b4c1c routine: a fixed-width id cell did not clip; found by looking at the 1280 px shot -->
 <!-- lesson-skip: 6a65e33 routine: a state colour pair below AA (same family as the 1d66ae0 / 217df0e entries: check a state colour in every theme), now a row-state contrast matrix; and a (0,2,1) density rule outranking the (0,1,1) cards reset, the 2026-10-23 specificity lesson again, pinned by a Chromium spec -->
