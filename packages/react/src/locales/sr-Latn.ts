@@ -685,6 +685,23 @@ export const srLatn: UixLabelPack = {
     forbidden: 'Ne možete da vidite ovu istoriju',
     forbiddenDetail: 'Zatražite pristup od administratora ove ustanove.',
   },
+  actionPanel: {
+    title: 'Radnje za {name}',
+    titleUnnamed: 'Radnje',
+    search: 'Pretraži radnje',
+    empty: 'Nema odgovarajućih radnji',
+    resultsOne: '{count} radnja',
+    resultsMany: {
+      one: '{count} radnja',
+      few: '{count} radnje',
+      other: '{count} radnji',
+    },
+    open: 'Prikaži radnje',
+    destructiveGroup: 'Opasne radnje',
+    confirmTitle: '{action}?',
+    confirmBody: 'Ovo se ne može poništiti.',
+    cancel: 'Otkaži',
+  },
   dataWorkspace: {
     search: 'Pretraga',
     searchPlaceholder: 'Pretraži…',

@@ -692,6 +692,23 @@ export const srCyrl: UixLabelPack = {
     forbidden: 'Не можете да видите ову историју',
     forbiddenDetail: 'Затражите приступ од администратора ове установе.',
   },
+  actionPanel: {
+    title: 'Радње за {name}',
+    titleUnnamed: 'Радње',
+    search: 'Претражи радње',
+    empty: 'Нема одговарајућих радњи',
+    resultsOne: '{count} радња',
+    resultsMany: {
+      one: '{count} радња',
+      few: '{count} радње',
+      other: '{count} радњи',
+    },
+    open: 'Прикажи радње',
+    destructiveGroup: 'Опасне радње',
+    confirmTitle: '{action}?',
+    confirmBody: 'Ово се не може поништити.',
+    cancel: 'Откажи',
+  },
   dataWorkspace: {
     search: 'Претрага',
     searchPlaceholder: 'Претражи…',
