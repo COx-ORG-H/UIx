@@ -25,12 +25,11 @@
   /* roadmap #9: the alias that matched, "Mark done (Archive)" — the real name leads, the alias explains */
   .uix-cmdk__alias { color: var(--uix-text-muted); }
   /* an item that opens a page ends in the icon set's chevron-right, in the muted text colour */
-  .uix-cmdk__chevron {
-    flex: none; width: var(--uix-icon-sm); height: var(--uix-icon-sm); background: var(--uix-text-muted);
-    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E") center / contain no-repeat;
-    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E") center / contain no-repeat;
-  }
-  .uix-cmdk__chevron:dir(rtl) { scale: -1 1; }
+  .uix-cmdk__chevron { display: inline-flex; flex: none; color: var(--uix-text-muted); }
+  .uix-cmdk__item .uix-cmdk__chevron svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
+  :is(.uix-cmdk__chevron, .uix-cmdk__crumbs .uix-breadcrumbs__sep):dir(rtl) svg { scale: -1 1; }
+  .uix-cmdk__crumbs .uix-breadcrumbs__sep { display: inline-flex; }
+  .uix-cmdk__crumbs .uix-breadcrumbs__sep svg { width: var(--uix-icon-sm); height: var(--uix-icon-sm); }
   /* a source's rows from the previous query while the next answer loads: kept in place, dimmed only
      once the search takes a moment (the pending delay), back at once when it answers */
   .uix-cmdk__item[data-stale] { opacity: .6; cursor: default; transition: opacity var(--uix-dur-fast) var(--uix-ease-out) var(--uix-delay-pending); }

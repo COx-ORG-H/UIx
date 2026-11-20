@@ -15,6 +15,7 @@ import type { CommandFrecency } from '../hooks/useCommandFrecency.js';
 import { PENDING_DELAY_MS } from '../motion-timing.js';
 import { searchSegments } from '../search-suggest-model.js';
 import { Breadcrumbs } from './Breadcrumbs.js';
+import { ChevronRightIcon } from '../icons/components.js';
 import { DelayedRender } from './DelayedRender.js';
 import { KbdCombo, ariaKeyShortcutsFor, useKbdPlatform } from './Kbd.js';
 import { toSequence } from '../shortcut-hooks.js';
@@ -532,7 +533,7 @@ function CommandPaletteItems({
           {item.description && <span className="uix-cmdk__desc">{item.description}</span>}
         </span>
         {keys ? <span className="uix-cmdk__shortcut"><KbdCombo keys={keys} platform={platform} /></span> : null}
-        {item.page && <span className="uix-cmdk__chevron" aria-hidden="true" />}
+        {item.page && <span className="uix-cmdk__chevron" aria-hidden="true"><ChevronRightIcon size="sm" /></span>}
       </div>
     );
   };
@@ -560,7 +561,7 @@ function CommandPaletteItems({
     <Breadcrumbs
       className="uix-cmdk__crumbs"
       label={labels?.breadcrumb ?? 'Breadcrumb'}
-      separator="›"
+      separator={<ChevronRightIcon size="sm" />}
       items={[
         { label: inputLabel, id: '\u0000' },
         ...stack.slice(0, -1).map((level) => ({ label: level.page.label, id: level.page.id })),
