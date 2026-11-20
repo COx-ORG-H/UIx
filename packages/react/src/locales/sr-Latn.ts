@@ -21,6 +21,8 @@
  * has to agree with the number.
  */
 import type { UixLabelPack } from '../labels-context.js';
+
+export type { UixLabelPack } from '../labels-context.js';
 import { countLabel } from '../plural.js';
 
 const percent = new Intl.NumberFormat('sr-Latn', { style: 'percent', maximumFractionDigits: 0 });
@@ -105,6 +107,9 @@ export const srLatn: UixLabelPack = {
     motion: 'Animacije',
     motionSystem: 'Kao u sistemu',
     motionReduce: 'Smanjene',
+    transparency: 'Providnost',
+    transparencyStandard: 'Standardna',
+    transparencyReduce: 'Smanjena',
     density: 'Gustina',
     densityCompact: 'Zbijena',
     densityStandard: 'Standardna',

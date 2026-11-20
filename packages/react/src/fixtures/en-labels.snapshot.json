@@ -241,7 +241,10 @@
     "density": "Density",
     "densityCompact": "Compact",
     "densityStandard": "Standard",
-    "densityComfortable": "Comfortable"
+    "densityComfortable": "Comfortable",
+    "transparency": "Transparency",
+    "transparencyStandard": "Standard",
+    "transparencyReduce": "Reduce"
   },
   "DEFAULT_ENTITY_PICKER_LABELS": {
     "search": "Search",

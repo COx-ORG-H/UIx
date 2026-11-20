@@ -8,6 +8,8 @@
  */
 import type { UixLabelPack } from '../labels-context.js';
 
+export type { UixLabelPack } from '../labels-context.js';
+
 const percent = new Intl.NumberFormat('en', { style: 'percent', maximumFractionDigits: 0 });
 const STATUS = { done: 'Done', failed: 'Failed', cancelled: 'Cancelled' } as const;
 
@@ -90,6 +92,9 @@ export const en: UixLabelPack = {
     motion: 'Motion',
     motionSystem: 'System',
     motionReduce: 'Reduce',
+    transparency: 'Transparency',
+    transparencyStandard: 'Standard',
+    transparencyReduce: 'Reduce',
     density: 'Density',
     densityCompact: 'Compact',
     densityStandard: 'Standard',

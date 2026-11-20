@@ -14,6 +14,8 @@
  */
 import type { UixLabelPack } from '../labels-context.js';
 
+export type { UixLabelPack } from '../labels-context.js';
+
 const percent = new Intl.NumberFormat('de', { style: 'percent', maximumFractionDigits: 0 });
 const STATUS = { done: 'Fertig', failed: 'Fehlgeschlagen', cancelled: 'Abgebrochen' } as const;
 
@@ -96,6 +98,9 @@ export const de: UixLabelPack = {
     motion: 'Bewegung',
     motionSystem: 'System',
     motionReduce: 'Reduziert',
+    transparency: 'Transparenz',
+    transparencyStandard: 'Standard',
+    transparencyReduce: 'Reduziert',
     density: 'Dichte',
     densityCompact: 'Kompakt',
     densityStandard: 'Standard',

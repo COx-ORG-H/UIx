@@ -17,6 +17,8 @@
  * and `other` (0, 5–20, 25–30, 100 …).
  */
 import type { UixLabelPack } from '../labels-context.js';
+
+export type { UixLabelPack } from '../labels-context.js';
 import { countLabel } from '../plural.js';
 
 const percent = new Intl.NumberFormat('hr', { style: 'percent', maximumFractionDigits: 0 });
@@ -101,6 +103,9 @@ export const hr: UixLabelPack = {
     motion: 'Animacije',
     motionSystem: 'Sustav',
     motionReduce: 'Smanjene',
+    transparency: 'Prozirnost',
+    transparencyStandard: 'Standardna',
+    transparencyReduce: 'Smanjena',
     density: 'Gustoća',
     densityCompact: 'Zbijena',
     densityStandard: 'Standardna',

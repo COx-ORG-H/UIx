@@ -28,6 +28,8 @@
  * has to agree with the number.
  */
 import type { UixLabelPack } from '../labels-context.js';
+
+export type { UixLabelPack } from '../labels-context.js';
 import { countLabel } from '../plural.js';
 
 const percent = new Intl.NumberFormat('sr-Cyrl', { style: 'percent', maximumFractionDigits: 0 });
@@ -112,6 +114,9 @@ export const srCyrl: UixLabelPack = {
     motion: 'Анимације',
     motionSystem: 'Као у систему',
     motionReduce: 'Смањене',
+    transparency: 'Провидност',
+    transparencyStandard: 'Стандардна',
+    transparencyReduce: 'Смањена',
     density: 'Густина',
     densityCompact: 'Збијена',
     densityStandard: 'Стандардна',

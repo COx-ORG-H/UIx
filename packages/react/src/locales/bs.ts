@@ -15,6 +15,8 @@
  * `Intl.PluralRules('bs')`: one = 1, 21, 31, 101; few = 2–4, 22–24; other = 0, 5–20, 25–30, 100.
  */
 import type { UixLabelPack } from '../labels-context.js';
+
+export type { UixLabelPack } from '../labels-context.js';
 import { countLabel } from '../plural.js';
 
 const percent = new Intl.NumberFormat('bs', { style: 'percent', maximumFractionDigits: 0 });
@@ -99,6 +101,9 @@ export const bs: UixLabelPack = {
     motion: 'Animacije',
     motionSystem: 'Prema sistemu',
     motionReduce: 'Smanjene',
+    transparency: 'Providnost',
+    transparencyStandard: 'Standardna',
+    transparencyReduce: 'Smanjena',
     density: 'Gustina prikaza',
     densityCompact: 'Zbijena',
     densityStandard: 'Standardna',
