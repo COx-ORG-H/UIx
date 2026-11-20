@@ -336,7 +336,7 @@ export interface AuditLogLabels {
     // (undocumented)
     forbiddenDetail: string;
     list: string;
-    loaded: string;
+    loaded: UixCountLabel;
     // (undocumented)
     loading: string;
     loadingMore: string;
@@ -1449,6 +1449,9 @@ export interface CopyButtonProps {
 // @public
 export function Count(input: CountProps): react.JSX.Element;
 
+// @public
+export function countLabel(label: UixCountLabel, count: number, locale?: string, one?: string): string;
+
 // @public (undocumented)
 export interface CountProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
     arrive?: boolean;
@@ -1604,7 +1607,7 @@ export interface DashboardGridProps extends HTMLAttributes<HTMLDivElement> {
 export type DashboardGridSpan = 1 | 2 | 'full';
 
 // @public
-export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null, Q = DataWorkspaceQuery>(input: DataWorkspaceProps<T, S, Q>): react.JSX.Element;
+export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null>(input: DataWorkspaceProps<T, S>): react.JSX.Element;
 
 // @public (undocumented)
 export interface DataWorkspaceColumn<T> {
@@ -1663,10 +1666,7 @@ export interface DataWorkspaceLabels {
     bulkActions: string;
     // (undocumented)
     clearFilters: string;
-    // (undocumented)
-    clearSelection: string;
     collapseGroup: string;
-    dismiss: string;
     // (undocumented)
     empty: string;
     // (undocumented)
@@ -1678,7 +1678,7 @@ export interface DataWorkspaceLabels {
     filteredEmpty: string;
     // (undocumented)
     filteredEmptyDetail: string;
-    groupCount: string;
+    groupCount: UixCountLabel;
     groupCountOne: string;
     // (undocumented)
     loading: string;
@@ -1686,8 +1686,6 @@ export interface DataWorkspaceLabels {
     maximize: string;
     more?: string;
     open: string;
-    querySearch: string;
-    querySeparator: string;
     range: string;
     restore: string;
     // (undocumented)
@@ -1707,22 +1705,9 @@ export interface DataWorkspaceLabels {
     searchPlaceholder: string;
     // (undocumented)
     selectAll: string;
-    selectAllMatching: string;
-    selected: string;
-    selectedAll: string;
-    selectedAllMatching: string;
+    selected: UixCountLabel;
     selectGroup: string;
-    selectionAll: string;
-    selectionAllMatching: string;
-    selectionCleared: string;
-    selectionExcept: string;
-    selectionExceptMatching: string;
-    selectionPage: string;
-    selectionStale: string;
     selectRow: string;
-    shortcutSelectPage: string;
-    shortcutSelectRange: string;
-    shortcutToggleRow: string;
     sortPriority: string;
     // (undocumented)
     view: string;
@@ -1753,17 +1738,16 @@ export type DataWorkspacePagination = ({
 };
 
 // @public (undocumented)
-export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null, Q = DataWorkspaceQuery> extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWorkspaceSort | null> extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
     activateOnClick?: boolean;
     activeRowId?: string | null;
     beforeBody?: ReactNode;
-    bulkActions?: (selectedIds: string[], scope: SelectionScope<Q>) => ReactNode;
+    bulkActions?: (selectedIds: string[]) => ReactNode;
     collapsedGroups?: ReadonlySet<string>;
     // (undocumented)
     columns: readonly DataWorkspaceColumn<T>[];
     // (undocumented)
     density?: TableDensity;
-    disableRowActionsWhileSelected?: boolean;
     empty?: ReactNode;
     emptyAction?: ReactNode;
     error?: ReactNode;
@@ -1836,7 +1820,6 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
         maxLength?: number;
     };
     selection?: ReadonlySet<string>;
-    selectionScope?: DataWorkspaceSelectionScope<Q>;
     sort?: S;
     stateOverride?: ReactNode;
     status?: 'ready' | 'loading' | 'error';
@@ -1849,25 +1832,9 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
 }
 
 // @public
-export interface DataWorkspaceQuery {
-    filters: Record<string, FilterValue>;
-    search: string;
-}
-
-// @public
 export interface DataWorkspaceRowActionsContext {
     compact: boolean;
     ladder: 'cards' | 'priority' | 'priority-mid' | null;
-}
-
-// @public
-export interface DataWorkspaceSelectionScope<Q = DataWorkspaceQuery> {
-    description?: ReactNode;
-    onChange: (scope: SelectionScope<Q>) => void;
-    onQueryChange?: 'clear' | 'confirm';
-    query?: Q;
-    total?: number;
-    value: SelectionScope<Q>;
 }
 
 // @public (undocumented)
@@ -2292,6 +2259,9 @@ export const DEFAULT_TOAST_RATE_LIMIT: ToastRateLimit;
 
 // @public (undocumented)
 export const DEFAULT_TREE_LABELS: TreeLabels;
+
+// @public (undocumented)
+export const DEFAULT_USE_TABLE_LABELS: UseTableLabels;
 
 // @public
 export const defaultTimelineStep: (scale: TimelineScale) => number;
@@ -2720,9 +2690,6 @@ export function edgeLabelSize(lines: readonly string[]): {
 export function effectiveShortcut(id: string, defaultKeys: ShortcutBinding | null | undefined, preferences: ShortcutPreferenceValues): KeySequence | null;
 
 // @public
-export const EMPTY_SELECTION_SCOPE: SelectionScopeIds;
-
-// @public
 export function emptyFilterValue(kind: FilterValueKind): FilterValue;
 
 // @public
@@ -2758,12 +2725,12 @@ export interface EntityPickerLabels {
     loading: string;
     more: string;
     none: string;
-    results: string;
-    resultsMore: string;
+    results: UixCountLabel;
+    resultsMore: UixCountLabel;
     // (undocumented)
     retry: string;
     search: string;
-    tooShort: string;
+    tooShort: UixCountLabel;
     typeToSearch: string;
 }
 
@@ -2989,7 +2956,7 @@ export interface FileDropLabels {
     chooseLabel: string;
     dragRelease: string;
     dragSummary: string;
-    fileMany: string;
+    fileMany: UixCountLabel;
     fileOne: string;
     prompt: string;
 }
@@ -3153,7 +3120,7 @@ export interface FileUploadItem {
 
 // @public (undocumented)
 export interface FileUploadLabels {
-    added: string;
+    added: UixCountLabel;
     alt: string;
     // (undocumented)
     choose: string;
@@ -3172,7 +3139,7 @@ export interface FileUploadLabels {
     retryShort: string;
     title: string;
     tooLarge: string;
-    tooMany: string;
+    tooMany: UixCountLabel;
     uploading: string;
     wrongType: string;
 }
@@ -3265,7 +3232,7 @@ export interface FilterEditorLabels {
     searching: string;
     // (undocumented)
     selectAll: string;
-    selected: string;
+    selected: UixCountLabel;
     // (undocumented)
     selectNone: string;
     // (undocumented)
@@ -3868,16 +3835,10 @@ export function isDateUnavailable(date: string, options: {
 export function isFilterEmpty(value: FilterValue | undefined): boolean;
 
 // @public
-export function isInSelectionScope(scope: SelectionScope<unknown>, id: string): boolean;
-
-// @public
 export const isOvernightRange: (min?: string, max?: string) => boolean;
 
 // @public (undocumented)
 export function isRuleGroup(node: RuleCondition | RuleGroup): node is RuleGroup;
-
-// @public
-export function isSelectionScopeEmpty(scope: SelectionScope<unknown>): boolean;
 
 // @public
 export function isTimeOutOfRange(value: string, min?: string, max?: string): boolean;
@@ -4475,11 +4436,11 @@ export interface MatchReviewLabels {
     // (undocumented)
     accept: string;
     // (undocumented)
-    acceptedMany: string;
+    acceptedMany: UixCountLabel;
     // (undocumented)
     acceptedOne: string;
     // (undocumented)
-    acceptingMany: string;
+    acceptingMany: UixCountLabel;
     // (undocumented)
     acceptingOne: string;
     // (undocumented)
@@ -4487,11 +4448,11 @@ export interface MatchReviewLabels {
     // (undocumented)
     actions: string;
     adopt: string;
-    adoptedMany: string;
+    adoptedMany: UixCountLabel;
     adoptedOne: string;
     adoptFailed: string;
     adoptField: string;
-    adoptSelectedMany: string;
+    adoptSelectedMany: UixCountLabel;
     adoptSelectedOne: string;
     // (undocumented)
     applying: string;
@@ -4520,11 +4481,11 @@ export interface MatchReviewLabels {
     // (undocumented)
     dismiss: string;
     // (undocumented)
-    dismissedMany: string;
+    dismissedMany: UixCountLabel;
     // (undocumented)
     dismissedOne: string;
     // (undocumented)
-    dismissingMany: string;
+    dismissingMany: UixCountLabel;
     // (undocumented)
     dismissingOne: string;
     // (undocumented)
@@ -4533,8 +4494,7 @@ export interface MatchReviewLabels {
     empty: string;
     // (undocumented)
     emptyDetail: string;
-    // (undocumented)
-    failedSuffix: string;
+    failedSuffix: UixCountLabel;
     // (undocumented)
     field: string;
     // (undocumented)
@@ -4559,8 +4519,7 @@ export interface MatchReviewLabels {
     select: string;
     // (undocumented)
     selectCandidate: string;
-    // (undocumented)
-    selectedCount: string;
+    selectedCount: UixCountLabel;
     // (undocumented)
     split: string;
     // (undocumented)
@@ -5424,7 +5383,7 @@ export interface OrgChartLabels {
     expand: string;
     fit: string;
     loading: string;
-    reportsMany: string;
+    reportsMany: UixCountLabel;
     reportsOne: string;
     resetZoom: string;
     retry: string;
@@ -5816,6 +5775,9 @@ export function placeSpan(span: {
     start: string;
     end: string;
 }, range: TimelineRange): Omit<PlacedSpan, 'item' | 'row' | 'conflict'> | null;
+
+// @public
+export function pluralCategory(count: number, locale?: string): Intl.LDMLPluralRule;
 
 // @public
 export function Popconfirm(input: PopconfirmProps): react.JSX.Element;
@@ -6744,8 +6706,7 @@ export interface RuleBuilderLabels {
     issueMissingOperator: string;
     // (undocumented)
     issueNoActions: string;
-    // (undocumented)
-    issuesMany: string;
+    issuesMany: UixCountLabel;
     // (undocumented)
     issuesOne: string;
     // (undocumented)
@@ -6776,8 +6737,7 @@ export interface RuleBuilderLabels {
     removeNamed: string;
     // (undocumented)
     summary: string;
-    // (undocumented)
-    summaryIssuesMany: string;
+    summaryIssuesMany: UixCountLabel;
     // (undocumented)
     summaryIssuesOne: string;
     // (undocumented)
@@ -7072,25 +7032,25 @@ export interface SchedulingCalendarLabels {
     allDay?: string;
     availability?: Partial<Record<SchedulingAvailabilityKind, string>>;
     continuesFrom?: string;
-    continuesInDay?: string;
-    dayCount?: string;
+    continuesInDay?: UixCountLabel;
+    dayCount?: UixCountLabel;
     dayName?: string;
     entry: string;
     fewerEntries: string;
     gapForward?: string;
     // (undocumented)
     grid: string;
-    hiddenInDay?: string;
+    hiddenInDay?: UixCountLabel;
     // (undocumented)
     legend: string;
     // (undocumented)
     loading: string;
-    moreEntries: string;
-    moreEntriesLabel: string;
+    moreEntries: UixCountLabel;
+    moreEntriesLabel: UixCountLabel;
     moreSpans?: string;
-    moreSpansLabel?: string;
-    moreWindows?: string;
-    moreWindowsLabel?: string;
+    moreSpansLabel?: UixCountLabel;
+    moreWindows?: UixCountLabel;
+    moreWindowsLabel?: UixCountLabel;
     moveCancelled?: string;
     moveHint?: string;
     moveProposed?: string;
@@ -7362,7 +7322,7 @@ export interface SchedulingTimelineLabels {
     // (undocumented)
     empty: string;
     gapForward?: string;
-    groupSummary?: string;
+    groupSummary?: UixCountLabel;
     item: string;
     // (undocumented)
     lanes: string;
@@ -7648,9 +7608,6 @@ export interface SegmentedProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
 // @public
 export const Select: react.ForwardRefExoticComponent<SelectProps & react.RefAttributes<HTMLSelectElement>>;
 
-// @public
-export function selectAllMatching<Q>(query: Q, total: number): SelectionScopeQuery<Q>;
-
 // @public (undocumented)
 export type SelectAllState = 'none' | 'some' | 'all';
 
@@ -7667,35 +7624,6 @@ export interface SelectGroup {
 }
 
 // @public
-export function selectionQueryKey(query: unknown): string;
-
-// @public
-export type SelectionScope<Q = unknown> = SelectionScopeIds | SelectionScopeQuery<Q>;
-
-// @public
-export function selectionScopeCount(scope: SelectionScope<unknown>): number;
-
-// @public
-export interface SelectionScopeIds {
-    // (undocumented)
-    ids: readonly string[];
-    // (undocumented)
-    kind: 'ids';
-}
-
-// @public
-export function selectionScopeMatcher(scope: SelectionScope<unknown>): (id: string) => boolean;
-
-// @public
-export interface SelectionScopeQuery<Q = unknown> {
-    excludedIds: readonly string[];
-    // (undocumented)
-    kind: 'query';
-    query: Q;
-    total: number;
-}
-
-// @public
 export interface SelectLabels {
     clear: string;
     done: string;
@@ -7704,12 +7632,12 @@ export interface SelectLabels {
     // (undocumented)
     loading: string;
     noMatches: string;
-    results: string;
+    results: UixCountLabel;
     // (undocumented)
     retry: string;
     search: string;
     searchPlaceholder: string;
-    selectedCount: string;
+    selectedCount: UixCountLabel;
 }
 
 // @public
@@ -7757,9 +7685,6 @@ export function separateEdgeLabels(boxes: readonly EdgeLabelBox[], options?: {
 
 // @public
 export function serializeView(v: ViewState): string;
-
-// @public
-export function setInSelectionScope<Q>(scope: SelectionScope<Q>, ids: readonly string[], on: boolean, cap?: number): SelectionScope<Q>;
 
 // @public
 export function setRuleCombinator(group: RuleGroup, combinator: 'and' | 'or'): RuleGroup;
@@ -8554,7 +8479,7 @@ export function TagInput(input: TagInputProps): react.JSX.Element;
 // @public
 export interface TagInputLabels {
     added: string;
-    count: string;
+    count: UixCountLabel;
     duplicate: string;
     list: string;
     max: string;
@@ -8791,7 +8716,7 @@ export interface TextDiffLabels {
     // (undocumented)
     noChanges: string;
     removed: string;
-    showUnchanged: string;
+    showUnchanged: UixCountLabel;
     summary: string;
     // (undocumented)
     tooLarge: string;
@@ -9339,9 +9264,6 @@ export function toDateKey(date: Date): string;
 export function toggleId(set: ReadonlySet<string>, id: string): Set<string>;
 
 // @public
-export function toggleInSelectionScope<Q>(scope: SelectionScope<Q>, id: string, cap?: number): SelectionScope<Q>;
-
-// @public
 export function togglePage(selected: ReadonlySet<string>, pageIds: readonly string[]): Set<string>;
 
 // @public (undocumented)
@@ -9508,12 +9430,22 @@ export interface TrProps extends HTMLAttributes<HTMLTableRowElement> {
 }
 
 // @public
+export type UixCountLabel = string | UixPluralForms | ((count: number) => string);
+
+// @public
 export interface UixDateFormat {
     formatDate?: (date: string) => string;
     locale?: string;
     parseDate?: (text: string) => string | null;
     placeholder?: string;
 }
+
+// @public
+export type UixLabelPack = {
+    [K in Exclude<keyof UixLabels, 'locale' | 'dateFormat'>]-?: Required<NonNullable<UixLabels[K]>>;
+} & {
+    locale: string;
+};
 
 // @public
 export interface UixLabels {
@@ -9541,7 +9473,7 @@ export interface UixLabels {
     commandPalette?: {
         input?: string;
         resultsOne?: string;
-        resultsMany?: string;
+        resultsMany?: UixCountLabel;
         empty?: string;
         recent?: string;
     };
@@ -9586,6 +9518,7 @@ export interface UixLabels {
     kanban?: Partial<KanbanLabels>;
     keyboardGrab?: Partial<KeyboardGrabLabels>;
     lightbox?: Partial<LightboxLabels>;
+    locale?: string;
     matchReview?: Partial<MatchReviewLabels>;
     // (undocumented)
     modal?: {
@@ -9623,6 +9556,7 @@ export interface UixLabels {
         collapse?: string;
     };
     sortableList?: Partial<SortableListLabels>;
+    table?: Partial<UseTableLabels>;
     tagInput?: Partial<TagInputLabels>;
     taskTray?: Partial<TaskTrayLabels>;
     // (undocumented)
@@ -9660,6 +9594,22 @@ export interface UixLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
     className?: string;
     // (undocumented)
     href: string;
+}
+
+// @public
+export interface UixPluralForms {
+    // (undocumented)
+    few?: string;
+    // (undocumented)
+    many?: string;
+    // (undocumented)
+    one?: string;
+    // (undocumented)
+    other: string;
+    // (undocumented)
+    two?: string;
+    // (undocumented)
+    zero?: string;
 }
 
 // @public
@@ -9782,6 +9732,9 @@ export interface UseOptimisticValueResult<T> {
 }
 
 // @public
+export function usePluralLabel(): (label: UixCountLabel, count: number, one?: string) => string;
+
+// @public
 export function UserChip(input: UserChipProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -9849,6 +9802,16 @@ export function useSlidingIndicator(containerRef: RefObject<HTMLElement | null>,
 // @public
 export function useTable<T extends Row>(data: readonly T[], options?: UseTableOptions): UseTableResult<T>;
 
+// @public
+export interface UseTableLabels {
+    ascending: string;
+    descending: string;
+    results: UixCountLabel;
+    selected: UixCountLabel;
+    sortCleared: string;
+    sorted: string;
+}
+
 // @public (undocumented)
 export interface UseTableOptions {
     idField?: string;
@@ -9859,6 +9822,7 @@ export interface UseTableOptions {
     initialQuery?: string;
     // (undocumented)
     initialSort?: SortKey[];
+    labels?: Partial<UseTableLabels>;
     searchFields?: readonly string[];
 }
 
@@ -9904,6 +9868,9 @@ export function useToastQuiet(store?: ToastStore): boolean;
 
 // @public
 export function useUixLabels(): UixLabels;
+
+// @public
+export function useUixLocale(): string | undefined;
 
 // @public
 export function useViewTransition(): StartViewTransition;

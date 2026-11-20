@@ -8,7 +8,9 @@ import type {
 import { cx } from '../cx.js';
 import { toggleSort } from '../table-engine.js';
 import { fillLabel } from '../fill-label.js';
-import { useUixLabels } from '../labels-context.js';
+import { useUixLabels, useUixLocale } from '../labels-context.js';
+import { countLabel } from '../plural.js';
+import type { UixCountLabel } from '../plural.js';
 import { renderUixLink } from '../link.js';
 import type { UixRenderLink } from '../link.js';
 import { isFilterEmpty, summarizeFilter } from '../filter-model.js';
@@ -69,33 +71,34 @@ export interface DataWorkspaceLabels {
   selectAll: string;
   /** `{label}`: the row's id. */
   selectRow: string;
-  /** `{count}` selected, in the bulk bar. */
-  selected: string;
+  /** `{count}` selected, in the bulk bar. Takes the plural forms or a function of the count too. */
+  selected: UixCountLabel;
   bulkActions: string;
   /**
    * Selection scope (roadmap #12). The bulk bar's count under "all matching" with no filter or
-   * search: `{count}`.
+   * search: `{count}`. Every selection-scope label with a `{count}` takes the plural forms or a
+   * function of the count too (the form follows `{count}`).
    */
-  selectedAll: string;
+  selectedAll: UixCountLabel;
   /** The same with a filter or search: `{count}`, `{query}` (the filter in words). */
-  selectedAllMatching: string;
+  selectedAllMatching: UixCountLabel;
   /** The scope banner once the whole page is selected: `{count}` (the rows on the page). */
-  selectionPage: string;
+  selectionPage: UixCountLabel;
   /** The banner's button that selects every matching record: `{count}` (the matching total). */
-  selectAllMatching: string;
+  selectAllMatching: UixCountLabel;
   /** Every record selected, no filter or search: `{count}`. */
-  selectionAll: string;
+  selectionAll: UixCountLabel;
   /** Every matching record selected: `{count}`, `{query}`. */
-  selectionAllMatching: string;
+  selectionAllMatching: UixCountLabel;
   /** Every record selected, some unticked since: `{count}` of `{total}`. */
-  selectionExcept: string;
+  selectionExcept: UixCountLabel;
   /** Every matching record selected, some unticked since: `{count}`, `{total}`, `{query}`. */
-  selectionExceptMatching: string;
+  selectionExceptMatching: UixCountLabel;
   clearSelection: string;
   /** The filter or search changed under an "all matching" selection, which was dropped. */
   selectionCleared: string;
   /** The same with `onQueryChange: 'confirm'`: `{count}` (the old selection). */
-  selectionStale: string;
+  selectionStale: UixCountLabel;
   /** Hides the "Selection cleared" note. */
   dismiss: string;
   /** The search, in `{query}`: `{search}`. */
@@ -123,9 +126,12 @@ export interface DataWorkspaceLabels {
   retry: string;
   /** A sorted header's place among two or more sort keys (HAR-2623): `{n}`. */
   sortPriority: string;
-  /** A group header's row count (HAR-2625): `{count}`. */
-  groupCount: string;
-  /** The same for one row. */
+  /**
+   * A group header's row count (HAR-2625): `{count}`. Takes the plural forms
+   * (`{ one, few, other }`) or a function of the count too, and then `groupCountOne` is not read.
+   */
+  groupCount: UixCountLabel;
+  /** The same for one row, when `groupCount` is a plain string. */
   groupCountOne: string;
   /** A group header's toggle while the group is open: `{name}`. */
   collapseGroup: string;
@@ -152,15 +158,18 @@ export const DEFAULT_DATA_WORKSPACE_LABELS: DataWorkspaceLabels = {
   bulkActions: 'Bulk actions',
   selectedAll: '{count} selected · all rows',
   selectedAllMatching: '{count} selected · all matching {query}',
-  selectionPage: 'All {count} rows on this page are selected.',
+  selectionPage: { one: '{count} row on this page is selected.', other: 'All {count} rows on this page are selected.' },
   selectAllMatching: 'Select all {count} matching',
-  selectionAll: 'All {count} rows are selected.',
-  selectionAllMatching: 'All {count} rows matching {query} are selected.',
-  selectionExcept: '{count} of {total} rows are selected.',
-  selectionExceptMatching: '{count} of {total} rows matching {query} are selected.',
+  selectionAll: { one: '{count} row is selected.', other: 'All {count} rows are selected.' },
+  selectionAllMatching: { one: '{count} row matching {query} is selected.', other: 'All {count} rows matching {query} are selected.' },
+  selectionExcept: { one: '{count} of {total} rows is selected.', other: '{count} of {total} rows are selected.' },
+  selectionExceptMatching: { one: '{count} of {total} rows matching {query} is selected.', other: '{count} of {total} rows matching {query} are selected.' },
   clearSelection: 'Clear selection',
   selectionCleared: 'Selection cleared: the filter changed.',
-  selectionStale: 'The filter changed, so the {count} rows selected under the previous filter are not selected here.',
+  selectionStale: {
+    one: 'The filter changed, so the {count} row selected under the previous filter is not selected here.',
+    other: 'The filter changed, so the {count} rows selected under the previous filter are not selected here.',
+  },
   dismiss: 'Dismiss',
   querySearch: 'the search “{search}”',
   querySeparator: '; ',
@@ -653,6 +662,7 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
 }: DataWorkspaceProps<T, S, Q>) {
   const uixLabels = useUixLabels();
   const labels = { ...DEFAULT_DATA_WORKSPACE_LABELS, ...uixLabels.dataWorkspace, ...labelOverrides };
+  const workspaceLocale = useUixLocale();
   const id = useId();
   const searchRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLElement>(null);
@@ -933,8 +943,10 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
     setClearedUnder(queryKey);
     selectionScope.onChange(EMPTY_SELECTION_SCOPE);
   }, [stale, queryPolicy, queryKey]); // eslint-disable-line react-hooks/exhaustive-deps
-  const numbers = useMemo(() => new Intl.NumberFormat(), []);
+  // the workspace's language (UixLabelsProvider locale): its plural forms and its digit grouping
+  const numbers = useMemo(() => { try { return new Intl.NumberFormat(workspaceLocale); } catch { return new Intl.NumberFormat('en'); } }, [workspaceLocale]);
   const count = (n: number) => numbers.format(n);
+  const plural = (label: UixCountLabel, n: number) => countLabel(label, n, workspaceLocale);
   const matchingTotal = selectionScope?.total ?? (pagination?.mode === 'offset' ? pagination.total : undefined);
   // not while a refetch runs: the total may still be the previous query's
   const canSelectMatching = matchingTotal != null && matchingTotal > 0 && matchingTotal <= cap && !refreshing;
@@ -950,21 +962,21 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
   }
   /** After the banner's last action, focus goes to the header checkbox (the banner leaves). */
   const focusHeadCheckbox = () => rootRef.current?.querySelector<HTMLInputElement>('thead .uix-table__selcol input')?.focus();
-  const selectMatching = { label: fillLabel(labels.selectAllMatching, { count: count(matchingTotal ?? 0) }), run: () => { selectionScope?.onChange(selectAllMatching(queryNow as Q, matchingTotal ?? 0)); setClearedUnder(null); } };
+  const selectMatching = { label: fillLabel(plural(labels.selectAllMatching, matchingTotal ?? 0), { count: count(matchingTotal ?? 0) }), run: () => { selectionScope?.onChange(selectAllMatching(queryNow as Q, matchingTotal ?? 0)); setClearedUnder(null); } };
   const clearScope = { label: labels.clearSelection, run: () => { selectionScope?.onChange(EMPTY_SELECTION_SCOPE); setClearedUnder(null); focusHeadCheckbox(); } };
   let bannerText: ReactNode = null;
   let bannerPrimary: BannerAction | null = null;
   let bannerSecondary: BannerAction | null = null;
   if (banner === 'page') {
-    bannerText = fillNodes(labels.selectionPage, { count: count(onPage) });
+    bannerText = fillNodes(plural(labels.selectionPage, onPage), { count: count(onPage) });
     bannerPrimary = selectMatching;
   } else if (banner === 'all' && effectiveScope?.kind === 'query') {
     const except = effectiveScope.excludedIds.length > 0;
     const template = except ? (hasQuery ? labels.selectionExceptMatching : labels.selectionExcept) : (hasQuery ? labels.selectionAllMatching : labels.selectionAll);
-    bannerText = fillNodes(template, { count: count(selectedCount), total: count(effectiveScope.total), query: queryWords });
+    bannerText = fillNodes(plural(template, selectedCount), { count: count(selectedCount), total: count(effectiveScope.total), query: queryWords });
     bannerPrimary = clearScope;
   } else if (banner === 'stale' && scopeValue) {
-    bannerText = fillNodes(labels.selectionStale, { count: count(selectionScopeCount(scopeValue)) });
+    bannerText = fillNodes(plural(labels.selectionStale, selectionScopeCount(scopeValue)), { count: count(selectionScopeCount(scopeValue)) });
     bannerPrimary = canSelectMatching ? selectMatching : clearScope;
     bannerSecondary = canSelectMatching ? clearScope : null;
   } else if (banner === 'cleared') {
@@ -989,9 +1001,9 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
     : [...legacySelected];
   const bulkCountLabel = (n: number): ReactNode => (effectiveScope?.kind === 'query'
     // the filter in words can be long: this count wraps (the bar keeps a plain count on one line)
-    ? <span className="uix-data-workspace__bulk-scope">{fillNodes(hasQuery ? labels.selectedAllMatching : labels.selectedAll, { count: count(n), query: queryWords })}</span>
+    ? <span className="uix-data-workspace__bulk-scope">{fillNodes(plural(hasQuery ? labels.selectedAllMatching : labels.selectedAll, n), { count: count(n), query: queryWords })}</span>
     // by id the number is formatted; without selectionScope it reads as it always did
-    : fillLabel(labels.selected, { count: effectiveScope ? count(n) : n }));
+    : fillLabel(plural(labels.selected, n), { count: effectiveScope ? count(n) : n }));
   // Carbon's batch mode: a row's own verbs are off while the bulk bar acts on the selection, and
   // always under "all matching", where a row verb would read as a verb on thousands of rows.
   const rowActionsOff = effectiveScope?.kind === 'query' && selectedCount > 0 ? true : disableRowActionsWhileSelected && showBulk;
@@ -1218,6 +1230,7 @@ function WorkspaceTable<T>({
   const cards = ladder === 'cards';
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const baseId = useId();
+  const locale = useUixLocale();
 
   // ── windowing (HAR-2626) ────────────────────────────────────────────────────────────────
   const maxHeight = windowing?.maxHeight ?? 640;
@@ -1691,7 +1704,7 @@ function WorkspaceTable<T>({
                   <ChevronIcon />
                 </button>
                 <span className="uix-data-workspace__group-name" id={nameId}>{group.label}</span>
-                <span className="uix-data-workspace__group-count" id={countId}>{fillLabel(count === 1 ? labels.groupCountOne : labels.groupCount, { count })}</span>
+                <span className="uix-data-workspace__group-count" id={countId}>{fillLabel(countLabel(labels.groupCount, count, locale, labels.groupCountOne), { count })}</span>
                 {leadAgg}
               </span>
             </th>

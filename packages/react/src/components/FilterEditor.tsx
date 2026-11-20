@@ -10,7 +10,8 @@ import { Select } from './Select.js';
 import { Chip } from './Chip.js';
 import { fillLabel } from '../fill-label.js';
 import { cx } from '../cx.js';
-import { useUixLabels } from '../labels-context.js';
+import { usePluralLabel, useUixLabels } from '../labels-context.js';
+import type { UixCountLabel } from '../plural.js';
 import { useDelayedPending } from '../hooks/useDelayedPending.js';
 import { foldForSearch } from '../search-suggest-model.js';
 import { DATE_FILTER_OPERATORS, ENUM_FILTER_OPERATORS, NUMBER_FILTER_OPERATORS, TEXT_FILTER_OPERATORS, emptyFilterValue, isUnresolvedChoice, matchFilterPreset, orderFilterRange } from '../filter-model.js';
@@ -35,8 +36,8 @@ export interface FilterEditorLabels {
   retry: string;
   selectAll: string;
   selectNone: string;
-  /** `{count}` chosen. */
-  selected: string;
+  /** `{count}` chosen. Takes the plural forms or a function of the count too. */
+  selected: UixCountLabel;
   /** Remove one chosen record. `{label}`. */
   remove: string;
   /** Names the row of `field.presets` chips. Optional so existing label objects still type-check; default "Presets". */
@@ -222,6 +223,7 @@ export function FilterEditor({ field, value: valueProp, onValueChange, onApply, 
 
 function EnumBody({ field, value, onChange, labels, threshold }: { field: FilterField; value: Extract<FilterValue, { kind: 'enum' }>; onChange: (v: FilterValue) => void; labels: FilterEditorLabels; threshold: number }) {
   const [query, setQuery] = useState('');
+  const plural = usePluralLabel();
   const options = field.options ?? [];
   const shown = useMemo(() => {
     const q = foldForSearch(query.trim()).text;
@@ -257,7 +259,7 @@ function EnumBody({ field, value, onChange, labels, threshold }: { field: Filter
       )}
       {options.length > threshold && <Input type="search" size="sm" aria-label={labels.search} placeholder={labels.search} value={query} onChange={(e) => setQuery(e.currentTarget.value)} autoFocus />}
       <div className="uix-filter-editor__bulk">
-        <span className="uix-filter-editor__count" aria-live="polite">{fillLabel(labels.selected, { count: value.values.length })}</span>
+        <span className="uix-filter-editor__count" aria-live="polite">{fillLabel(plural(labels.selected, value.values.length), { count: value.values.length })}</span>
         <Button type="button" variant="link" size="sm" onClick={() => onChange(withValues([...new Set([...value.values, ...shown.map((o) => o.value)])]))}>{labels.selectAll}</Button>
         <Button type="button" variant="link" size="sm" onClick={() => onChange(withValues([]))}>{labels.selectNone}</Button>
       </div>
@@ -271,6 +273,7 @@ function EnumBody({ field, value, onChange, labels, threshold }: { field: Filter
 
 function ReferenceBody({ field, value, onChange, labels, delay }: { field: FilterField; value: Extract<FilterValue, { kind: 'reference' }>; onChange: (v: FilterValue) => void; labels: FilterEditorLabels; delay: number }) {
   const [query, setQuery] = useState('');
+  const plural = usePluralLabel();
   const [state, setState] = useState<{ status: 'idle' | 'loading' | 'done' | 'error'; results: readonly FilterChoice[] }>({ status: 'idle', results: [] });
   const [attempt, setAttempt] = useState(0);
   // The kit's pending rule: nothing for 300 ms, then the note for at least 500 ms (no flash).
@@ -327,7 +330,7 @@ function ReferenceBody({ field, value, onChange, labels, delay }: { field: Filte
   return (
     <>
       {values.length > 0 && (
-        <div className="uix-chip-group" role="group" aria-label={fillLabel(labels.selected, { count: values.length })}>
+        <div className="uix-chip-group" role="group" aria-label={fillLabel(plural(labels.selected, values.length), { count: values.length })}>
           {values.map((v) => <Chip key={v.value} removeLabel={fillLabel(labels.remove, { label: v.label })} onRemove={() => toggle(v, false)}>{v.label}</Chip>)}
         </div>
       )}

@@ -4,7 +4,9 @@ import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useSta
 import type { CSSProperties, FocusEvent, HTMLAttributes, KeyboardEvent, MouseEvent, PointerEvent } from 'react';
 import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
-import { useUixLabels } from '../labels-context.js';
+import { useUixLabels, useUixLocale } from '../labels-context.js';
+import { countLabel } from '../plural.js';
+import type { UixCountLabel } from '../plural.js';
 import { Avatar } from './Avatar.js';
 import { Button } from './Button.js';
 
@@ -42,10 +44,13 @@ export interface OrgChartLabels {
   error: string;
   /** The action in that row. Enter, Space or a click on the row runs it. */
   retry: string;
-  /** Read after the person: one direct report. */
+  /** Read after the person: one direct report, when `reportsMany` is a plain string. */
   reportsOne: string;
-  /** Read after the person: `{count}` direct reports. */
-  reportsMany: string;
+  /**
+   * Read after the person: `{count}` direct reports. Takes the plural forms (`{ one, few, other }`)
+   * or a function of the count too, and then `reportsOne` is not read.
+   */
+  reportsMany: UixCountLabel;
   /** The report count's tooltip while the reports are hidden. */
   expand: string;
   /** The report count's tooltip while the reports are shown. */
@@ -203,6 +208,8 @@ interface RenderContext {
   tabbableId?: string;
   stackLeaves: boolean;
   labels: OrgChartLabels;
+  /** The provider's locale, for the plural forms of `reportsMany`. */
+  locale: string | undefined;
   chartId: string;
   onToggle: (id: string) => void;
   /** A click on a card or a status row: select (or retry) and focus the item. */
@@ -241,7 +248,7 @@ function OrgChartItem({ node, level, size, pos, ctx }: { node: OrgChartNode; lev
   const count = known ? known.length : (node.reportCount ?? 0);
   const nameId = idRef(ctx.chartId, node.id, 'name');
   const descId = idRef(ctx.chartId, node.id, 'desc');
-  const reportsText = count > 0 ? fillLabel(count === 1 ? ctx.labels.reportsOne : ctx.labels.reportsMany, { count }) : '';
+  const reportsText = count > 0 ? fillLabel(countLabel(ctx.labels.reportsMany, count, ctx.locale, ctx.labels.reportsOne), { count }) : '';
   const waiting = open && !known;
   const status: 'loading' | 'error' | null = waiting ? (ctx.failed.has(node.id) ? 'error' : 'loading') : null;
   const children = open && known && known.length > 0 ? known : null;
@@ -338,6 +345,7 @@ export function OrgChart({
   className, 'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledby, ...props
 }: OrgChartProps) {
   const labels: OrgChartLabels = { ...DEFAULT_ORG_CHART_LABELS, ...useUixLabels().orgChart, ...labelOverrides };
+  const locale = useUixLocale();
   const chartId = useId().replace(/[^A-Za-z0-9_-]/g, '');
   const [internalExpanded, setInternalExpanded] = useState<ReadonlySet<string>>(() => defaultExpanded ?? new Set());
   const expanded = controlledExpanded ?? internalExpanded;
@@ -710,7 +718,7 @@ export function OrgChart({
 
   const ctx: RenderContext = {
     expanded, loaded, failed, loading, lazy, selectable, selected, tabbableId,
-    stackLeaves, labels, chartId, onToggle: toggle, onActivate: activate, onFocusItem: setFocusedId,
+    stackLeaves, labels, locale, chartId, onToggle: toggle, onActivate: activate, onFocusItem: setFocusedId,
   };
   const percent = fillLabel(labels.zoomLevel, { percent: Math.round(zoom * 100) });
   const atMin = zoom <= MIN_ZOOM + 0.001;
