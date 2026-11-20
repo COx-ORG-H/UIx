@@ -377,7 +377,17 @@ export function SessionTimeout({ onSignOut, onSignIn, labels: labelsProp, locale
   const id = useId();
   const descId = `${id}-desc`;
   const timeId = `${id}-time`;
-  const primaryRef = useRef<HTMLButtonElement>(null);
+  const primaryRef = useRef<HTMLButtonElement | null>(null);
+  /**
+   * The primary action carries the `autofocus` attribute, so `showModal()` itself puts focus there
+   * every time it runs. A focus() from an effect alone lost to it in development: StrictMode re-runs
+   * the new Modal's effects after this component's, and that second showModal() focused the first
+   * button ("Sign out").
+   */
+  const setPrimary = useCallback((el: HTMLButtonElement | null) => {
+    primaryRef.current = el;
+    el?.setAttribute('autofocus', '');
+  }, []);
   const dialogRef = useRef<HTMLDialogElement>(null);
   /** The warning was on screen when the session ended: the notice replaces it at once, no second entrance. */
   const replaced = useRef(false);
@@ -392,7 +402,8 @@ export function SessionTimeout({ onSignOut, onSignIn, labels: labelsProp, locale
   }, [extendFailed]);
 
   const open = phase === 'warning' || (phase === 'expired' && !dismissed);
-  // Focus on the primary action once the dialog is shown (Modal has called showModal() by now).
+  // And focus it once the dialog is shown (Modal has called showModal() by now), where showModal
+  // does not honour autofocus.
   useEffect(() => {
     if (open) primaryRef.current?.focus();
   }, [open, phase, attempt]);
@@ -422,7 +433,7 @@ export function SessionTimeout({ onSignOut, onSignIn, labels: labelsProp, locale
         footer={(
           <>
             {onSignOut && <Button type="button" wrap onClick={() => onSignOut?.()} disabled={extending}>{labels.signOut}</Button>}
-            <Button ref={primaryRef} type="button" wrap variant="primary" loading={extending} onClick={stay}>{labels.stay}</Button>
+            <Button ref={setPrimary} type="button" wrap variant="primary" loading={extending} onClick={stay}>{labels.stay}</Button>
           </>
         )}
       >
@@ -461,8 +472,8 @@ export function SessionTimeout({ onSignOut, onSignIn, labels: labelsProp, locale
       onClose={close}
       footer={(
         <>
-          <Button ref={onSignIn ? undefined : primaryRef} type="button" wrap onClick={close}>{labels.close}</Button>
-          {onSignIn && <Button ref={primaryRef} type="button" wrap variant="primary" onClick={() => onSignIn?.()}>{labels.signIn}</Button>}
+          <Button ref={onSignIn ? undefined : setPrimary} type="button" wrap onClick={close}>{labels.close}</Button>
+          {onSignIn && <Button ref={setPrimary} type="button" wrap variant="primary" onClick={() => onSignIn?.()}>{labels.signIn}</Button>}
         </>
       )}
     >

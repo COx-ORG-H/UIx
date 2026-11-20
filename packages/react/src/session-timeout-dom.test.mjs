@@ -97,6 +97,8 @@ test('warning: opens warnBefore (2 min) before expiresAt as an alert dialog, ann
   assert.equal(timer.getAttribute('aria-live'), 'off', 'the countdown is not read out every second');
   assert.equal(timer.querySelector('.uix-session-timeout__clock').getAttribute('aria-hidden'), 'true');
   assert.equal(document.activeElement.textContent, 'Stay signed in', 'focus on the primary action');
+  // showModal() itself focuses it (also when StrictMode shows the dialog a second time in development).
+  assert.deepEqual([...dialog.querySelectorAll('[autofocus]')].map((b) => b.textContent), ['Stay signed in']);
   assert.deepEqual([...dialog.querySelectorAll('.uix-dialog__footer button')].map((b) => b.textContent), ['Sign out', 'Stay signed in']);
 
   tick(1000);
