@@ -244,7 +244,12 @@ export interface ViewState {
   columns?: string[];   // visible columns, in order
   density?: 'compact' | 'standard' | 'comfortable';
   q?: string;           // search query
+  /** Resized column widths in px, by column id (`DataWorkspace` `columnWidths`). */
+  widths?: Record<string, number>;
 }
+
+/** A width a URL or saved view may hold: a positive finite number, as a whole px. */
+const validWidth = (w: unknown): w is number => typeof w === 'number' && Number.isFinite(w) && w > 0;
 
 /**
  * Filter serialization. Each filter is a `field~kind~op~value` token; tokens are
@@ -311,6 +316,9 @@ export function serializeView(v: ViewState): string {
   if (v.density && v.density !== 'standard') p.set('density', v.density);
   if (v.q) p.set('q', v.q);
   if (v.filters?.length) p.set('filter', v.filters.map(serializeFilter).join(','));
+  // `id:px` pairs; the id is escaped so a literal , or : in it survives the round-trip
+  const widths = Object.entries(v.widths ?? {}).filter(([id, w]) => id !== '' && validWidth(w));
+  if (widths.length) p.set('widths', widths.map(([id, w]) => `${escapePart(id)}:${Math.round(w)}`).join(','));
   return p.toString();
 }
 
@@ -334,6 +342,19 @@ export function parseView(qs: string): ViewState {
     v.filters = filter.split(',').filter(Boolean)
       .map(parseFilter)
       .filter((f): f is ColumnFilter => f !== null);
+  }
+  const widths = p.get('widths');
+  if (widths) {
+    const out: Record<string, number> = {};
+    for (const tok of widths.split(',')) {
+      const at = tok.lastIndexOf(':');
+      if (at <= 0) continue;
+      let id: string;
+      try { id = unescapePart(tok.slice(0, at)); } catch { continue; } // a hand-edited link with a broken escape
+      const w = Number(tok.slice(at + 1));
+      if (id && validWidth(w)) out[id] = Math.round(w);
+    }
+    if (Object.keys(out).length) v.widths = out;
   }
   return v;
 }
@@ -374,6 +395,93 @@ export function shouldVirtualize(count: number, threshold = 100): boolean {
 /** Clamp a dragged column width to a sane minimum (and optional maximum). */
 export function clampWidth(width: number, min = 64, max = Infinity): number {
   return Math.max(min, Math.min(max, Math.round(width)));
+}
+
+/**
+ * The column-width scale in px, narrowest first: the `col-w-*` tiers (xs 92, sm 112, md 132,
+ * lg 176, lg-plus 208, xl 240) and the title floor `col-title-min` (340) of
+ * `tokens/base/size.json`. A coarse resize step (Shift + arrow, the width popover's − / +) moves a
+ * column to the next stop on it, so resized columns keep landing on the widths the kit draws.
+ */
+export const COLUMN_WIDTH_SCALE: readonly number[] = [92, 112, 132, 176, 208, 240, 340];
+/** The narrowest a resized column gets unless it names its own floor: the scale's first tier. */
+export const COLUMN_WIDTH_MIN = 92;
+/** The widest a resized column gets: about the width of a long description. */
+export const COLUMN_WIDTH_MAX = 960;
+/** A fine resize step (an arrow key on the grip): 8 px, the spacing grid. */
+export const COLUMN_WIDTH_STEP = 8;
+/** Past the scale's last stop (340), a coarse step is 64 px. */
+const COARSE_BEYOND_SCALE = 64;
+
+/** Resized column widths in px, by column id: what `ViewState.widths` and a saved view hold. */
+export type ColumnWidths = Readonly<Record<string, number>>;
+
+/** A column's resize bounds in px: its floor and its cap. */
+export interface ColumnWidthBounds {
+  /** Default `COLUMN_WIDTH_MIN`. */
+  min?: number;
+  /** Default `COLUMN_WIDTH_MAX`. */
+  max?: number;
+}
+
+const boundsOf = (bounds: ColumnWidthBounds = {}) => {
+  const min = Math.max(1, Math.round(bounds.min ?? COLUMN_WIDTH_MIN));
+  return { min, max: Math.max(min, Math.round(bounds.max ?? COLUMN_WIDTH_MAX)) };
+};
+
+/**
+ * One resize step from `width`: `direction` 1 widens, -1 narrows. A fine step is
+ * `COLUMN_WIDTH_STEP` px; a coarse one goes to the next stop of `COLUMN_WIDTH_SCALE` (then every
+ * 64 px past its last stop). The result is clamped to the bounds.
+ */
+export function stepColumnWidth(width: number, direction: 1 | -1, options: ColumnWidthBounds & { coarse?: boolean } = {}): number {
+  const { min, max } = boundsOf(options);
+  const from = clampWidth(width, min, max);
+  if (!options.coarse) return clampWidth(from + direction * COLUMN_WIDTH_STEP, min, max);
+  const last = COLUMN_WIDTH_SCALE[COLUMN_WIDTH_SCALE.length - 1];
+  const stops = [...COLUMN_WIDTH_SCALE];
+  for (let stop = last + COARSE_BEYOND_SCALE; stop < max; stop += COARSE_BEYOND_SCALE) stops.push(stop);
+  stops.push(min, max);
+  const inRange = [...new Set(stops)].filter((stop) => stop >= min && stop <= max).sort((a, b) => a - b);
+  const next = direction > 0 ? inRange.find((stop) => stop > from) : [...inRange].reverse().find((stop) => stop < from);
+  return next ?? from;
+}
+
+/**
+ * The width a key gives a focused column-resize separator (the APG window splitter, vertical):
+ * ← / → narrow and widen by a fine step, with Shift by a coarse one (`stepColumnWidth`); Alt + ← / →
+ * does the same, as in grids that resize from the header; Home goes to the floor, End to the cap.
+ * Right-to-left (`rtl`) mirrors the arrows. Any other key: `null`.
+ */
+export function columnWidthForKey(
+  width: number,
+  event: { key: string; shiftKey?: boolean },
+  options: ColumnWidthBounds & { rtl?: boolean } = {},
+): number | null {
+  const { min, max } = boundsOf(options);
+  const flip = options.rtl ? -1 : 1;
+  switch (event.key) {
+    case 'ArrowRight': return stepColumnWidth(width, (1 * flip) as 1 | -1, { min, max, coarse: event.shiftKey });
+    case 'ArrowLeft': return stepColumnWidth(width, (-1 * flip) as 1 | -1, { min, max, coarse: event.shiftKey });
+    case 'Home': return min;
+    case 'End': return max;
+    default: return null;
+  }
+}
+
+/** The width that fits a column's widest content (header and cells, each with its padding), within the bounds. */
+export function fitColumnWidth(contentWidths: readonly number[], bounds: ColumnWidthBounds = {}): number {
+  const { min, max } = boundsOf(bounds);
+  const widest = contentWidths.reduce((acc, w) => (Number.isFinite(w) && w > acc ? w : acc), 0);
+  return clampWidth(Math.ceil(widest), min, max);
+}
+
+/** `widths` with column `id` set to `width`, or without it for `null` (back to its default). A new object. */
+export function setColumnWidth(widths: ColumnWidths | undefined, id: string, width: number | null): Record<string, number> {
+  const next: Record<string, number> = { ...widths };
+  if (width == null || !Number.isFinite(width) || width <= 0) delete next[id];
+  else next[id] = Math.round(width);
+  return next;
 }
 
 /** Move an item from index `from` to index `to`, returning a new array. */

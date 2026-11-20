@@ -127,6 +127,9 @@
 <!-- lesson-skip: c532f344 routine: tsc named the namespaces #310 added that the complete-by-type packs lacked; Escape key name added to the transliterator keep-Latin list -->
 <!-- lesson-skip: 38dc8ac3 routine: compare() escapes its text, so <code> showed literally; found by looking at the 390 px shot -->
 
+### 2026-11-20 · focusing content of a popover opened from a timer · `c5ded32c`
+- **Rule:** focus a popover's field in that content's own mount effect, not in the popover's `toggle` listener. Opened from a `setTimeout` (a click that waits out a double-click), `setOpen(true)` + `showPopover()` fires `toggle` before React has rendered the content, so the listener finds nothing; from a React key or click handler it works, which hides the bug in keyboard tests.  **Why:** updates outside a React event are not flushed synchronously, while `toggle` is the next task.  **Gate:** tests/a11y/column-resize.spec.mjs (the field is focused after a pointer click on the grip).  **Tag:** react, popover, focus
+
 ### 2026-11-20 · screenshots of scroll-driven effects · `86b3f381`
 - **Rule:** never pass `animations: 'disabled'` to a Playwright screenshot of anything drawn by a scroll-timeline animation (a revealed divider, a scroll fade); it resets the animation to its start, so the pixels show the unscrolled state. Scroll, wait two frames, shoot without it.  **Why:** Playwright finishes or cancels every CSS animation for the shot, scroll-driven ones included; the forced-colours lane read a drawn divider as missing.  **Gate:** `tests/a11y/forced-colors.lane.spec.mjs` (pinned header) shoots without it; ⚠ TODO no lint for the option on scroll-timeline subjects.  **Tag:** false-red, motion, test-double-fidelity
 
