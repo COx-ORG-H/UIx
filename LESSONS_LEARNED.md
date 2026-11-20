@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: ddba5324 routine: a scripted edit without an assertion did not apply, and the merge resolution assumed it had; the dts build named it -->
 <!-- lesson-skip: 9f537ee4 routine: an empty flex item centred in a box a parent stretched; found by looking at the harness shot, the mark now sits on the text baseline -->
 <!-- lesson-skip: 526b38f1 routine review fix from Qodo on #303 (a US-only physical-key fallback gated on the browser's layout map), pinned by matcher tests; the size gate named the baseline -->
 <!-- lesson-skip: 4a8bdc29 routine review fix from Qodo on #303 (shifted punctuation in the Alt physical-key fallback), pinned by matcher tests -->
