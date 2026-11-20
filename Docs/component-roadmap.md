@@ -103,7 +103,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | SortableList | sortable-list.css | ✓ `SortableList` | Beta | no | HAR-1375: a list the person reorders: grip (pointer drag), Move up / Move down always present, Alt+↑ / Alt+↓, focus kept, polite announcement. Shares `reorder.ts` (`placeId`, `useRowDrag`) with ViewMenu, SavedViewMenu and NavFavourites. |
 | Select | select.css | ✓ `Select` | Stable | no | Form primitive. |
 | Sidebar | sidebar.css | ✓ `Sidebar` | Stable | no | Also controlled `NavGroup`, rail mode, `SidebarSection`, `NavItem`, and `SubNavItem`. HAR-1371: `actions`, `search`, `footer` slots and `AccountMenu`. |
-| Sla | sla.css | absent | Planned | no | Planned wrapper (presentational). |
+| Sla | sla.css | ✓ `SlaTimer` | Alpha | no | SLA clock (enterprise-UX study #17; spec `Docs/specs/2026-11-20-sla-timer.md`): time left or over in a queue cell or a record header, up to three thresholds (warning 75 %, urgent 90 % by default), pause with reason, the server's breach, met. Shape plus colour per level, red only at the breach; re-renders on its minute, not in a hidden tab; `announce` opt-in. `slaStatus` / `slaSortValue` sort a queue column. Follow-up: TENSOR adoption (ADR-0054 column and rail). |
 | Slider | slider.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
 | Spinner | spinner.css | ✓ `Spinner` | Stable | no | Feedback. |
 | Stat | stat-tile.css | ✓ `Stat` | Stable | no | Exported as `Stat` (`StatTrend`). HAR-1563: `trend.sentiment`; toned tiles keep a neutral border. HAR-1803: a link tile shows a chevron at rest. |

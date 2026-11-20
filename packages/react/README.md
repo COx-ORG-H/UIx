@@ -580,6 +580,26 @@ await tasks.run('CMDB discovery: Sarajevo DC', async (task) => { /* task.update(
 - **Placement:** `position` `bottom-center` (default, away from the Toaster's corner), `bottom-start` or `bottom-end`. It sits above overlays and below toasts; a modal dialog covers it. `open`/`defaultOpen`/`onOpenChange` control the panel.
 - **Stores:** `createTaskApi(createTaskStore())` gives a separate set (tests, embedded apps); pass its `store` to `<TaskTray store>`.
 
+### SlaTimer: how long an SLA has left
+
+An SLA's clock in a queue cell or a record header (enterprise-UX study #17; spec `Docs/specs/2026-11-20-sla-timer.md`). The server owns the clock: pass the instants it computed through its business calendar, and the timer says where it stands.
+
+```tsx
+// a queue column, sorted most urgent first
+const rows = [...tickets].sort((a, b) => slaSortValue(a.sla) - slaSortValue(b.sla));
+{ id: 'sla', header: 'Resolution SLA', sortable: true, cell: (t) => <SlaTimer {...t.sla} /> }
+
+// the open record's header: its name, the time, the deadline; say a crossing once
+<SlaTimer variant="header" label="Resolution" startedAt={sla.startedAt} dueAt={sla.dueAt} announce />
+<SlaTimer variant="header" label="Resolution" dueAt={sla.dueAt} paused pausedAt={sla.pausedAt} pausedReason="Waiting for the requester" />
+```
+
+- **States:** `on-track` (ink, no mark), `notice` (a ring), `warning` (amber dot), `urgent` (the attention orange, a diamond), `breached` (red dot and words: "35 min over", "Breached 2 hr ago"), `paused` (two bars, the time frozen at `pausedAt`), `met`, `none` (`—`). Red is only the breach; the brief's 90 % "critical" is `urgent`, because critical is red in the calm kit.
+- **Thresholds:** up to three, each `{ level, elapsed }` (a share of `startedAt` → `dueAt`), `{ level, remaining }` (ms before `dueAt`) or `{ level, at }` (an instant the server projected). Default: warning at 75 %, urgent at 90 %; without `startedAt`, warning with 2 h left and urgent with 30 min. `breachedAt` (the server's breach) wins over the wall clock; `completedAt` stops it as `met`, or `breached` when late.
+- **Words:** `format` `compact` ("2 hr 14 min", `Intl` units, floored), `relative` ("in 2 hours") or `absolute`. The cell speaks "Due in 2 hours 14 minutes, warning. Deadline 20 Nov 2026, 15:30" from a hidden span; the deadline is also on hover. Translate through `UixLabelsProvider` `slaTimer` (`states` merges per state); `locale` defaults to `dateFormat.locale`.
+- **Time:** no fixed tick. One shared scheduler wakes each timer when its minute or state changes, on whole seconds so a queue re-renders together, and nothing while the tab is hidden. `now` fixes the clock for tests. Nothing animates. `announce` (off by default) says a crossing into a worse level once, politely; never for a queue.
+- **Model:** `slaStatus(input, now)` gives `{ state, level, remaining, deadline, stopped, nextChangeAt }`; `slaSortValue` the column's key (`SLA_SORT_LAST` for met and none, finite).
+
 ### Icons (`@tensor_1/react/icons`)
 
 The TENSOR adoption set also includes `LandmarkIcon`, `KeyboardIcon`, `ArchiveRestoreIcon`,

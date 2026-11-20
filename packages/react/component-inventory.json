@@ -726,6 +726,10 @@
       "subpath": "."
     },
     {
+      "name": "SlaTimer",
+      "subpath": "."
+    },
+    {
       "name": "SortableList",
       "subpath": "."
     },

@@ -1,7 +1,7 @@
 /* uix SLA indicator / timer (breach states) — depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-sla { display: inline-flex; align-items: center; gap: var(--uix-space-2); font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text-hushed); white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .uix-sla svg { width: 14px; height: 14px; }
+  .uix-sla { display: inline-flex; align-items: baseline; gap: var(--uix-space-2); font-size: var(--uix-text-meta); font-weight: 500; color: var(--uix-text-hushed); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .uix-sla svg { width: 14px; height: 14px; align-self: center; }
   /* the CSS-only states (an icon and words); SlaTimer writes the states below */
   .uix-sla[data-state="ok"] { color: var(--uix-success-text); }
   .uix-sla[data-state="at-risk"] { color: var(--uix-warning-text); }
@@ -11,7 +11,8 @@
      orange, and red is the breach alone, as a dot with words, never a fill. The mark's shape says
      the level as well as its colour (WCAG 1.4.1): nothing on track or met, a ring at notice, a dot
      at warning, a diamond at urgent, a dot at the breach, two bars when paused. Nothing moves. */
-  .uix-sla__mark { flex: none; box-sizing: border-box; width: 7px; height: 7px; }
+  /* centred on the words, which give the row its baseline (an empty box would be the baseline) */
+  .uix-sla__mark { flex: none; align-self: center; box-sizing: border-box; width: 7px; height: 7px; }
   .uix-sla[data-state="notice"] .uix-sla__mark { border: 1.5px solid var(--uix-warning-text); border-radius: 50%; }
   .uix-sla[data-state="warning"] { color: var(--uix-warning-text); }
   .uix-sla[data-state="warning"] .uix-sla__mark { background: var(--uix-warning-text); border-radius: 50%; }
@@ -25,7 +26,7 @@
 
   /* the record header: the SLA's name, the time on its own line, the deadline or the pause's reason */
   .uix-sla--header { display: inline-grid; justify-items: start; gap: var(--uix-space-1); font-size: var(--uix-text-body); white-space: normal; }
-  .uix-sla__value { display: inline-flex; align-items: center; gap: var(--uix-space-2); white-space: nowrap; }
+  .uix-sla__value { display: inline-flex; align-items: baseline; gap: var(--uix-space-2); white-space: nowrap; }
   .uix-sla--header .uix-sla__mark { width: 8px; height: 8px; }
   .uix-sla__label { font-size: var(--uix-text-eyebrow); font-weight: 600; color: var(--uix-text-hushed); }
   .uix-sla__meta { font-size: var(--uix-text-meta); font-weight: 400; color: var(--uix-text-hushed); overflow-wrap: break-word; hyphens: auto; }

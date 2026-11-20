@@ -172,7 +172,9 @@ function slaWords(
   if (reason) spoken = `${spoken}. ${reason}`;
   if (props.label) spoken = fillLabel(labels.labelled, { label: props.label, text: spoken });
   // a paused clock's deadline moves when it resumes: the reason stands in for it
-  return { shown, meta: reason || (state === 'paused' ? '' : dated), spoken, hover: state === 'paused' ? reason || undefined : reason ? `${dated}. ${reason}` : dated };
+  // the third line is the deadline, unless the line above already is one (absolute) or it moves (paused)
+  const meta = reason || (state === 'paused' || props.format === 'absolute' ? '' : dated);
+  return { shown, meta, spoken, hover: state === 'paused' ? reason || undefined : reason ? `${dated}. ${reason}` : dated };
 }
 
 const noSubscribe = () => () => {};
