@@ -4,11 +4,11 @@ import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffe
 import type { ReactNode, HTMLAttributes, InputHTMLAttributes, KeyboardEvent } from 'react';
 import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
-import { usePluralLabel, useUixLabels } from '../labels-context.js';
+import { usePluralLabel, useUixLabels, useUixLocale } from '../labels-context.js';
 import { useDialog } from '../hooks/useDialog.js';
 import { groupCommandItems } from '../command-palette-model.js';
 import type { CommandPaletteItem, CommandPalettePage, CommandPaletteSource } from '../command-palette-model.js';
-import { defaultCommandFold, rankCommandItems } from '../command-palette-rank.js';
+import { rankCommandItems } from '../command-palette-rank.js';
 import type { RankedCommand } from '../command-palette-rank.js';
 import { useCommandSources } from '../hooks/useCommandSources.js';
 import type { CommandFrecency } from '../hooks/useCommandFrecency.js';
@@ -250,8 +250,8 @@ export function CommandItem({ icon, shortcut, active, children, className, id, .
 const optionId = (listId: string, prefix: string, id: string) => `${listId}-${`${prefix}${id}`.replace(/[^\w-]/g, '_')}`;
 
 /** A label with the query's matches emphasised (the same rule as SearchSuggest). */
-function Highlighted({ text, query }: { text: string; query: string }) {
-  return <>{searchSegments(text, query).map((segment, index) => (segment.match ? <mark key={index} className="uix-cmdk__mark">{segment.text}</mark> : segment.text))}</>;
+function Highlighted({ text, query, locale }: { text: string; query: string; locale: string | undefined }) {
+  return <>{searchSegments(text, query, locale).map((segment, index) => (segment.match ? <mark key={index} className="uix-cmdk__mark">{segment.text}</mark> : segment.text))}</>;
 }
 
 /** One level of the page stack: the page, and the query and active row of the level it was opened from. */
@@ -319,11 +319,12 @@ function CommandPaletteItems({
   const scope = stack.map((level) => level.page.id).join('\u0001');
   const fieldLabel = page?.label ?? inputLabel;
 
+  const locale = useUixLocale();
   // Ranked with the alias that matched, the screen's boosts and the person's frecency; a custom `filter` keeps its own order.
   const frecencyScore = frecency?.score;
   const found = useMemo<RankedCommand[]>(() => (filter
     ? filter(levelItems, query).map((item) => ({ item, score: 0 }))
-    : rankCommandItems(levelItems, query, { fold: defaultCommandFold, frecency: frecencyScore })), [filter, levelItems, query, frecencyScore]);
+    : rankCommandItems(levelItems, query, { locale, frecency: frecencyScore })), [filter, levelItems, query, locale, frecencyScore]);
   const { views, retry } = useCommandSources(page ? page.sources : sources, query, scope, !inDialog || !!open);
   const showRecent = !page && query.trim() === '' && (recent?.length ?? 0) > 0;
 
@@ -529,8 +530,8 @@ function CommandPaletteItems({
         {item.icon != null && <span className="uix-cmdk__icon" aria-hidden="true">{item.icon}</span>}
         <span className="uix-cmdk__text">
           <span className="uix-cmdk__label">
-            <Highlighted text={item.label} query={query} />
-            {alias !== undefined && <>{' '}<span className="uix-cmdk__alias">(<Highlighted text={alias} query={query} />)</span></>}
+            <Highlighted text={item.label} query={query} locale={locale} />
+            {alias !== undefined && <>{' '}<span className="uix-cmdk__alias">(<Highlighted text={alias} query={query} locale={locale} />)</span></>}
           </span>
           {item.description && <span className="uix-cmdk__desc">{item.description}</span>}
         </span>

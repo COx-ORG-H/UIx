@@ -5,16 +5,23 @@
  * The match tiers are those of `filterCommandItems` (a label that starts with the query, then
  * every word of the query starting a word, then the label containing every word, then keywords),
  * so items without aliases, boosts or frecency come out in exactly the order they did before.
- * Folding is a parameter: `CommandFold` gives every spelling a text answers to, which is the shape
- * of the locale-aware `foldKeys` (roadmap #15), so the palette can switch to it in one place. */
-import { foldForSearch } from './search-suggest-model.js';
+ * Folding is locale-aware by default (roadmap #15, the same fold as `filterCommandItems`): each
+ * spelling a text answers to counts (đ as "dj" or "d", Serbian Cyrillic as Latin), the best one
+ * ranks. `CommandFold` replaces it whole. */
+import { foldContext, foldKeys } from './locale-text.js';
 import type { CommandPaletteItem } from './command-palette-model.js';
 
 /** Every folded spelling `text` answers to, best first (lower case, diacritics stripped). */
 export type CommandFold = (text: string) => readonly string[];
 
-/** The default fold: one spelling, case and diacritics folded (`foldForSearch`). */
-export const defaultCommandFold: CommandFold = (text) => [foldForSearch(text).text];
+/** The fold for `locale`: every spelling, best first, case and diacritics folded, as `filterCommandItems` folds. */
+export function commandFoldFor(locale?: string): CommandFold {
+  const context = foldContext(locale);
+  return (text) => foldKeys(text, context);
+}
+
+/** The fold with no locale: case and diacritics folded, đ as "dj" or "d". */
+export const defaultCommandFold: CommandFold = commandFoldFor();
 
 /** A found command, with what found it. */
 export interface RankedCommand {
@@ -28,7 +35,9 @@ export interface RankedCommand {
 
 /** How `rankCommandItems` folds text and weighs the person's use. */
 export interface RankCommandOptions {
-  /** How text is folded for matching. Default `defaultCommandFold`. */
+  /** The locale whose fold matches (the palette passes the `UixLabelsProvider` one), e.g. Serbian Cyrillic answering to Latin. Ignored with `fold`. */
+  locale?: string;
+  /** How text is folded for matching, replacing the locale's fold. Default `commandFoldFor(locale)`. */
   fold?: CommandFold;
   /** The person's use of each command, 0 (never) to 1 (all the time): `useCommandFrecency().score`. */
   frecency?: (id: string) => number;
@@ -82,7 +91,7 @@ function match(item: CommandPaletteItem, query: string, tokens: readonly string[
  * those two alone. Equal scores keep the order the items were given in.
  */
 export function rankCommandItems(items: readonly CommandPaletteItem[], query: string, options: RankCommandOptions = {}): RankedCommand[] {
-  const fold = options.fold ?? defaultCommandFold;
+  const fold = options.fold ?? (options.locale ? commandFoldFor(options.locale) : defaultCommandFold);
   const queries = [...new Set(fold(query.trim()))]
     .map((folded) => ({ folded, tokens: folded.split(/\s+/).filter(Boolean) }))
     .filter((q) => q.tokens.length > 0);

@@ -88,6 +88,18 @@ test('rankCommandItems orders exactly as filterCommandItems for plain items, and
   }
 });
 
+test('rankCommandItems folds as filterCommandItems does for a locale: Serbian Cyrillic answers to Latin, đ to dj and d', () => {
+  const items = [{ id: 'cyr', label: 'Ђорђе Петровић' }, { id: 'lat', label: 'Đorđe Novak' }, { id: 'al', label: 'Profil', aliases: ['Подешавања'] }];
+  for (const q of ['dj', 'dorde', 'djordje', 'petrovic', 'x']) {
+    assert.deepEqual(ui.rankCommandItems(items, q, { locale: 'sr' }).map((r) => r.item.id), ui.filterCommandItems(items, q, 'sr').map((i) => i.id), `query "${q}"`);
+  }
+  assert.deepEqual(ui.rankCommandItems(items, 'petrovic', { locale: 'sr' }).map((r) => r.item.id), ['cyr']);
+  assert.deepEqual(ui.rankCommandItems(items, 'petrovic').map((r) => r.item.id), [], 'no cross-script fold without a locale that asks for it');
+  assert.equal(ui.rankCommandItems(items, 'podesavanja', { locale: 'sr' })[0]?.alias, 'Подешавања', 'aliases fold the same way');
+  const fold = ui.commandFoldFor('sr');
+  assert.deepEqual(ui.rankCommandItems(items, 'petrovic', { locale: 'en', fold }).map((r) => r.item.id), ['cyr'], 'fold replaces the locale');
+});
+
 test('rankCommandItems: contextBoost and frecency reorder but never hide', () => {
   const items = [{ id: 'a', label: 'Reports' }, { id: 'b', label: 'Resolve' }, { id: 'c', label: 'Assign', contextBoost: 1 }];
   assert.deepEqual(ui.rankCommandItems(items, '').map((r) => r.item.id), ['c', 'a', 'b'], 'an empty query puts the boosted command first');

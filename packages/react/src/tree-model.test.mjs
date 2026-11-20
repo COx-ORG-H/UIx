@@ -1,11 +1,11 @@
-/* Unit tests for the framework-agnostic tree model (UIX-FIX-05). Zero deps; Node strips the TS
- * types on import (Node >= 22.18 / 24). Run: node --test (from packages/react).
+/* Unit tests for the framework-agnostic tree model (UIX-FIX-05). Imports the BUILT dist (the model
+ * folds through locale-text.ts); run `npm run build` first, CI does. Then: node --test (from packages/react).
  *
  * These lock the flatten + keyboard-nav logic the plain and virtualized <Tree> render paths both
  * delegate to, so nav works identically — including for rows scrolled out of the virtual window. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { flattenTree, treeNav } from './tree-model.ts';
+import { flattenTree, treeNav } from '../dist/index.js';
 
 const TREE = [
   { id: 'a', children: [{ id: 'a1' }, { id: 'a2' }] },
