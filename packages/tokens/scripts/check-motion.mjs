@@ -145,10 +145,23 @@ export function collectMotionContext(sources) {
   return { keyframeProps: collectKeyframeProps(sources), aliases: collectOvershootAliases(sources) };
 }
 
-/** The overshooting curve in a value as `rule` sees it: its own custom properties first (the last one wins), then the shared aliases. */
+/** A CSS-wide keyword that leaves a custom property at its inherited value. */
+const INHERITS = /^(inherit|unset|revert|revert-layer)$/i;
+
+/**
+ * The overshooting curve in a value as `rule` sees it: its own custom properties first (the last
+ * one wins, an !important one over a normal one), then the shared aliases. A local `inherit`,
+ * `unset` or `revert` keeps the inherited value, so the shared aliases decide for it.
+ */
 function curveCheck(rule, aliases) {
   const local = new Map();
-  rule.each((n) => { if (n.type === 'decl' && n.prop.startsWith('--')) local.set(n.prop, stripStrings(n.value)); });
+  const important = new Set();
+  rule.each((n) => {
+    if (n.type !== 'decl' || !n.prop.startsWith('--') || (important.has(n.prop) && !n.important)) return;
+    if (n.important) important.add(n.prop);
+    const value = stripStrings(n.value).trim();
+    if (INHERITS.test(value)) local.delete(n.prop); else local.set(n.prop, value);
+  });
   const seen = new Set();
   const isVar = (name) => {
     if (isToken(name)) return true;
@@ -289,38 +302,57 @@ const comma = (v) => postcss.list.comma(v).map((s) => s.trim());
 /**
  * A rule's effective transition and animation lists, its declarations folded in source order the
  * way the cascade folds them: a shorthand resets both its property (or name) list and its timing
- * list, a longhand replaces only its own. Each list remembers the declaration that last set it.
+ * list, a longhand replaces only its own, and a normal declaration never replaces an !important
+ * one. Each list remembers the declaration that set it (`<list>Decl`).
  */
 function motionLists(rule, keyframeProps) {
   const s = {};
+  const set = (key, value, d) => {
+    if (s[`${key}Imp`] && !d.important) return;
+    s[key] = value; s[`${key}Imp`] = Boolean(d.important); s[`${key}Decl`] = d;
+  };
   rule.each((d) => {
     if (d.type !== 'decl') return;
     const p = d.prop.toLowerCase();
     const items = comma(stripStrings(d.value));
-    if (p === 'transition') { s.tProps = items.map((i) => transitionProps('transition', i)[0]); s.tTimings = items; s.tPropDecl = d; s.tTimingDecl = d; }
-    else if (p === 'transition-property') { s.tProps = items.map((i) => i.toLowerCase()); s.tPropDecl = d; }
-    else if (p === 'transition-timing-function') { s.tTimings = items; s.tTimingDecl = d; }
-    else if (p === 'animation') { s.aNames = items.map((i) => postcss.list.space(i).find((t) => keyframeProps.has(t)) ?? null); s.aTimings = items; s.aNameDecl = d; s.aTimingDecl = d; }
-    else if (p === 'animation-name') { s.aNames = items; s.aNameDecl = d; }
-    else if (p === 'animation-timing-function') { s.aTimings = items; s.aTimingDecl = d; }
+    if (p === 'transition') { set('tProps', items.map((i) => transitionProps('transition', i)[0]), d); set('tTimings', items, d); }
+    else if (p === 'transition-property') set('tProps', items.map((i) => i.toLowerCase()), d);
+    else if (p === 'transition-timing-function') set('tTimings', items, d);
+    else if (p === 'animation') { set('aNames', items.map((i) => postcss.list.space(i).find((t) => keyframeProps.has(t)) ?? null), d); set('aTimings', items, d); }
+    else if (p === 'animation-name') set('aNames', items, d);
+    else if (p === 'animation-timing-function') set('aTimings', items, d);
   });
   return s;
 }
 
-/** `a` and `b` are one element's selectors: equal, or one is the other plus a state (`.x` / `.x[open]`, `.x:popover-open`). */
-const sameElement = (a, b) => a === b || (b.startsWith(a) && /^[[:.#]/.test(b.slice(a.length))) || (a.startsWith(b) && /^[[:.#]/.test(a.slice(b.length)));
+/** `state` is `base` plus a state of the same element (`.x` → `.x[open]`, `.x:popover-open`, `.x.is-on`). */
+const isState = (base, state) => state.length > base.length && state.startsWith(base) && /^[[:.#]/.test(state.slice(base.length));
 
-/** The `key` list ('tProps' or 'aNames') that other rules of this file set for the same element, merged; null if none does. */
-function cascadeList(rule, root, keyframeProps, key) {
-  const mine = splitSelectors(rule.selector);
-  const found = [];
+/**
+ * The `key` lists ('tProps' or 'aNames') that apply where `rule` sets a timing and no list, one per
+ * case: for each of its selectors, the list of the closest rule for the same or a broader state of
+ * that element (the selector itself or a prefix of it; the longest wins, then the last; null if
+ * none), and the list of every rule for a narrower state of it, which applies in that state.
+ */
+function cascadeLists(rule, root, keyframeProps, key) {
+  const candidates = [];
   root.walkRules((other) => {
     if (other === rule || ancestors(other).some(isKeyframes)) return;
-    if (!splitSelectors(other.selector).some((s) => mine.some((m) => sameElement(m, s)))) return;
     const list = motionLists(other, keyframeProps)[key];
-    if (list) found.push(...list);
+    if (list) candidates.push([splitSelectors(other.selector), list]);
   });
-  return found.length ? [...new Set(found)] : null;
+  const lists = [];
+  for (const mine of splitSelectors(rule.selector)) {
+    let best = null;
+    for (const [selectors, list] of candidates) {
+      for (const sel of selectors) {
+        if (sel === mine || isState(sel, mine)) { if (!best || sel.length >= best[0].length) best = [sel, list]; }
+        else if (isState(mine, sel)) lists.push(list);
+      }
+    }
+    lists.push(best?.[1] ?? null);
+  }
+  return lists;
 }
 
 const later = (a, b) => (!a ? b : !b ? a : (a.source.start.offset ?? 0) >= (b.source.start.offset ?? 0) ? a : b);
@@ -329,8 +361,9 @@ const later = (a, b) => (!a ? b : !b ? a : (a.source.start.offset ?? 0) >= (b.so
  * Rule 10 for one rule: [declaration, "what on which curve"] for each overshooting curve that eases
  * something that is not geometry. Timings repeat over the property (or name) list the way CSS
  * repeats them. With no list in the rule, the same element's other rules in this file supply it
- * (every name they set is checked against the curve); with none there, a transition applies to
- * `all`, which is not geometry, and an animation cannot be checked, so both fail. An animation is
+ * (cascadeLists: the closest broader-or-equal state, and each narrower state); with none there, a
+ * transition applies to `all`, which is not geometry, and an animation cannot be checked, so both
+ * fail. An animation is
  * judged by the properties its @keyframes set; a frame's own timing by its keyframes' properties.
  */
 function overshootEffects(rule, root, { keyframeProps, aliases }) {
@@ -348,23 +381,25 @@ function overshootEffects(rule, root, { keyframeProps, aliases }) {
     return out;
   }
   const s = motionLists(rule, keyframeProps);
-  // the curve for list entry i: its own timing, or, for a list merged from other rules, any overshooting timing
-  const curveFor = (timings, own) => (i) => (own ? curveIn(timings[i % timings.length]) : timings.map(curveIn).find(Boolean));
+  // entry i of a list takes timing i, the timings repeating as CSS repeats them
+  const paired = (lists, timings, keep, describe) => [...new Set(lists.flatMap((list) => list
+    .map((entry, i) => [entry, curveIn(timings[i % timings.length])])
+    .filter(([entry, curve]) => curve && keep(entry))
+    .map(([entry, curve]) => describe(entry, curve))))];
 
   if (s.tTimings?.some(curveIn)) {
-    const props = s.tProps ?? cascadeList(rule, root, keyframeProps, 'tProps') ?? ['all'];
-    const curve = curveFor(s.tTimings, Boolean(s.tProps));
-    const bad = props.map((p, i) => [p, curve(i)]).filter(([p, c]) => c && !SPATIAL_PROPS.has(p));
-    if (bad.length) out.push([later(s.tPropDecl, s.tTimingDecl), bad.map(([p, c]) => `${p} on ${c}`).join(', ')]);
+    // with no list anywhere for this element, transition-property is its initial `all`
+    const lists = s.tProps ? [s.tProps] : cascadeLists(rule, root, keyframeProps, 'tProps').map((l) => l ?? ['all']);
+    const bad = paired(lists, s.tTimings, (p) => !SPATIAL_PROPS.has(p), (p, c) => `${p} on ${c}`);
+    if (bad.length) out.push([later(s.tPropsDecl, s.tTimingsDecl), bad.join(', ')]);
   }
   if (s.aTimings?.some(curveIn)) {
-    const names = s.aNames ?? cascadeList(rule, root, keyframeProps, 'aNames');
-    if (!names) {
-      out.push([s.aTimingDecl, `an overshooting animation-timing-function, and no rule for '${rule.selector.replace(/\s+/g, ' ')}' in this file names the animation (name it, so its @keyframes can be checked)`]);
+    const lists = s.aNames ? [s.aNames] : cascadeLists(rule, root, keyframeProps, 'aNames').filter(Boolean);
+    if (!lists.length) {
+      out.push([s.aTimingsDecl, `an overshooting animation-timing-function, and no rule for '${rule.selector.replace(/\s+/g, ' ')}' in this file names the animation (name it, so its @keyframes can be checked)`]);
     } else {
-      const curve = curveFor(s.aTimings, Boolean(s.aNames));
-      const bad = names.map((n, i) => [n, curve(i)]).filter(([n, c]) => n && c && effectsOf(n).length);
-      if (bad.length) out.push([later(s.aNameDecl, s.aTimingDecl), bad.map(([n, c]) => `@keyframes ${n} animates ${effectsOf(n).join(', ')} on ${c}`).join('; ')]);
+      const bad = paired(lists, s.aTimings, (n) => n && effectsOf(n).length, (n, c) => `@keyframes ${n} animates ${effectsOf(n).join(', ')} on ${c}`);
+      if (bad.length) out.push([later(s.aNamesDecl, s.aTimingsDecl), bad.join('; ')]);
     }
   }
   return out;
@@ -414,10 +449,12 @@ export function checkTs(src, file, keyframeProps = new Map()) {
     if (/(transition|animation)\w*["'`]?\s*[:=]\s*["'`][^"'`]*(?<![\w.-])\d*\.?\d+m?s\b/i.test(line)) {
       problems.push(`${file}:${i + 1} [raw-time] literal time in an inline transition/animation — put motion in the stylesheet on tokens`);
     }
-    for (const m of line.matchAll(/\btokenEase\(\s*["'`](--[\w-]+)["'`]/g)) {
-      if (isToken(m[1])) problems.push(`${file}:${i + 1} [overshoot-effect] tokenEase('${m[1]}') — script-driven easing runs effects (blurIn's radius), and an effect never overshoots; geometry moves in the stylesheet. Use --uix-ease-soft/-enter/-leave`);
-    }
   });
+  // a formatted call may put its argument on the next line
+  for (const m of src.matchAll(/\btokenEase\(\s*["'`](--[\w-]+)["'`]/g)) {
+    const at = src.slice(0, m.index).split('\n').length;
+    if (isToken(m[1]) && !allowedAt(at)) problems.push(`${file}:${at} [overshoot-effect] tokenEase('${m[1]}') — script-driven easing runs effects (blurIn's radius), and an effect never overshoots; geometry moves in the stylesheet. Use --uix-ease-soft/-enter/-leave`);
+  }
   const effectsOf = (name) => [...(keyframeProps.get(name) ?? [])].filter((p) => !SPATIAL_PROPS.has(p));
   for (const m of src.matchAll(/\b(transition|animation)["'`]?\s*[:=]\s*(["'`])((?:\\.|(?!\2)[\s\S])*)\2/gi)) {
     const at = src.slice(0, m.index).split('\n').length;

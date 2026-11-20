@@ -161,6 +161,30 @@ test("overshoot-effect: aliases resolve across files, and a rule's own redefinit
   assert.deepEqual(rules(".a { --x-ease: var(--uix-ease-pop); } .b { transition: opacity var(--uix-dur) var(--x-ease); }"), ["overshoot-effect"], "inherited: any definition counts");
 });
 
+test("overshoot-effect: !important wins over a later normal declaration", () => {
+  assert.deepEqual(rules(".a { transition-property: opacity !important; transition-property: transform; transition-timing-function: var(--uix-ease-pop); }"), ["overshoot-effect"]);
+  assert.deepEqual(rules(".a { transition-timing-function: var(--uix-ease-pop) !important; transition: opacity var(--uix-dur) var(--uix-ease-out); }"), ["overshoot-effect"]);
+  assert.deepEqual(rules(".a { --x: var(--uix-ease-pop) !important; --x: var(--uix-ease-out); transition: opacity var(--uix-dur) var(--x); }"), ["overshoot-effect"]);
+  assert.deepEqual(rules(".a { --x: var(--uix-ease-pop); --x: var(--uix-ease-out) !important; transition: opacity var(--uix-dur) var(--x); }"), []);
+});
+
+test("overshoot-effect: a list from other rules keeps its pairing and its winner", () => {
+  // timings pair by position with the list another rule sets
+  assert.deepEqual(rules(".a { transition-property: transform, opacity; } .a[open] { transition-timing-function: var(--uix-ease-pop), var(--uix-ease-out); }"), []);
+  assert.deepEqual(rules(".a { transition-property: transform, opacity; } .a[open] { transition-timing-function: var(--uix-ease-out), var(--uix-ease-pop); }"), ["overshoot-effect"]);
+  // the closest broader state wins over the base it overrides
+  assert.deepEqual(rules(".a { transition-property: opacity; } .a.special { transition-property: transform; } .a.special:hover { transition-timing-function: var(--uix-ease-pop); }"), []);
+  // a narrower state's own list applies in that state
+  assert.deepEqual(rules(".a { transition-property: transform; } .a:hover { transition-timing-function: var(--uix-ease-pop); } .a:hover[open] { transition-property: opacity; }"), ["overshoot-effect"]);
+});
+
+test("overshoot-effect: a local inherit or unset keeps the inherited spring", () => {
+  for (const keyword of ["inherit", "unset", "revert"]) {
+    assert.deepEqual(rules(`:root { --x: var(--uix-ease-pop); } .a { --x: ${keyword}; transition: opacity var(--uix-dur) var(--x); }`), ["overshoot-effect"], keyword);
+  }
+  assert.deepEqual(rules(":root { --x: var(--uix-ease-pop); } .a { --x: initial; transition: opacity var(--uix-dur) var(--x); }"), [], "initial is no curve at all");
+});
+
 test("overshoot-effect: motion-allow exempts with its reason", () => {
   const r = checkCss(layer(".a { /* motion-allow: the operator picked it */ transition: opacity var(--uix-dur) var(--uix-ease-pop); }"), "seed.css");
   assert.deepEqual(r.problems, []);
@@ -172,6 +196,9 @@ test("overshoot-effect: TS inline transitions and script-driven easing", () => {
   assert.equal(checkTs("const s = { transition: 'transform var(--uix-dur-pop) var(--uix-ease-pop)' };", "a.tsx").length, 0);
   assert.equal(checkTs("blurIn([el], { from: 4, duration: 300, ease: tokenEase('--uix-ease-bounce') });", "a.ts").length, 1);
   assert.equal(checkTs("blurIn([el], { from: 4, duration: 300, ease: tokenEase('--uix-ease-soft') });", "a.ts").length, 0);
+  const formatted = checkTs("const ease = tokenEase(\n  '--uix-ease-pop',\n);", "a.ts");
+  assert.equal(formatted.length, 1, "a formatted tokenEase call");
+  assert.match(formatted[0], /^a\.ts:1 \[overshoot-effect\]/);
   // read whole: a template literal may span lines; the report names the line it starts on
   const multi = checkTs("const x = 1;\nel.style.transition = `opacity var(--uix-dur)\n  var(--uix-ease-pop)`;", "a.ts");
   assert.equal(multi.length, 1);
