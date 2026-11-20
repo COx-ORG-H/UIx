@@ -160,3 +160,70 @@ test('the old selection / onSelectionChange path is unchanged: a Set, no banner'
   assert.equal(banner(t.host), null);
   t.unmount();
 });
+
+test('review: the "Selection cleared" note does not come back after a new pick or a later query', () => {
+  const seen = [];
+  const t = mount(h(Harness, { seen }));
+  click(head(t.host));
+  click(bannerButton(t.host, `Select all ${fmt(40)} matching`));
+  t.render(h(Harness, { seen, searchValue: 'vpn' }));
+  assert.equal(text(banner(t.host).querySelector('p')), 'Selection cleared: the filter changed.');
+  click(boxes(t.host)[0]);
+  click(boxes(t.host)[0]);
+  assert.equal(banner(t.host), null, 'a tick and an untick: the note stays gone');
+  click(head(t.host));
+  click(bannerButton(t.host, `Select all ${fmt(40)} matching`));
+  t.render(h(Harness, { seen, searchValue: 'disk' }));
+  assert.equal(text(banner(t.host).querySelector('p')), 'Selection cleared: the filter changed.');
+  t.render(h(Harness, { seen, searchValue: 'printer' }));
+  t.render(h(Harness, { seen, searchValue: 'disk' }));
+  assert.equal(banner(t.host), null, 'back to the query it was cleared under: no note again');
+  t.unmount();
+});
+
+const keydown = (target, key, init = {}) => act(() => target.dispatchEvent(new window.KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init })));
+
+test('review: X selects by key with selectionScope; a table without it keeps its keys and markup', () => {
+  const seen = [];
+  const t = mount(h(Harness, { seen }));
+  boxes(t.host)[1].focus();
+  keydown(boxes(t.host)[1], 'x', { code: 'KeyX' });
+  assert.deepEqual(seen.at(-1), { kind: 'ids', ids: ['INC-2'] });
+  t.unmount();
+  let got = null;
+  const legacy = mount(h(ui.DataWorkspace, {
+    label: 'Incidents', rows: ROWS, getRowId: (r) => r.id, columns: COLUMNS, selection: new Set(), onSelectionChange: (s) => { got = s; },
+  }));
+  const box = legacy.host.querySelector('tbody .uix-table__selcell input');
+  box.focus();
+  keydown(box, 'x', { code: 'KeyX' });
+  const all = new window.KeyboardEvent('keydown', { key: 'a', code: 'KeyA', ctrlKey: true, bubbles: true, cancelable: true });
+  act(() => box.dispatchEvent(all));
+  assert.equal(got, null, 'no X, no Ctrl + A');
+  assert.equal(all.defaultPrevented, false, 'the browser keeps its select-all');
+  assert.equal(legacy.host.querySelector('tbody tr[data-uix-row-id]'), null, 'rows carry no new attribute');
+  legacy.unmount();
+});
+
+test('review: a click on an inert actions cell does not activate the row', () => {
+  const seen = [];
+  let opened = 0;
+  function Activating() {
+    const [scope, setScope] = useState(ui.EMPTY_SELECTION_SCOPE);
+    return h(ui.DataWorkspace, {
+      label: 'Incidents', rows: ROWS, getRowId: (r) => r.id, columns: COLUMNS, rowLabel: (r) => r.id,
+      pagination: { mode: 'offset', page: 1, pageSize: 5, total: 40, onPageChange() {} },
+      selectionScope: { value: scope, onChange: (next) => { seen.push(next); setScope(next); } },
+      onRowActivate: () => { opened += 1; }, rowActions: (r) => h('button', { type: 'button' }, `Delete ${r.id}`),
+    });
+  }
+  const t = mount(h(Activating));
+  click(head(t.host));
+  click(bannerButton(t.host, `Select all ${fmt(40)} matching`));
+  const row = t.host.querySelector('tbody tr');
+  assert.ok(row.querySelector('td.uix-table__actions').hasAttribute('inert'));
+  // hit-testing skips the inert cell: the browser targets the row, at the cell's place (jsdom: a 0×0 box at 0,0)
+  click(row, { clientX: 0, clientY: 0 });
+  assert.equal(opened, 0);
+  t.unmount();
+});

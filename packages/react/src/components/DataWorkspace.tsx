@@ -354,7 +354,8 @@ export interface DataWorkspaceSelectionScope<Q = DataWorkspaceQuery> {
    * The query changed under an "all matching" selection. `clear` (default): the selection is
    * dropped and the banner says so. `confirm`: the boxes clear and the bulk bar goes, but the
    * selection is kept aside; the banner offers to select all matching the new query or to clear
-   * it, and turning the filter back brings the selection back.
+   * it, and turning the filter back brings the selection back. A new pick under the new query (a
+   * tick, X) starts a selection by id in its place.
    */
   onQueryChange?: 'clear' | 'confirm';
 }
@@ -779,6 +780,10 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
   const stale = scopeValue?.kind === 'query' && selectionQueryKey(scopeValue.query) !== queryKey;
   const queryPolicy = selectionScope?.onQueryChange ?? 'clear';
   const effectiveScope: SelectionScope<Q> | null = selectionScope ? (stale ? EMPTY_SELECTION_SCOPE : scopeValue!) : null;
+  /** The query an "all matching" scope was cleared under (`clear`): the banner says so there, until the next pick. */
+  const [clearedUnder, setClearedUnder] = useState<string | null>(null);
+  // the query moved on (and is not itself about to be cleared): the note belonged to the old one
+  if (clearedUnder !== null && clearedUnder !== queryKey && !stale) setClearedUnder(null);
   const isSelected = useMemo(
     () => (effectiveScope ? selectionScopeMatcher(effectiveScope) : (rowId: string) => legacySelected.has(rowId)),
     [effectiveScope, legacySelected],
@@ -801,6 +806,7 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
       const base = effectiveScope ?? EMPTY_SELECTION_SCOPE;
       const next = setInSelectionScope<Q>(base, rowIds, on, cap);
       if (next !== base || stale) selectionScope.onChange(next);
+      setClearedUnder(null);
       return;
     }
     if (!onSelectionChange) return;
@@ -921,8 +927,7 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
 
   // ── the scope banner and the bulk bar (roadmap #12) ──────────────────────────────────────
   // `clear`: a stale "all matching" scope is dropped at once; the banner says why until the
-  // person dismisses it, selects again or the query changes again.
-  const [clearedUnder, setClearedUnder] = useState<string | null>(null);
+  // person dismisses it, selects again or the query changes again (`clearedUnder`, above).
   useIsomorphicLayoutEffect(() => {
     if (!selectionScope || !stale || queryPolicy !== 'clear') return;
     setClearedUnder(queryKey);
@@ -931,7 +936,8 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
   const numbers = useMemo(() => new Intl.NumberFormat(), []);
   const count = (n: number) => numbers.format(n);
   const matchingTotal = selectionScope?.total ?? (pagination?.mode === 'offset' ? pagination.total : undefined);
-  const canSelectMatching = matchingTotal != null && matchingTotal > 0 && matchingTotal <= cap;
+  // not while a refetch runs: the total may still be the previous query's
+  const canSelectMatching = matchingTotal != null && matchingTotal > 0 && matchingTotal <= cap && !refreshing;
   const hasQuery = selectionScope?.description != null || activeFilters.length > 0 || searching;
   const queryWords: ReactNode = selectionScope?.description
     ?? (hasQuery ? <QueryWords filters={filters} fields={activeFilters} search={search?.value.trim() ?? ''} labels={labels} /> : null);
@@ -944,7 +950,7 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
   }
   /** After the banner's last action, focus goes to the header checkbox (the banner leaves). */
   const focusHeadCheckbox = () => rootRef.current?.querySelector<HTMLInputElement>('thead .uix-table__selcol input')?.focus();
-  const selectMatching = { label: fillLabel(labels.selectAllMatching, { count: count(matchingTotal ?? 0) }), run: () => selectionScope?.onChange(selectAllMatching(queryNow as Q, matchingTotal ?? 0)) };
+  const selectMatching = { label: fillLabel(labels.selectAllMatching, { count: count(matchingTotal ?? 0) }), run: () => { selectionScope?.onChange(selectAllMatching(queryNow as Q, matchingTotal ?? 0)); setClearedUnder(null); } };
   const clearScope = { label: labels.clearSelection, run: () => { selectionScope?.onChange(EMPTY_SELECTION_SCOPE); setClearedUnder(null); focusHeadCheckbox(); } };
   let bannerText: ReactNode = null;
   let bannerPrimary: BannerAction | null = null;
@@ -970,6 +976,8 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
   const bannerTextRef = useRef<HTMLParagraphElement>(null);
   const saidBanner = useRef<string | null>(null);
   useEffect(() => {
+    // a first load that ends shows what was restored: that is not news either
+    if (saidBanner.current === null && status !== 'ready') return;
     const text = banner ? bannerTextRef.current?.textContent ?? '' : '';
     if (saidBanner.current !== null && text !== '' && text !== saidBanner.current) announcePolite(text, rootRef.current);
     saidBanner.current = text;
@@ -982,7 +990,8 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
   const bulkCountLabel = (n: number): ReactNode => (effectiveScope?.kind === 'query'
     // the filter in words can be long: this count wraps (the bar keeps a plain count on one line)
     ? <span className="uix-data-workspace__bulk-scope">{fillNodes(hasQuery ? labels.selectedAllMatching : labels.selectedAll, { count: count(n), query: queryWords })}</span>
-    : fillLabel(labels.selected, { count: count(n) }));
+    // by id the number is formatted; without selectionScope it reads as it always did
+    : fillLabel(labels.selected, { count: effectiveScope ? count(n) : n }));
   // Carbon's batch mode: a row's own verbs are off while the bulk bar acts on the selection, and
   // always under "all matching", where a row verb would read as a verb on thousands of rows.
   const rowActionsOff = effectiveScope?.kind === 'query' && selectedCount > 0 ? true : disableRowActionsWhileSelected && showBulk;
@@ -1011,7 +1020,7 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
         freezeFirstColumn={freezeFirstColumn} fixed={fixed ?? columns.some((column) => column.className != null || column.minWidth != null)}
         ladderOn={mobile != null} ladder={ladder} refreshing={refreshing} rowMotion={rowMotion}
         selectable={selectable} isSelected={isSelected} onPage={onPage} atCap={atCap} toggleRow={toggleRow} toggleMany={toggleMany}
-        actionsDisabled={rowActionsOff} actionsByRow={actionsByRow} lazyRowActions={lazyRowActions} hasActions={hasActions} keys={keys} sortable={onSortChange != null} multi={multi} sortFor={sortFor} cycleSort={cycleSort}
+        selectionKeys={selectionScope != null} actionsDisabled={rowActionsOff} actionsByRow={actionsByRow} lazyRowActions={lazyRowActions} hasActions={hasActions} keys={keys} sortable={onSortChange != null} multi={multi} sortFor={sortFor} cycleSort={cycleSort}
         virtualize={pagination || shownGroups ? undefined : virtualize}
         rowNavigation={rowNavigation ?? onRowActivate != null} onRowActivate={onRowActivate} activateOnClick={activateOnClick}
         activeRowId={activeRowId} onActiveRowChange={onActiveRowChange} peekRowId={peekRowId} labels={labels} onRowsExited={onRowsExited}
@@ -1113,6 +1122,8 @@ interface WorkspaceGridProps<T> {
   /** `range`: from the anchor to this row (Shift + click, Shift + X). */
   toggleRow: (rowId: string, on: boolean, range: boolean) => void;
   toggleMany: (rowIds: readonly string[], on: boolean) => void;
+  /** X / Shift + X / Ctrl/⌘ + A select by key (with `selectionScope`; a table without it keeps its keys as they were). */
+  selectionKeys: boolean;
   /** The rows' own actions are off (inert): the bulk bar acts on the selection. */
   actionsDisabled: boolean;
   actionsByRow: readonly ReactNode[];
@@ -1201,7 +1212,7 @@ const cellContent = <T,>(column: DataWorkspaceColumn<T>, row: T) => {
 
 function WorkspaceTable<T>({
   label, rows, ids, groups, collapsed, onToggleGroup, getRowId, rowLabel, columns, idColumn, getRowProps, density, zebra, freezeFirstColumn,
-  fixed, ladderOn, ladder, refreshing, rowMotion, selectable, isSelected, onPage, atCap, toggleRow, toggleMany, actionsDisabled, actionsByRow, lazyRowActions, hasActions, keys, sortable,
+  fixed, ladderOn, ladder, refreshing, rowMotion, selectable, isSelected, onPage, atCap, toggleRow, toggleMany, selectionKeys, actionsDisabled, actionsByRow, lazyRowActions, hasActions, keys, sortable,
   multi, sortFor, cycleSort, rowNavigation, onRowActivate, activateOnClick, activeRowId, onActiveRowChange, peekRowId, labels, windowing, virtual, onRowsExited,
 }: WorkspaceGridProps<T> & { windowing: DataWorkspaceVirtualize | null; virtual: UseVirtualRowsResult<T> | null }) {
   const cards = ladder === 'cards';
@@ -1391,6 +1402,13 @@ function WorkspaceTable<T>({
       // cell, a link) is the control's; a drag that selected text is not a click on the row.
       const control = (event.target as Element).closest?.(CONTROLS);
       if (control && control !== event.currentTarget && event.currentTarget.contains(control)) return;
+      // An inert actions cell (the bulk bar acts) is skipped by hit-testing, so a click on its dimmed
+      // verbs lands on the row itself: it is still not a click on the row.
+      if (actionsDisabled && event.target === event.currentTarget) {
+        const cell = event.currentTarget.querySelector<HTMLElement>(':scope > td.uix-table__actions');
+        const box = cell?.getBoundingClientRect();
+        if (box && event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom) return;
+      }
       if (typeof window !== 'undefined' && (window.getSelection?.()?.toString() ?? '') !== '') return;
       const row = rows[ids.indexOf(rowId)];
       if (row !== undefined) onRowActivate?.(row);
@@ -1437,15 +1455,15 @@ function WorkspaceTable<T>({
   };
   useShortcut({
     id: 'uix.data-workspace.toggle-row', keys: 'X', label: labels.shortcutToggleRow,
-    scope: wrapRef, scopeLabel: label, enabled: selectable, handler: toggleFocused(false),
+    scope: wrapRef, scopeLabel: label, enabled: selectable && selectionKeys, handler: toggleFocused(false),
   });
   useShortcut({
     id: 'uix.data-workspace.select-range', keys: 'Shift+X', label: labels.shortcutSelectRange,
-    scope: wrapRef, scopeLabel: label, enabled: selectable, handler: toggleFocused(true),
+    scope: wrapRef, scopeLabel: label, enabled: selectable && selectionKeys, handler: toggleFocused(true),
   });
   useShortcut({
     id: 'uix.data-workspace.select-page', keys: 'Mod+A', label: labels.shortcutSelectPage,
-    scope: wrapRef, scopeLabel: label, enabled: selectable,
+    scope: wrapRef, scopeLabel: label, enabled: selectable && selectionKeys,
     // in the table only: a field in it keeps its own select-all
     handler: () => { if (onPage < ids.length) toggleMany(ids, true); return true; },
   });
@@ -1601,7 +1619,7 @@ function WorkspaceTable<T>({
         selectable={selectable} selected={rowSelected} selectDisabled={!rowSelected && atCap}
         hasActions={hasActions} actions={actionsByRow[index]} actionsDisabled={actionsDisabled} lazyRowActions={lazyRowActions} ladder={ladder} ladderOn={ladderOn}
         selectRowLabel={selectRowLabel} openLabel={openLabel}
-        marked={nav || selectable || windowing != null || peekRowId !== undefined} ariaRowIndex={windowed ? index + 2 : undefined}
+        marked={nav || selectionKeys || windowing != null || peekRowId !== undefined} ariaRowIndex={windowed ? index + 2 : undefined}
         nav={nav} tabStop={tabStop === rowId} handlers={handlers}
       />
     );
