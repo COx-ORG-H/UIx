@@ -91,6 +91,7 @@
 <!-- lesson-skip: 04d0a48 not the CI cause (85526af was); kept: a constant backdrop blur and no per-row blur are cheaper without a GPU -->
 <!-- lesson-skip: 9d095c8 not the CI cause (85526af was); kept: a transform-only glide layer and settleOverlay waiting for the subtree -->
 <!-- lesson-skip: 5ebab16 not the CI cause (85526af was); kept: named isolation hosts instead of a subject-less :has() -->
+<!-- lesson-skip: 4b192a18 routine: a fallback could run an update twice if the engine threw after calling it; Qodo's risk note named it, pinned by a jsdom test -->
 <!-- lesson-skip: 38dc8ac3 routine: compare() escapes its text, so <code> showed literally; found by looking at the 390 px shot -->
 
 ### 2026-11-20 · reading a CSS animation and clicking under a view transition · `5805c3f4`
