@@ -1,5 +1,6 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 526b38f1 routine review fix from Qodo on #303 (a US-only physical-key fallback gated on the browser's layout map), pinned by matcher tests; the size gate named the baseline -->
 <!-- lesson-skip: 4a8bdc29 routine review fix from Qodo on #303 (shifted punctuation in the Alt physical-key fallback), pinned by matcher tests -->
 <!-- lesson-skip: 60f840c5 routine review fix from Qodo on #303 (a scoped command's hint resolved against focus or its own control), pinned by a jsdom test -->
 <!-- lesson-skip: b6fa2273 routine review fixes from Qodo on #303 (palette key without a callback, trailing +, Shift on punctuation, exact modifiers on chords, scope rank across sequences, platform notice) each pinned by a jsdom test; the sheet's root class was named by the react-classes-defined gate -->
