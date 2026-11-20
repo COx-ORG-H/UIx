@@ -63,6 +63,7 @@
   "delay-pending": { "$type": "duration", "$value": "300ms", "$description": "How long a pending action waits before it shows a pending indicator: a spinner that would flash for less is noise." },
   "hold-pending":  { "$type": "duration", "$value": "500ms", "$description": "Once a pending indicator shows, the least time it stays, so it never flickers." },
   "hold-result":   { "$type": "duration", "$value": "1500ms", "$description": "How long an in-place result (a button's success or error state, a copied check) holds before it returns to rest." },
+  "hold-undo":     { "$type": "duration", "$value": "8000ms", "$description": "The undo window of an undoable toast (toast.undoable; enterprise UX study, roadmap #23). No study gives a length: 8 s is the kit's read-and-decide toast tier (a warning toast stays 8 s), time to read one line and reach Undo or press Ctrl/Cmd+Z. The timer and its countdown pause while the pointer or focus is on the toasts or the tab is hidden (WCAG 2.2.1). Products set their own per call (duration). Not a transition budget." },
 
   "delay-tooltip":      { "$type": "duration", "$value": "400ms", "$description": "Hover delay before a tooltip opens. Keyboard focus opens it at once." },
   "delay-tooltip-skip": { "$type": "duration", "$value": "300ms", "$description": "Delay-group window: a neighbouring tooltip hovered within this long after one closed opens at once." },
