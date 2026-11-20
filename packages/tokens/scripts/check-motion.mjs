@@ -461,7 +461,8 @@ export function checkTs(src, file, keyframeProps = new Map()) {
     if (isToken(m[1]) && !allowedAt(at)) problems.push(`${file}:${at} [overshoot-effect] tokenEase('${m[1]}') — script-driven easing runs effects (blurIn's radius), and an effect never overshoots; geometry moves in the stylesheet. Use --uix-ease-soft/-enter/-leave`);
   }
   const effectsOf = (name) => [...(keyframeProps.get(name) ?? [])].filter((p) => !SPATIAL_PROPS.has(p));
-  for (const m of src.matchAll(/\b(transition|animation)["'`]?\s*[:=]\s*(["'`])((?:\\.|(?!\2)[\s\S])*)\2/gi)) {
+  // `transition: '…'`, `['transition']: '…'`, `.transition = '…'`, `setProperty('transition', '…')`
+  for (const m of src.matchAll(/\b(transition|animation)["'`]?\]?\s*[:=,]\s*(["'`])((?:\\.|(?!\2)[\s\S])*)\2/gi)) {
     const at = src.slice(0, m.index).split('\n').length;
     if (allowedAt(at)) continue;
     const items = postcss.list.comma(m[3].replace(/\s+/g, ' ').trim());

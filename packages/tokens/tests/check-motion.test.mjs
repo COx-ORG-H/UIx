@@ -212,6 +212,9 @@ test("overshoot-effect: TS inline transitions and script-driven easing", () => {
   assert.equal(checkTs("const s = { transition: 'transform var(--uix-dur-pop) var(--uix-ease-pop)' };", "a.tsx").length, 0);
   assert.equal(checkTs("blurIn([el], { from: 4, duration: 300, ease: tokenEase('--uix-ease-bounce') });", "a.ts").length, 1);
   assert.equal(checkTs("blurIn([el], { from: 4, duration: 300, ease: tokenEase('--uix-ease-soft') });", "a.ts").length, 0);
+  assert.equal(checkTs("const s = { ['transition']: 'opacity var(--uix-dur) cubic-bezier(.25,1.25,.25,1)' };", "a.tsx").length, 1, "a computed key");
+  assert.equal(checkTs("el.style.setProperty('transition', 'opacity var(--uix-dur) var(--uix-ease-pop)');", "a.ts").length, 1, "setProperty");
+  assert.equal(checkTs("el.style.setProperty('transition', 'transform var(--uix-dur) var(--uix-ease-pop)');", "a.ts").length, 0);
   const formatted = checkTs("const ease = tokenEase(\n  '--uix-ease-pop',\n);", "a.ts");
   assert.equal(formatted.length, 1, "a formatted tokenEase call");
   assert.match(formatted[0], /^a\.ts:1 \[overshoot-effect\]/);
