@@ -23,13 +23,13 @@
   .uix-steps--list > .uix-step { align-items: flex-start; min-width: 0; }
   .uix-steps--list > .uix-step:not(:last-child) { flex: 1; }
   .uix-step__text { display: grid; min-width: 0; padding-top: var(--uix-space-1); }
-  .uix-step__title { font-size: var(--uix-text-meta); font-weight: 500; }
+  .uix-step__title { font-size: var(--uix-text-meta); font-weight: 500; overflow-wrap: anywhere; }
   .uix-step__desc { font-size: var(--uix-text-meta); color: var(--uix-text-muted); overflow-wrap: anywhere; }
   .uix-step__action { color: inherit; text-decoration: none; padding: 0; border: 0; background: transparent; font: inherit; text-align: start; }
   a.uix-step__action, button.uix-step__action { cursor: pointer; text-decoration: underline; text-underline-offset: .15em; }
   .uix-steps--list .uix-step__connector { align-self: center; margin-top: 0; }
   .uix-steps--horizontal > .uix-step > .uix-step__connector { align-self: flex-start; margin-top: 13px; }
-  .uix-steps--horizontal > .uix-step > .uix-step__text { flex: 0 0 auto; max-width: 12rem; }
+  .uix-steps--horizontal > .uix-step > .uix-step__text { flex: 0 1 auto; min-inline-size: 6ch; max-width: 12rem; }
   .uix-step[data-state="waiting"] .uix-step__marker { border-style: dashed; border-color: var(--uix-warning-border); color: var(--uix-warning-text); }
   .uix-step[data-state="error"] { color: var(--uix-text); }
   /* the error marker is the icon set's X (HAR-1576), the size of the done check */
