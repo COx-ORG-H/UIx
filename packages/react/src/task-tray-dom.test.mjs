@@ -365,3 +365,22 @@ test('TaskTray: a Retry that restarts the same id keeps its new row, focusable; 
     assert.equal(panel.hasAttribute('inert'), false);
   } finally { unmount(); restore(); }
 });
+
+test('TaskTray: a controlled close shows the exit before the panel is hidden', () => {
+  const restore = useFakeTimers();
+  const t = ui.createTaskApi(ui.createTaskStore());
+  t.start('Export');
+  const { host, root, unmount } = mount(h(ui.TaskTray, { store: t.store, open: true }));
+  try {
+    const panel = host.querySelector('.uix-task-tray__panel');
+    assert.equal(panel.hidden, false);
+    act(() => root.render(h(ui.TaskTray, { store: t.store, open: false })));
+    assert.equal(panel.hidden, false, 'the first closed commit still shows the panel');
+    assert.ok(panel.hasAttribute('data-closing'));
+    tick(200);
+    assert.equal(panel.hidden, true);
+    act(() => root.render(h(ui.TaskTray, { store: t.store, open: true })));
+    assert.equal(panel.hidden, false);
+    assert.equal(panel.hasAttribute('data-closing'), false);
+  } finally { unmount(); restore(); }
+});

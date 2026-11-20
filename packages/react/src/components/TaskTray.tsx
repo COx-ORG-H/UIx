@@ -239,16 +239,18 @@ export function TaskTray({
   // --uix-dur-exit (the kit's [hidden] is display: none !important, which no transition outlasts).
   // While it closes it is inert, so nothing in it can take focus.
   const [closing, setClosing] = useState(false);
-  const wasOpen = useRef(open);
+  // Derived while rendering, not in an effect: the render that first sees `open` false already has
+  // `closing`, so `hidden` is never painted before the exit (a parent closing it from a timer too).
+  const [openBefore, setOpenBefore] = useState(open);
+  if (openBefore !== open) {
+    setOpenBefore(open);
+    setClosing(!open);
+  }
   useEffect(() => {
-    const was = wasOpen.current;
-    wasOpen.current = open;
-    if (open) { setClosing(false); return undefined; }
-    if (!was) return undefined;
-    setClosing(true);
+    if (!closing) return undefined;
     const timer = window.setTimeout(() => setClosing(false), tokenMs('--uix-dur-exit', 110, panelRef.current));
     return () => window.clearTimeout(timer);
-  }, [open]);
+  }, [closing]);
   useIsomorphicLayoutEffect(() => {
     const panel = panelRef.current;
     if (!panel) return;
