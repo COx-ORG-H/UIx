@@ -93,7 +93,11 @@ ${decls(elementBase, '    ')}
 const twLine = (ns, name, strip) =>
   `  --${ns}-${name.replace(strip, 'uix-')}: var(--${name});`;
 const twColors = base.filter(isColor).map((t) => twLine('color', t.name, /^uix-/));
-const twRadius = base.filter((t) => t.name.startsWith('uix-radius-')).map((t) => twLine('radius', t.name, /^uix-radius-/));
+const twRadius = rootBase.filter((t) => t.name.startsWith('uix-radius-')).map((t) => twLine('radius', t.name, /^uix-radius-/));
+// A plain @theme variable is emitted on :root and resolves there, so a per-element token would be
+// read once at the root (no container: invalid, so rounded-uix-inner drew 0). @theme inline writes
+// var(--uix-radius-inner) into the utility itself, which resolves on the element it styles.
+const twInline = elementBase.filter((t) => t.name.startsWith('uix-radius-')).map((t) => twLine('radius', t.name, /^uix-radius-/));
 const twFonts = base.filter((t) => t.name.startsWith('uix-font-')).map((t) => twLine('font', t.name, /^uix-font-/));
 
 const tailwindTheme = `/* GENERATED — do not edit. Tailwind v4 \`@theme\`. Import AFTER @tensor_1/tokens/css so the
@@ -101,7 +105,12 @@ const tailwindTheme = `/* GENERATED — do not edit. Tailwind v4 \`@theme\`. Imp
 @theme {
 ${[...twColors, '', ...twRadius, '', ...twFonts].join('\n')}
 }
-`;
+${twInline.length ? `
+/* per-element tokens: resolved where the utility is used, not on :root */
+@theme inline {
+${twInline.join('\n')}
+}
+` : ''}`;
 
 /* ---------- Tailwind v3 preset (same principle, config form) ---------- */
 const cjsMap = (toks, strip) =>
@@ -136,17 +145,19 @@ const obj = (entries) =>
   '{\n' + entries.map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)},`).join('\n') + '\n}';
 
 const cssVarEntries = base.map((t) => [key(t), `var(--${t.name})`]);
-// a per-element token has no one resolved value (it depends on the container), so it keeps its
-// expression instead of a fallback lifted out of it
-const lightEntries = base.map((t) => [key(t), perElement(t) ? val(t) : fallback(val(t))]);
+// a per-element token has no one resolved value (it depends on the container), so light leaves it
+// out: a native caller works it out from its own container radius and inset
+const lightEntries = rootBase.map((t) => [key(t), fallback(val(t))]);
 const darkEntries = dark.map((t) => [key(t), fallback(val(t))]);
 const numEntries = base.map((t) => [key(t), pxNum(val(t))]).filter(([, v]) => v !== undefined);
 
 const tokensJs = `/* GENERATED — do not edit. Source: tokens/  •  Build: npm run build:tokens.
  * cssVar  — theme-aware var() strings; use in the browser / CSS-in-JS (respects brand + dark).
  * light/dark — resolved values for non-DOM use (SSR, React Native, server-rendered charts).
- *              runtime brand tokens resolve to their fallback color here.
- * num     — unitless px numbers (React Native, layout math). */
+ *              runtime brand tokens resolve to their fallback color here. A per-element token
+ *              (radius-inner) has no one value and is not in light: compute
+ *              max(min, outerRadius - inset) from your own container.
+ * num    — unitless px numbers (React Native, layout math). */
 export const cssVar = ${obj(cssVarEntries)};
 
 export const light = ${obj(lightEntries)};
@@ -179,7 +190,9 @@ const nameUnion = base.map((t) => JSON.stringify(key(t))).join(' | ');
 const tokensDts = `/* GENERATED — do not edit. */
 export type UixTokenName = ${nameUnion};
 export declare const cssVar: Record<UixTokenName, string>;
-export declare const light: Record<UixTokenName, string>;
+/** Tokens resolved per element from a container's inputs (radius-inner); they have no static value. */
+export type UixElementTokenName = ${elementBase.length ? elementBase.map((t) => JSON.stringify(key(t))).join(' | ') : 'never'};
+export declare const light: Record<Exclude<UixTokenName, UixElementTokenName>, string>;
 export declare const dark: Partial<Record<UixTokenName, string>>;
 export declare const num: Partial<Record<UixTokenName, number>>;
 export type UixSpringName = ${springEntries.map(([k]) => JSON.stringify(k)).join(' | ')};

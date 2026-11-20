@@ -1,8 +1,10 @@
 /* GENERATED — do not edit. Source: tokens/  •  Build: npm run build:tokens.
  * cssVar  — theme-aware var() strings; use in the browser / CSS-in-JS (respects brand + dark).
  * light/dark — resolved values for non-DOM use (SSR, React Native, server-rendered charts).
- *              runtime brand tokens resolve to their fallback color here.
- * num     — unitless px numbers (React Native, layout math). */
+ *              runtime brand tokens resolve to their fallback color here. A per-element token
+ *              (radius-inner) has no one value and is not in light: compute
+ *              max(min, outerRadius - inset) from your own container.
+ * num    — unitless px numbers (React Native, layout math). */
 export const cssVar = {
   "bg-app": "var(--uix-bg-app)",
   "bg-subtle": "var(--uix-bg-subtle)",
@@ -570,7 +572,6 @@ export const light = {
   "radius-lg": "16px",
   "radius-xl": "24px",
   "radius-pill": "999px",
-  "radius-inner": "max(var(--uix-radius-inner-min, 0px), calc(var(--uix-radius-outer) - var(--uix-radius-inset, 0px)))",
   "row-h": "56px",
   "row-h-compact": "44px",
   "row-h-standard": "56px",

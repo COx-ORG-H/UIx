@@ -22,6 +22,7 @@ import postcss from 'postcss';
 import { readFile, readdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isHandComputedRadius, strayInsetPx } from './concentric-gate.mjs';
 
 const PKG = join(dirname(fileURLToPath(import.meta.url)), '..'); // packages/tokens
 
@@ -120,21 +121,21 @@ for (const file of (await readdir(compDir)).filter((n) => n.endsWith('.css'))) {
     // NB: compute matches once with .match() — never .test() on a /g regex (its lastIndex is
     // stateful across calls, which silently skips later decls). match() resets lastIndex itself.
     const pxMatches = val.match(PX);
-    // Concentric corners: --uix-radius-inset is the container's border plus its padding, so its one
-    // raw px may be the border width that the same rule draws (border / border-width), and nothing
-    // else. The padding part must be --uix-space-*.
+    // Concentric corners (concentric-gate.mjs): --uix-radius-inset is the container's border plus
+    // its padding, so it may hold the rule's own border width once and no other raw px; and a
+    // nested corner is never hand-computed from a radius token, with or without raw px.
     if (prop === '--uix-radius-inset') {
-      const borderPx = new Set();
-      d.parent.each((s) => {
-        if (s.type === 'decl' && /^border(-width)?$/.test(s.prop.toLowerCase())) for (const m of s.value.match(PX) ?? []) borderPx.add(m);
-      });
-      const stray = (pxMatches ?? []).filter((m) => !borderPx.has(m));
-      if (stray.length) flag(file, prop, val, `${file}: raw px in '${prop}: ${val}' — only the rule's own border width may be raw; the padding part must be --uix-space-*`);
+      const borders = [];
+      d.parent.each((s) => { if (s.type === 'decl' && /^border(-width)?$/.test(s.prop.toLowerCase())) borders.push(s.value); });
+      if (strayInsetPx(val, borders).length) flag(file, prop, val, `${file}: raw px in '${prop}: ${val}' — only the rule's own border width may be raw, once; the padding part must be --uix-space-*`);
+      return;
+    }
+    if (isHandComputedRadius(prop, val)) {
+      flag(file, prop, val, `${file}: hand-computed radius '${prop}: ${val}' — for a corner nested in a rounded container, set --uix-radius-outer / --uix-radius-inset on the container and use var(--uix-radius-inner)`);
       return;
     }
     if (pxMatches) {
-      if (TOKENIZE_PX_PROPS.has(prop) && /calc\(\s*var\(--uix-radius-[a-z0-9-]+\)\s*-/.test(val)) flag(file, prop, val, `${file}: hand-computed radius '${prop}: ${val}' — for a corner nested in a rounded container, set --uix-radius-outer / --uix-radius-inset on the container and use var(--uix-radius-inner)`);
-      else if (TOKENIZE_PX_PROPS.has(prop)) flag(file, prop, val, `${file}: raw px in '${prop}: ${val}' (tokenize -> --uix-space/radius/text)`);
+      if (TOKENIZE_PX_PROPS.has(prop)) flag(file, prop, val, `${file}: raw px in '${prop}: ${val}' (tokenize -> --uix-space/radius/text)`);
       else if (!GEOMETRY_PROPS.has(prop)) flag(file, prop, val, `${file}: raw px in un-classified property '${prop}: ${val}'`);
       else geometryPxCount += pxMatches.length;
     }
