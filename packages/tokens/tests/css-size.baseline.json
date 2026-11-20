@@ -122,9 +122,9 @@
       "brotli": 1061
     },
     "styles/components/command-palette.css": {
-      "raw": 6066,
-      "gzip": 1898,
-      "brotli": 1605
+      "raw": 8412,
+      "gzip": 2542,
+      "brotli": 2157
     },
     "styles/components/comments.css": {
       "raw": 3304,

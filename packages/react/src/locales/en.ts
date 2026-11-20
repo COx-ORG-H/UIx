@@ -226,6 +226,10 @@ export const en: UixLabelPack = {
     resultsMany: '{count} results',
     empty: 'No results',
     recent: 'Recent',
+    loading: 'Searching…',
+    failed: 'Search failed',
+    retry: 'Retry',
+    breadcrumb: 'Breadcrumb',
   },
   qrCode: {
     tooLong: 'Too long for a QR code',

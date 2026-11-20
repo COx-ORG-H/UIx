@@ -239,6 +239,10 @@ export const bs: UixLabelPack = {
     },
     empty: 'Nema rezultata',
     recent: 'Nedavno',
+    loading: 'Traženje…',
+    failed: 'Pretraga nije uspjela',
+    retry: 'Pokušaj ponovo',
+    breadcrumb: 'Putanja',
   },
   qrCode: {
     tooLong: 'Predugo za QR kod',

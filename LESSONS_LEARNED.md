@@ -1,5 +1,8 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 7a6f1333 routine: axe target-size (wcag22aa) counts an element's own box, not a ::before hit area; the a11y job named the crumb -->
+<!-- lesson-skip: 4e3f75a0 routine: the glyph guard named a text separator and a hand-drawn mask (icon set now), and a stray apostrophe broke a docs string; both named by CI gates -->
+<!-- lesson-skip: dd03ff1a routine: a source that answered with nothing kept its group heading; found by looking at the live demo, pinned by a jsdom test -->
 <!-- lesson-skip: 7589b7cb routine: the new label-in-name and forced-colors lanes named each case on first run; the gate is tests/a11y/label-in-name.spec.mjs and forced-colors.lane.spec.mjs -->
 <!-- lesson-skip: ddba5324 routine: a scripted edit without an assertion did not apply, and the merge resolution assumed it had; the dts build named it -->
 <!-- lesson-skip: 9f537ee4 routine: an empty flex item centred in a box a parent stretched; found by looking at the harness shot, the mark now sits on the text baseline -->

@@ -511,6 +511,17 @@ export type {
 // Items mode (HAR-1378): the palette filters, groups and runs commands itself
 export { filterCommandItems, groupCommandItems } from './command-palette-model.js';
 export type { CommandPaletteItem, CommandPaletteGroup } from './command-palette-model.js';
+// Roadmap #9: server sources, pages, aliases, context boost and frecency
+export type { CommandPalettePage, CommandPaletteSource } from './command-palette-model.js';
+export { rankCommandItems, commandFoldFor, defaultCommandFold, FRECENCY_WEIGHT } from './command-palette-rank.js';
+export type { RankedCommand, RankCommandOptions, CommandFold } from './command-palette-rank.js';
+export {
+  COMMAND_FRECENCY_STORAGE_KEY, COMMAND_FRECENCY_HALF_LIFE, COMMAND_FRECENCY_MAX_ENTRIES,
+  commandFrecencyScore, decayedFrecency, recordCommandUse, parseCommandFrecency, localCommandFrecencyStorage,
+} from './command-frecency.js';
+export type { CommandFrecencyEntry, CommandFrecencyEntries, CommandFrecencyStorage } from './command-frecency.js';
+export { useCommandFrecency } from './hooks/useCommandFrecency.js';
+export type { UseCommandFrecencyOptions, CommandFrecency } from './hooks/useCommandFrecency.js';
 
 // ITSM capability
 export { Inbox, InboxList, InboxItem, InboxDetail } from './components/Inbox.js';
