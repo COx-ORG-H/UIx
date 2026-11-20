@@ -165,3 +165,67 @@ test('OtpInput: alphanumeric upper-cases; invalid reaches the input; Field names
   assert.equal(host.querySelectorAll('.uix-otp__cell').length, 8);
   unmount();
 });
+
+/** A paste event the way React reads it: `clipboardData.getData('text')`. */
+const paste = (input, text) => act(() => {
+  const event = new window.Event('paste', { bubbles: true, cancelable: true });
+  event.clipboardData = { getData: (type) => (type === 'text' || type === 'text/plain' ? text : '') };
+  input.dispatchEvent(event);
+});
+
+test('OtpInput (WCAG 3.3.8): pasting the whole code fills every cell, wherever the caret is, spaces and dashes dropped', () => {
+  const done = [];
+  const { host, unmount } = mount(h(ui.OtpInput, { 'aria-label': 'Code', groupSize: 3, onComplete: (c) => done.push(c) }));
+  const input = host.querySelector('input');
+  const cells = () => [...host.querySelectorAll('.uix-otp__cell')].map((c) => c.textContent).join('');
+  act(() => input.focus());
+  // Into an empty field.
+  paste(input, ' 123 456 ');
+  assert.equal(input.value, '123456');
+  assert.equal(cells(), '123456');
+  assert.deepEqual(done, ['123456']);
+  // Over a half-typed code, the caret in the middle: the pasted code replaces it, it is not spliced in.
+  type(input, '98');
+  input.setSelectionRange(1, 1);
+  paste(input, '654-321');
+  assert.equal(input.value, '654321');
+  assert.equal(cells(), '654321');
+  // A longer paste ("Your code is 111222") keeps the first `length` usable characters.
+  type(input, '');
+  paste(input, '111-222-333');
+  assert.equal(input.value, '111222');
+  // Focus stays in the field with the caret at the end, ready for Enter or a correction.
+  assert.equal(document.activeElement, input);
+  assert.deepEqual([input.selectionStart, input.selectionEnd], [6, 6]);
+  // A short piece still goes in at the caret.
+  type(input, '12');
+  paste(input, '34');
+  assert.equal(input.value, '1234');
+  // Nothing usable changes nothing.
+  paste(input, 'abc');
+  assert.equal(input.value, '1234');
+  unmount();
+});
+
+test('OtpInput: one-time-code autofill (the browser or a password manager setting the value) fills every cell', () => {
+  const done = [];
+  const { host, unmount } = mount(h(ui.OtpInput, { 'aria-label': 'Code', name: 'otp', onComplete: (c) => done.push(c) }));
+  const input = host.querySelector('input');
+  assert.equal(input.getAttribute('autocomplete'), 'one-time-code');
+  // Nothing that turns a password manager away: no maxlength (it would cut "123-456"), not read-only,
+  // no autocomplete="off", no ignore markers, a name to submit.
+  assert.equal(input.hasAttribute('maxlength'), false);
+  assert.equal(input.readOnly, false);
+  assert.equal(input.name, 'otp');
+  assert.equal([...input.attributes].some((a) => /ignore/i.test(a.name)), false);
+  type(input, '1');
+  // The SMS code arrives while one digit is typed: autofill replaces the value as a whole.
+  type(input, '482-913');
+  assert.equal(input.value, '482913');
+  assert.deepEqual([...host.querySelectorAll('.uix-otp__cell')].map((c) => c.textContent), ['4', '8', '2', '9', '1', '3']);
+  assert.deepEqual(done, ['482913']);
+  unmount();
+  const custom = mount(h(ui.OtpInput, { 'aria-label': 'PIN', autoComplete: 'off' }));
+  assert.equal(custom.host.querySelector('input').getAttribute('autocomplete'), 'off', 'a product may still turn it off (a till PIN)');
+  custom.unmount();
+});

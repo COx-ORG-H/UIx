@@ -146,6 +146,13 @@ export type { DrawerProps } from './components/Drawer.js';
 export { DialogClose } from './components/DiscardPrompt.js';
 export type { DialogCloseEvent, DialogCloseProps, DiscardPromptLabels } from './components/DiscardPrompt.js';
 
+// Session timeout warning, extension and kept drafts (WCAG 2.2.1 / 2.2.6; UIx enterprise UX study #24)
+export { SessionTimeout, useSessionTimeout, DEFAULT_SESSION_TIMEOUT_LABELS } from './components/SessionTimeout.js';
+export type {
+  SessionTimeoutProps, SessionTimeoutLabels, SessionTimeoutPhase, SessionTimeoutState, SessionDraftsReason,
+  SessionDraftsState, SessionIdleConfig, UseSessionTimeoutOptions,
+} from './components/SessionTimeout.js';
+
 export { Peek } from './components/Peek.js';
 
 export { Lightbox, DEFAULT_LIGHTBOX_LABELS } from './components/Lightbox.js';
