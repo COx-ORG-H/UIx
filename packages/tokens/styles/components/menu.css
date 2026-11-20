@@ -1,9 +1,10 @@
 /* uix menu / dropdown / context menu — popover-anchored surface. Depends only on --uix-* tokens. */
 @layer uix.components {
-  .uix-menu { min-width: 200px; margin: 0; padding: var(--uix-space-1); list-style: none; background: var(--uix-surface-2); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-popover); }
+  .uix-menu { min-width: 200px; margin: 0; padding: var(--uix-space-1); list-style: none; background: var(--uix-surface-2); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-outer); box-shadow: var(--uix-shadow-popover);
+    --uix-radius-outer: var(--uix-radius-md); --uix-radius-inset: calc(1px + var(--uix-space-1)); }
   .uix-menu__item {
     display: flex; align-items: center; gap: var(--uix-space-3); width: 100%; text-align: left; padding: var(--uix-space-2) var(--uix-space-3);
-    border: 0; background: transparent; border-radius: var(--uix-radius-sm); color: var(--uix-text); font: inherit; font-size: var(--uix-text-body); cursor: pointer;
+    border: 0; background: transparent; border-radius: var(--uix-radius-inner, var(--uix-radius-sm)); color: var(--uix-text); font: inherit; font-size: var(--uix-text-body); cursor: pointer;
   }
   .uix-menu__item svg { width: var(--uix-icon-md); height: var(--uix-icon-md); color: var(--uix-text-muted); }
   .uix-menu__item:hover, .uix-menu__item[data-active] { background: var(--uix-bg-hover); }

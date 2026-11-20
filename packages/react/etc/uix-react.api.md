@@ -1755,6 +1755,7 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
     onSortChange?: (sort: DataWorkspaceSortValue<S>) => void;
     // (undocumented)
     pagination?: DataWorkspacePagination;
+    peekRowId?: string | null;
     refreshing?: boolean;
     rowActions?: (row: T, context: DataWorkspaceRowActionsContext) => ReactNode;
     rowActionsColumn?: boolean;
@@ -7725,6 +7726,9 @@ export interface StarButtonProps {
 // @public (undocumented)
 export function startOfMonth(value: string): string;
 
+// @public (undocumented)
+export type StartViewTransition = (update: () => void, options?: ViewTransitionOptions) => ViewTransitionResult;
+
 // @public
 export const Stat: react.ForwardRefExoticComponent<StatProps & react.RefAttributes<HTMLElement>>;
 
@@ -9161,6 +9165,9 @@ export interface UseTableResult<T> {
 export function useUixLabels(): UixLabels;
 
 // @public
+export function useViewTransition(): StartViewTransition;
+
+// @public
 export function useVirtualRows<T>(rows: readonly T[], input: UseVirtualRowsOptions): UseVirtualRowsResult<T>;
 
 // @public (undocumented)
@@ -9193,6 +9200,12 @@ export interface UseVirtualRowsResult<T> {
 
 // @public (undocumented)
 export function validateRuleDefinition(value: RuleDefinition, maxDepth?: number, options?: RuleValidationOptions): RuleValidationIssue[];
+
+// @public
+export const VIEW_TRANSITION_ATTR = "data-uix-view-transition";
+
+// @public
+export const VIEW_TRANSITION_CLASS = "uix-morph";
 
 // @public
 export function ViewMenu(input: ViewMenuProps): react.JSX.Element;
@@ -9279,6 +9292,26 @@ export interface ViewState {
     // (undocumented)
     sort?: SortKey[];
 }
+
+// @public (undocumented)
+export interface ViewTransitionOptions {
+    className?: string;
+    parts?: () => Iterable<ViewTransitionPart>;
+    scope?: Element | null;
+}
+
+// @public
+export type ViewTransitionPart = readonly [key: string, element: Element | null | undefined];
+
+// @public
+export interface ViewTransitionResult {
+    readonly animated: boolean;
+    readonly finished: Promise<void>;
+    readonly updated: Promise<void>;
+}
+
+// @public
+export function viewTransitionSupported(scope?: Element | null): boolean;
 
 // @public (undocumented)
 export interface VirtualWindow {

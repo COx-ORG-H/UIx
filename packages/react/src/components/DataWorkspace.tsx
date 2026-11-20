@@ -15,6 +15,8 @@ import { isFilterEmpty, summarizeFilter } from '../filter-model.js';
 import type { FilterField, FilterSummaryLabels, FilterValue, SummarizeFilterOptions } from '../filter-model.js';
 import { useResolvedFilterLabels } from '../hooks/useResolvedFilterLabels.js';
 import { useVirtualRows } from '../hooks/useVirtualRows.js';
+import { playArrival } from '../hooks/arrival.js';
+import { useViewTransition } from '../hooks/useViewTransition.js';
 import type { UseVirtualRowsResult } from '../hooks/useVirtualRows.js';
 import { BusyRegion } from './BusyRegion.js';
 import { Button } from './Button.js';
@@ -360,7 +362,11 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
   onSaveViewAs?: () => void;
   /** When Save as shows: `changed` (default) with `viewChanged`; `always`, to keep any view under a name (HAR-2622). */
   saveViewAs?: 'changed' | 'always';
-  /** Toolbar: a maximize toggle; Escape restores, unless an open popover or menu takes it first. */
+  /**
+   * Toolbar: a maximize toggle; Escape restores, unless an open popover or menu takes it first.
+   * Picked with the pointer, the workspace grows into the window and shrinks back to its place
+   * (a view transition, `useViewTransition`); from the keyboard and under reduced motion it jumps.
+   */
   maximized?: boolean;
   onMaximizedChange?: (maximized: boolean) => void;
   /**
@@ -433,6 +439,16 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
   activeRowId?: string | null;
   /** The tab stop moved to another row (a key, a click, focus entering a row). */
   onActiveRowChange?: (rowId: string) => void;
+  /**
+   * The row whose record the side `Peek` shows, or `null` while no Peek is open (experiment: the
+   * return-to-row cue). Pass it to get the way back: when it turns `null`, focus goes to that row
+   * (its id control without `rowNavigation`) and the row plays the arrival cue (`.uix-arrival`)
+   * once, so the person sees where they are in the list. Keep it on the record the Peek shows
+   * after ↑ / ↓, and the way back is to that record. A row that left the list while the Peek
+   * was open (filtered out, resolved) hands focus to the row now in its place, without a cue.
+   * Focus moves only when it is in the table or nowhere; nothing moves and the open stays instant.
+   */
+  peekRowId?: string | null;
   labels?: Partial<DataWorkspaceLabels>;
 }
 
@@ -505,12 +521,18 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
   onSaveView, onSaveViewAs, saveViewAs = 'changed', maximized = false, onMaximizedChange, toolbarMenu, toolbarEnd, beforeBody, pagination,
   status = 'ready', refreshing = false, rowMotion = false, onRetry, loadingRows = 6, empty, emptyAction, filteredEmpty, filteredEmptyAction,
   error, stateOverride, groups, collapsedGroups, onCollapsedGroupsChange, virtualize, rowNavigation, onRowActivate,
-  activateOnClick = true, activeRowId, onActiveRowChange, multiSort = false, labels: labelOverrides, className, ...props
+  activateOnClick = true, activeRowId, onActiveRowChange, peekRowId, multiSort = false, labels: labelOverrides, className, ...props
 }: DataWorkspaceProps<T, S>) {
   const labels = { ...DEFAULT_DATA_WORKSPACE_LABELS, ...useUixLabels().dataWorkspace, ...labelOverrides };
   const id = useId();
   const searchRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLElement>(null);
+  // Maximize is occasional, so it may travel: the workspace morphs between its place and the window.
+  const morph = useViewTransition();
+  const setMaximized = (next: boolean) => {
+    if (!onMaximizedChange) return;
+    morph(() => onMaximizedChange(next), { parts: () => [['workspace', rootRef.current]] });
+  };
   /** The row a Shift-click range starts from: the last row clicked without Shift. */
   const anchor = useRef<string | null>(null);
 
@@ -737,7 +759,7 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
             {showSaveAs && <MenuItem onSelect={() => onSaveViewAs?.()}>{labels.saveViewAs}</MenuItem>}
             {toolbarMenu}
             {onMaximizedChange && (
-              <MenuItemCheckbox checked={maximized} onCheckedChange={(next) => onMaximizedChange(next)} closeOnSelect icon={<MaximizeIcon restore={maximized} />}>
+              <MenuItemCheckbox checked={maximized} onCheckedChange={setMaximized} closeOnSelect icon={<MaximizeIcon restore={maximized} />}>
                 {labels.maximize}
               </MenuItemCheckbox>
             )}
@@ -775,7 +797,7 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
         actionsByRow={actionsByRow} lazyRowActions={lazyRowActions} hasActions={hasActions} keys={keys} sortable={onSortChange != null} multi={multi} sortFor={sortFor} cycleSort={cycleSort}
         virtualize={pagination || shownGroups ? undefined : virtualize}
         rowNavigation={rowNavigation ?? onRowActivate != null} onRowActivate={onRowActivate} activateOnClick={activateOnClick}
-        activeRowId={activeRowId} onActiveRowChange={onActiveRowChange} labels={labels} onRowsExited={onRowsExited}
+        activeRowId={activeRowId} onActiveRowChange={onActiveRowChange} peekRowId={peekRowId} labels={labels} onRowsExited={onRowsExited}
       />
     );
   }
@@ -843,6 +865,7 @@ interface WorkspaceGridProps<T> {
   activateOnClick: boolean;
   activeRowId?: string | null;
   onActiveRowChange?: (rowId: string) => void;
+  peekRowId?: string | null;
   labels: DataWorkspaceLabels;
   /** The last leaving row has gone: the workspace may now show its empty state. */
   onRowsExited?: () => void;
@@ -915,7 +938,7 @@ const cellContent = <T,>(column: DataWorkspaceColumn<T>, row: T) => {
 function WorkspaceTable<T>({
   label, rows, ids, groups, collapsed, onToggleGroup, getRowId, rowLabel, columns, idColumn, getRowProps, density, zebra, freezeFirstColumn,
   fixed, ladderOn, ladder, refreshing, rowMotion, selectable, selected, onPage, atCap, toggleRow, toggleMany, actionsByRow, lazyRowActions, hasActions, keys, sortable,
-  multi, sortFor, cycleSort, rowNavigation, onRowActivate, activateOnClick, activeRowId, onActiveRowChange, labels, windowing, virtual, onRowsExited,
+  multi, sortFor, cycleSort, rowNavigation, onRowActivate, activateOnClick, activeRowId, onActiveRowChange, peekRowId, labels, windowing, virtual, onRowsExited,
 }: WorkspaceGridProps<T> & { windowing: DataWorkspaceVirtualize | null; virtual: UseVirtualRowsResult<T> | null }) {
   const cards = ladder === 'cards';
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -1028,6 +1051,49 @@ function WorkspaceTable<T>({
     if (el && el.contains(focused)) return;
     const mayTake = focused == null || focused === document.body || (wrapRef.current?.contains(focused) ?? false);
     focusRow(activeRowId, { take: mayTake });
+  });
+
+  // ── the way back from a Peek (experiment: the return-to-row cue) ─────────────────────────
+  // While the Peek is open: the row it shows and its last place among the rows on screen, kept
+  // after the row leaves so the row now in that place can take focus. On close (the Peek's dialog
+  // has already given focus back to whatever opened it, in the same commit): focus that row and
+  // play the arrival cue on it once. A row the window has not rendered yet gets the cue when it does.
+  const peekOpen = useRef<{ id: string; at: number } | null>(null);
+  const pendingCue = useRef<string | null>(null);
+  useIsomorphicLayoutEffect(() => {
+    if (peekRowId == null) return;
+    const at = navIds.indexOf(peekRowId);
+    peekOpen.current = { id: peekRowId, at: at >= 0 ? at : peekOpen.current?.id === peekRowId ? peekOpen.current.at : -1 };
+  }, [peekRowId, navIds]);
+  useIsomorphicLayoutEffect(() => {
+    if (peekRowId != null) { pendingCue.current = null; return; }
+    const was = peekOpen.current;
+    if (!was) return;
+    peekOpen.current = null;
+    const focused = document.activeElement;
+    const mayTake = focused == null || focused === document.body || (wrapRef.current?.contains(focused) ?? false);
+    const target = navIds.includes(was.id) ? was.id : navIds[Math.min(Math.max(was.at, 0), navIds.length - 1)];
+    if (target == null) return;
+    if (mayTake) {
+      if (nav) focusRow(target);
+      else {
+        const el = rowElement(target);
+        const control = el?.querySelector<HTMLElement>('.uix-id-cell__btn') ?? el?.querySelector<HTMLElement>('a[href]');
+        if (el && control) { control.focus({ preventScroll: true }); reveal(el); }
+      }
+    }
+    // The cue says "you came from here": a stand-in row only takes focus.
+    if (target !== was.id) return;
+    const el = rowElement(target);
+    if (el) playArrival(el);
+    else pendingCue.current = target;
+  }, [peekRowId]); // eslint-disable-line react-hooks/exhaustive-deps
+  useIsomorphicLayoutEffect(() => {
+    const id = pendingCue.current;
+    if (id == null) return;
+    if (!ids.includes(id)) { pendingCue.current = null; return; }
+    const el = rowElement(id);
+    if (el) { pendingCue.current = null; playArrival(el); }
   });
 
   const latest = {
@@ -1237,7 +1303,7 @@ function WorkspaceTable<T>({
         selectable={selectable} selected={isSelected} selectDisabled={!isSelected && atCap}
         hasActions={hasActions} actions={actionsByRow[index]} lazyRowActions={lazyRowActions} ladder={ladder} ladderOn={ladderOn}
         selectRowLabel={selectRowLabel} openLabel={openLabel}
-        marked={nav || windowing != null} ariaRowIndex={windowed ? index + 2 : undefined}
+        marked={nav || windowing != null || peekRowId !== undefined} ariaRowIndex={windowed ? index + 2 : undefined}
         nav={nav} tabStop={tabStop === rowId} handlers={handlers}
       />
     );
@@ -1435,7 +1501,7 @@ interface WorkspaceRowProps<T> {
   ladderOn: boolean;
   selectRowLabel: string;
   openLabel: string;
-  /** `data-uix-row-id` on the row: for the keyboard model and the windowing's measurement. */
+  /** `data-uix-row-id` on the row: for the keyboard model, the windowing's measurement and the way back from a Peek. */
   marked: boolean;
   ariaRowIndex?: number;
   nav: boolean;
