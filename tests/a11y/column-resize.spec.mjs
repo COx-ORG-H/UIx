@@ -10,7 +10,7 @@
  *   - without a flex column the others hold still; a frozen column stays frozen; cards have no grip;
  *   - axe, with the popover open too. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/column-resize/harness.html';
 
