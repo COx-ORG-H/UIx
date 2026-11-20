@@ -378,6 +378,15 @@ test('Rules for apps is a Foundations page with the five rule sets and the gates
   assert.match(pageContent('status-colour'), /href="#rules-for-apps"/);
 });
 
+test('Localisation checks is a Foundations page naming the pseudo-locale lane, the logical gate and the Serbian italic finding (roadmap #20)', () => {
+  assert.equal(getPage('localisation-checks'), 'localisation-checks');
+  assert.match(readFileSync(resolve(docsDirectory, 'docs.js'), 'utf8'), /\{ name: 'Localisation checks', slug: 'localisation-checks', group: 'Foundations'/);
+  const html = pageContent('localisation-checks');
+  for (const id of ['expansion', 'pseudo-locale', 'logical-properties', 'serbian-italic', 'review']) assert.match(html, new RegExp(`id="${id}"`), id);
+  for (const file of ['pseudo-locale.spec.mjs', 'check-logical.mjs', 'logical-properties.baseline.json', 'logical-allow:', 'serbian-italic.spec.mjs']) assert.ok(html.includes(file), file);
+  assert.ok(!html.includes('SERBIAN_FINDING'), 'the Serbian finding is written in');
+});
+
 test('the status-colour policy is linked from Status pill, Alert, Stat, SchedulingCalendar and SchedulingTimeline', () => {
   for (const slug of ['status-pill', 'alert', 'stat-tile', 'scheduling-calendar', 'scheduling-timeline']) {
     assert.match(pageContent(slug), /<a href="#status-colour">status colour policy<\/a>/, slug);

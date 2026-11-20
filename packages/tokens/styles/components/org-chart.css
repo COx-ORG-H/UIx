@@ -89,7 +89,7 @@
     padding: var(--uix-space-3) var(--uix-space-3) var(--uix-space-4);
     border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
     background: var(--uix-surface); color: var(--uix-text); box-shadow: var(--uix-shadow-sm);
-    text-align: left; cursor: pointer;
+    text-align: start; cursor: pointer;
     transition: border-color var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-org-chart__item > .uix-org-chart__node:hover { border-color: var(--uix-border-strong); }
