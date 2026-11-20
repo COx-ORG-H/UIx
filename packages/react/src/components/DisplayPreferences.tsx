@@ -7,7 +7,7 @@ import { useUixLabels } from '../labels-context.js';
 import { MonitorIcon, MoonIcon, SunIcon } from '../icons/components.js';
 import { Segmented, SegmentedOption } from './Segmented.js';
 import {
-  DEFAULT_DISPLAY_PREFERENCES, DISPLAY_PREFERENCES_STORAGE_KEY, applyDisplayAttributes, parseDisplayPreferences,
+  DEFAULT_DISPLAY_PREFERENCES, DISPLAY_ATTRIBUTE_NAMES, DISPLAY_PREFERENCES_STORAGE_KEY, applyDisplayAttributes, parseDisplayPreferences,
   readSystemDisplayPreferences, resolveDisplayAttributes,
 } from '../display-preferences-model.js';
 import type { DisplayPreferenceValues, SystemDisplayPreferences, ThemePreference } from '../display-preferences-model.js';
@@ -42,7 +42,7 @@ export interface UseDisplayPreferencesResult {
 
 /**
  * The display preferences (HAR-1372): read from `localStorage`, kept in step with the system
- * (`prefers-color-scheme`, `prefers-contrast`), with other tabs and with other users of the hook in
+ * (`prefers-color-scheme`, `prefers-contrast`, `prefers-reduced-transparency`), with other tabs and with other users of the hook in
  * this tab, and written to `<html>` as the attributes the tokens read. Changing one applies at once,
  * with every transition suspended for that frame so nothing fades between themes.
  * The server renders `defaults`; the stored choice is read before the first paint on the client
@@ -52,7 +52,7 @@ export function useDisplayPreferences({ storageKey = DISPLAY_PREFERENCES_STORAGE
   const defaults = { ...DEFAULT_DISPLAY_PREFERENCES, ...defaultOverrides };
   const defaultsKey = JSON.stringify(defaults);
   const [preferences, setState] = useState<DisplayPreferenceValues>(defaults);
-  const [system, setSystem] = useState<SystemDisplayPreferences>({ dark: false, moreContrast: false });
+  const [system, setSystem] = useState<SystemDisplayPreferences>({ dark: false, moreContrast: false, reducedTransparency: false });
   const [loaded, setLoaded] = useState(false);
 
   const read = useCallback(() => {
@@ -71,7 +71,9 @@ export function useDisplayPreferences({ storageKey = DISPLAY_PREFERENCES_STORAGE
   }, [read]);
 
   useEffect(() => {
-    const queries = typeof matchMedia === 'function' ? [matchMedia('(prefers-color-scheme: dark)'), matchMedia('(prefers-contrast: more)')] : [];
+    const queries = typeof matchMedia === 'function'
+      ? ['(prefers-color-scheme: dark)', '(prefers-contrast: more)', '(prefers-reduced-transparency: reduce)'].map((q) => matchMedia(q))
+      : [];
     const onSystem = () => setSystem(readSystemDisplayPreferences());
     // another tab: storage has the new values; this tab: the event carries them
     const onStorage = (event: StorageEvent) => { if (event.key === storageKey) setState(read()); };
@@ -95,8 +97,7 @@ export function useDisplayPreferences({ storageKey = DISPLAY_PREFERENCES_STORAGE
     const next = resolveDisplayAttributes(preferences, system);
     // nothing to change (the head script already applied it, or another instance did): no
     // switching frame either, which would cut a dialog's entrance short on mount
-    const names = ['data-theme', 'data-contrast', 'data-text-scale', 'data-motion', 'data-density'] as const;
-    if (names.every((name) => (next[name] ?? null) === root.getAttribute(name))) return undefined;
+    if (DISPLAY_ATTRIBUTE_NAMES.every((name) => (next[name] ?? null) === root.getAttribute(name))) return undefined;
     // No transition while the tokens change under every element: a theme switch is one frame,
     // not a half-second fade of every border (motion contract: frequent, so no animation).
     root.setAttribute('data-uix-switching', '');
@@ -123,6 +124,7 @@ export interface DisplayPreferencesLabels {
   contrast: string; contrastStandard: string; contrastMore: string;
   textScale: string; textSmall: string; textDefault: string; textLarge: string; textLarger: string;
   motion: string; motionSystem: string; motionReduce: string;
+  transparency: string; transparencyStandard: string; transparencyReduce: string;
   density: string; densityCompact: string; densityStandard: string; densityComfortable: string;
 }
 
@@ -131,6 +133,7 @@ export const DEFAULT_DISPLAY_PREFERENCES_LABELS: DisplayPreferencesLabels = {
   contrast: 'Contrast', contrastStandard: 'Standard', contrastMore: 'More',
   textScale: 'Text size', textSmall: 'Small', textDefault: 'Default', textLarge: 'Large', textLarger: 'Larger',
   motion: 'Motion', motionSystem: 'System', motionReduce: 'Reduce',
+  transparency: 'Transparency', transparencyStandard: 'Standard', transparencyReduce: 'Reduce',
   density: 'Density', densityCompact: 'Compact', densityStandard: 'Standard', densityComfortable: 'Comfortable',
 };
 
@@ -185,24 +188,27 @@ export function ThemeSwitcher({ value, onValueChange, storageKey, display = 'lab
 }
 
 export interface DisplayPreferencesProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
-  /** Controlled values. Leave out to keep them in `localStorage` (`useDisplayPreferences`). */
-  value?: DisplayPreferenceValues;
+  /**
+   * Controlled values. Leave out to keep them in `localStorage` (`useDisplayPreferences`). A value
+   * saved before a setting existed (no `transparency`) shows and reports that setting's default.
+   */
+  value?: Partial<DisplayPreferenceValues>;
   onValueChange?: (value: DisplayPreferenceValues) => void;
   storageKey?: string;
-  /** Show only some of the five settings, in this order. Default all. */
+  /** Show only some of the six settings, in this order. Default all. */
   settings?: readonly (keyof DisplayPreferenceValues)[];
   labels?: Partial<DisplayPreferencesLabels>;
 }
 
 /**
- * The five display settings (HAR-1372; MOTUS C-4, TENSOR A7): theme, contrast, text size, motion
- * and density, each a labelled radio group. Put it in a preferences page or an account menu's
- * dialog. Changes apply at once and are remembered.
+ * The six display settings (HAR-1372; MOTUS C-4, TENSOR A7): theme, contrast, text size, motion,
+ * transparency and density, each a labelled radio group. Put it in a preferences page or an account
+ * menu's dialog. Changes apply at once and are remembered.
  */
-export function DisplayPreferences({ value, onValueChange, storageKey, settings = ['theme', 'contrast', 'textScale', 'motion', 'density'], labels: labelOverrides, className, ...props }: DisplayPreferencesProps) {
+export function DisplayPreferences({ value, onValueChange, storageKey, settings = ['theme', 'contrast', 'textScale', 'motion', 'transparency', 'density'], labels: labelOverrides, className, ...props }: DisplayPreferencesProps) {
   const labels = useDisplayLabels(labelOverrides);
   const own = useDisplayPreferences({ storageKey, apply: value === undefined });
-  const current = value ?? own.preferences;
+  const current: DisplayPreferenceValues = value ? { ...DEFAULT_DISPLAY_PREFERENCES, ...value } : own.preferences;
   const id = useId();
   const change = <K extends keyof DisplayPreferenceValues>(key: K, next: DisplayPreferenceValues[K]) => {
     const all = { ...current, [key]: next };
@@ -233,6 +239,11 @@ export function DisplayPreferences({ value, onValueChange, storageKey, settings 
     motion: () => row('motion', labels.motion, <>
       <SegmentedOption value="system">{labels.motionSystem}</SegmentedOption>
       <SegmentedOption value="reduce">{labels.motionReduce}</SegmentedOption>
+    </>),
+    transparency: () => row('transparency', labels.transparency, <>
+      <SegmentedOption value="standard">{labels.transparencyStandard}</SegmentedOption>
+      <SegmentedOption value="reduce">{labels.transparencyReduce}</SegmentedOption>
+      <SegmentedOption value="system">{labels.system}</SegmentedOption>
     </>),
     density: () => row('density', labels.density, <>
       <SegmentedOption value="compact">{labels.densityCompact}</SegmentedOption>

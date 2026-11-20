@@ -152,6 +152,65 @@ test('a drag cancelled by pointercancel or Escape puts the rows back and reports
   t.unmount();
 });
 
+test('makeRoom (experiment): the same order, words and focus from the keyboard; one pointer per drag; a drag that goes nowhere reports nothing; off under reduced motion', () => {
+  const log = [];
+  const t = mount(h(List, { log, makeRoom: true }));
+  const list = t.host.querySelector('.uix-sortable');
+  assert.equal(list.getAttribute('data-make-room'), '');
+  const down = () => [...t.host.querySelectorAll('.uix-sortable__row')].find((r) => r.dataset.id === 'p1').querySelector('.uix-sortable__move--down');
+  down().focus();
+  click(down());
+  assert.deepEqual(titles(t.host), ['1/3 Kinderecke', '2/3 Lesesaal', '3/3 Lesung']);
+  assert.deepEqual(log, [['p2', 'p1', 'p3']]);
+  assert.equal(document.activeElement, down(), 'focus stays on Move down of the moved row');
+  assert.equal(t.host.querySelector('[role="status"]').textContent, 'Lesesaal moved to position 2 of 3');
+  // one pointer drags: a second finger's release does not drop the first one's row
+  const grip = t.host.querySelector('.uix-sortable__grip');
+  act(() => { grip.dispatchEvent(new window.PointerEvent('pointerdown', { bubbles: true, button: 0, pointerId: 1 })); });
+  act(() => { window.dispatchEvent(new window.PointerEvent('pointerup', { pointerId: 2 })); });
+  assert.equal(list.hasAttribute('data-dragging'), true, 'another pointer does not end the drag');
+  act(() => { window.dispatchEvent(new window.PointerEvent('pointerup', { pointerId: 1 })); });
+  assert.equal(list.hasAttribute('data-dragging'), false);
+  // jsdom lays nothing out: the pointer never passes a neighbour, so the row goes back where it was
+  dragToEnd(t.host, '.uix-sortable__grip', pointerup);
+  assert.deepEqual(log, [['p2', 'p1', 'p3']], 'a drag that lands where it started reports nothing');
+  assert.equal(list.hasAttribute('data-dragging'), false);
+  t.unmount();
+  document.documentElement.setAttribute('data-motion', 'reduce');
+  try {
+    const r = mount(h(List, { log: [], makeRoom: true }));
+    assert.equal(r.host.querySelector('.uix-sortable').hasAttribute('data-make-room'), false, 'reduced motion: as without makeRoom');
+    r.unmount();
+  } finally { document.documentElement.removeAttribute('data-motion'); }
+});
+
+test('makeRoom: reduced motion turned on mid-drag ends the drag and puts every row back at once', async () => {
+  // useReducedMotion listens only where matchMedia exists, and hears the in-app preference
+  // through a MutationObserver: give it both (the OS setting stays off)
+  expose('MutationObserver', window.MutationObserver);
+  expose('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+  const log = [];
+  const t = mount(h(List, { log, makeRoom: true }));
+  const list = t.host.querySelector('.uix-sortable');
+  const grip = t.host.querySelector('.uix-sortable__grip');
+  act(() => { grip.dispatchEvent(new window.PointerEvent('pointerdown', { bubbles: true, button: 0, pointerId: 1 })); });
+  assert.equal(list.hasAttribute('data-dragging'), true);
+  for (const row of t.host.querySelectorAll('.uix-sortable__row')) row.style.translate = '0px 12px'; // as a drag leaves them
+  try {
+    await act(async () => { document.documentElement.setAttribute('data-motion', 'reduce'); await new Promise((r) => setTimeout(r, 0)); });
+    assert.equal(list.hasAttribute('data-make-room'), false);
+    assert.equal(list.hasAttribute('data-dragging'), false, 'the drag ended');
+    assert.deepEqual([...t.host.querySelectorAll('.uix-sortable__row')].map((r) => r.style.translate), ['', '', ''], 'every row in its place');
+    act(() => { window.dispatchEvent(new window.PointerEvent('pointerup', { pointerId: 1 })); });
+    assert.deepEqual(log, [], 'nothing reported');
+  } finally {
+    document.documentElement.removeAttribute('data-motion');
+    t.unmount();
+    delete globalThis.MutationObserver;
+    delete globalThis.matchMedia;
+  }
+});
+
 test('ViewMenu and SavedViewMenu share the drag: Escape and pointercancel put the rows back there too', () => {
   const cols = [{ id: 'a', label: 'Alpha', visible: true }, { id: 'b', label: 'Beta', visible: true }, { id: 'c', label: 'Gamma', visible: true }];
   for (const finish of [pointercancel, escape]) {

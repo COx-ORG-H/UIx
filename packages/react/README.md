@@ -360,6 +360,11 @@ into) and `[data-uix-settle]` (the landing). Reduced motion keeps the states and
 and the landing.
 
 - **SortableList** and **DashboardCanvas** lift and settle on their own.
+- **SortableList `makeRoom`** (EXPERIMENT, not a settled default; phone-OS motion study, Tier 3
+  item 16): the dragged row follows the pointer and the rows it passes glide aside by its height
+  (`translate` on `--uix-dur` / `--uix-ease-glide`), so a gap shows where it lands; one
+  `onReorder` on drop, and a keyboard move glides the two rows. Off by default, and under reduced
+  motion it is today's behaviour. It may change or go away.
 - **Kanban**: `KanbanCard dragging`, `KanbanColumn dropTarget`, `<KanbanDropLine />` at the gap;
   call `settleDrop(cardElement)` once the card is in its new place.
 - **`useKeyboardGrab({ id, label, onMove, onDrop, onCancel, labels })`** for a draggable thing you
@@ -1905,7 +1910,7 @@ const [nav, setNav] = useState<ShellNav>('full');
   the first paint and reports it through `onNavChange`.
 - `phoneNav="drawer"`: at 40rem and under, a menu button opens the sidebar in a start-side `Drawer`.
 
-#### Display preferences: theme, contrast, text size, motion, density (HAR-1372)
+#### Display preferences: theme, contrast, text size, motion, transparency, density (HAR-1372)
 
 ```tsx
 // app/layout.tsx: before the stylesheets, so nothing flashes. The script sets attributes on <html>
@@ -1926,10 +1931,21 @@ const [nav, setNav] = useState<ShellNav>('full');
 const { preferences, setPreference, resolvedTheme } = useDisplayPreferences({ storageKey: 'staff-display' });
 ```
 
-The tokens read five attributes on `<html>`: `data-theme` (light / dark), `data-contrast="more"`,
-`data-text-scale="sm|lg|xl"`, `data-motion="reduce"` and `data-density="compact|comfortable"`. A choice applies
-at once (transitions are suspended for that frame), is stored, and `system` follows the OS. The head script and the
-hook read the same key and the same defaults; pass both the same. `useReducedMotion` honours `data-motion`.
+The tokens read six attributes on `<html>`: `data-theme` (light / dark), `data-contrast="more"`,
+`data-text-scale="sm|lg|xl"`, `data-motion="reduce"`, `data-transparency="reduce"` and
+`data-density="compact|comfortable"`. A choice applies at once (transitions are suspended for that frame), is
+stored, and `system` follows the OS. The head script and the hook read the same key and the same defaults; pass
+both the same. `useReducedMotion` honours `data-motion`.
+
+Transparency (`standard | reduce | system`) is the kit's answer to iOS "Reduce Transparency" and One UI
+"Reduce transparency and blur". Under `reduce`, every blur the kit draws is gone: `--uix-scrim-blur`,
+`--uix-arrive-blur` and `--uix-swap-blur` are `0px`, the progress overlay stops blurring, and the modal and
+drawer scrims turn firmer (`.5` → `.6` black) so the layer still stands apart from the sharp page behind it.
+Rows still fade and move in; only the blur goes. `data-contrast="more"` implies it. `system` follows
+`prefers-reduced-transparency: reduce`, which only Chromium reports (Firefox ships it off, WebKit declines),
+so the in-app choice is the one that works everywhere. It is binary on purpose: no intensity slider.
+For blur or glass of your own, read `useReducedTransparency()` (or `prefersReducedTransparency()` in an
+event handler), or use the `--uix-*-blur` tokens, which already resolve to `0px`.
 
 #### StatRow: a row of tiles that reflows
 
