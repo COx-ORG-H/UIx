@@ -1,0 +1,78 @@
+name: Perf (nightly, no GPU)
+
+# Roadmap #22: the low-end lane. Chromium with the GPU off (software compositing and raster) at 4×
+# CPU throttling, the closest a hosted runner gets to a GPU-less VDI desktop (2–4 vCPU): Modal and
+# Drawer opening over the blurred scrim, a soft-edged list scrolling, the TaskTray expanding — each
+# with the default blur and with data-transparency="reduce". It fails only on a gross regression
+# (tests/perf/budgets.json, lane "no-gpu"). The report is the job summary and the perf-no-gpu
+# artifact; how to read it: Docs/performance-lanes.md.
+#
+# Not on every PR: nightly, on demand (Actions → this workflow → Run workflow), and on a PR that
+# changes the lane itself. A failed scheduled run notifies whoever last changed the schedule.
+
+on:
+  schedule:
+    - cron: '23 2 * * *'
+  workflow_dispatch:
+    inputs:
+      cpu:
+        description: CPU throttling rate (a rate other than the budgeted 4 only reports)
+        required: false
+        default: '4'
+      runs:
+        description: Measured runs (after one warm-up)
+        required: false
+        default: '3'
+  pull_request:
+    paths:
+      - 'tests/perf/**'
+      - '.github/workflows/perf-nightly.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: perf-nightly-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  no-gpu:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install (workspace)
+        run: npm ci
+
+      - name: Build styleguide CSS (tokens)
+        run: npm run build
+
+      # The lane launches the full Chromium (channel "chromium"), which this installs with the shell.
+      - name: Install Playwright chromium
+        run: npx playwright install chromium
+
+      - name: No-GPU lane (modal, drawer, scroll edges, task tray)
+        env:
+          CPU: ${{ inputs.cpu }}
+          RUNS: ${{ inputs.runs }}
+        shell: bash
+        run: |
+          args=()
+          if [ -n "$CPU" ]; then [[ "$CPU" =~ ^[0-9]+$ ]] || { echo "cpu must be a whole number"; exit 2; }; args+=(--cpu "$CPU"); fi
+          if [ -n "$RUNS" ]; then [[ "$RUNS" =~ ^[0-9]+$ ]] || { echo "runs must be a whole number"; exit 2; }; args+=(--runs "$RUNS"); fi
+          node tests/perf/build.mjs
+          node tests/perf/bench.mjs no-gpu "${args[@]}"
+
+      - name: Upload report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-no-gpu
+          path: perf-report/
+          retention-days: 30
