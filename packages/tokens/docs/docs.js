@@ -110,7 +110,7 @@ export const COMPONENT_GROUPS = {
   'Form controls': ['Button', 'Input', 'Textarea', 'Select', 'Checkbox', 'Radio', 'Switch', 'Slider', 'Segmented', 'Display preferences', 'Combobox', 'Search bar', 'Search suggest', 'Tag input', 'File upload', 'Date range picker', 'Date picker', 'Color picker', 'Metric input', 'Inline edit', 'Sortable list', 'QR scanner', 'Form'],
   'Navigation': ['App shell', 'Sidebar', 'Breadcrumbs', 'Tabs', 'Pagination', 'Steps', 'Stepper', 'Page header', 'Command palette', 'Menu', 'Nav favourites'],
   'Data display': ['Card', 'Table', 'Table toolbar', 'Data workspace', 'View menu', 'Filter popover', 'Saved view menu', 'List', 'Description list', 'List summary', 'Status pill', 'Overflow row', 'Avatar', 'Stat tile', 'Progress', 'Meter', 'Timeline', 'Tree', 'Org chart', 'Calendar', 'Chart', 'Insight card', 'Dashboard grid', 'Dashboard canvas', 'Tooltip', 'Info tip', 'States', 'Relative time', 'QR code', 'Code display', 'Chart card', 'Matrix'],
-  'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Save status', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Busy region', 'Lightbox', 'Arrival', 'Arrive', 'Change highlight', 'Count', 'List motion', 'Drag'],
+  'Feedback & overlays': ['Alert', 'Toast', 'Modal', 'Confirm dialog', 'Prompt dialog', 'Async operation status', 'Save status', 'Task tray', 'Drawer', 'Popover', 'Peek', 'Spinner', 'Busy region', 'Lightbox', 'Arrival', 'Arrive', 'Change highlight', 'Count', 'List motion', 'Drag'],
   'Enterprise patterns': ['Inbox', 'Kanban', 'Detail layout', 'Detail page', 'Related links', 'Toggle row', 'Collapsible section', 'Comments', 'Composer', 'Contact card', 'Attachment', 'File kit', 'Audit log', 'Notification center', 'Pipeline', 'SLA', 'Heartbeat'],
   'Advanced workflows': ['Rule builder', 'Builder canvas', 'Relationship graph', 'Scheduling calendar', 'Scheduling timeline', 'Diff viewer', 'Text diff', 'Match review', 'License position bar', 'Brand profiles', 'Flow'],
   'Content & utilities': ['Typography', 'Prose', 'Rich text', 'Markdown', 'Editorial home', 'Labels', 'Reactions', 'Media', 'Icon', 'Kbd', 'Link', 'Copy button', 'Print layout', 'Utility bits'],
@@ -167,6 +167,8 @@ export const REACT_COMPONENT_SLUGS = [
   'file-kit',
   // a row of badges that shows the ones that fit whole and counts the rest (HAR-3072)
   'overflow-row',
+  // background work that keeps running: the pill, the panel and the `tasks` store
+  'task-tray',
 ];
 
 const CATALOG_SEARCH_ITEMS = COMPONENT_ITEMS
@@ -290,6 +292,7 @@ const renderComponentReference = (item) => {
     ${componentPreview(item)}
     ${section('availability', 'Availability', availability)}
     ${section('behavior-contract', 'Behavior and expected result', `<p>${esc(COMPONENT_DETAILS[item.slug]?.[1] || COMPONENT_INTENT[item.slug][1])}</p><p>${REACT_COMPONENT_SLUGS.includes(item.slug) ? 'A React adapter is available. See the <a href="#react">React integration guide</a> and the <a data-api-report href="../../react/etc/uix-react.api.md">exported API</a> for its exact props. The preview here demonstrates HTML/CSS with docs behavior; it does not mount React.' : 'This is a CSS contract. Your application owns events, state, validation and persistence; importing CSS does not install those behaviors.'}</p><p>Start with <code>@import "@tensor_1/tokens/bundle";</code> to include tokens, base styles, components and layout utilities. A component-only import requires those shared layers separately. <a href="#installation">Installation</a> · <a href="#build-with-uix">Composition and styling</a></p>`)}
+    ${item.slug === 'task-tray' ? section('try-task-tray', 'Try it: the real TaskTray', `<p>This demo mounts the real <code>@tensor_1/react</code> <code>TaskTray</code> with its own <code>createTaskStore()</code>. Start a job: the pill appears at the bottom of the window, counts the running jobs and opens into the list. Start several, cancel one, let the bulk update fail and retry it. Escape collapses the panel onto the pill.</p><div class="uix-docs__live" data-live-demo="task-tray-demo"><p class="uix-docs__live-status" data-live-demo-status role="status">Loading the live demo…</p></div><p>In an app, mount <code>&lt;TaskTray /&gt;</code> once in the shell beside <code>&lt;Toaster /&gt;</code> and start work from anywhere with <code>tasks.start(title, options)</code> or <code>tasks.run(title, work, options)</code>. The store outlives every page, so a route change keeps the tasks.</p>`) : ''}
     ${STATUS_COLOUR_SLUGS.has(item.slug) ? statusColourSection() : ''}
     ${section('usage-guidance', 'Usage guidance', `<p>${esc(usage)}</p>${compare(`Reuse the shared ${item.name} contract and verify it in the context where people complete the task.`, `Fork the visual language locally or infer unsupported behavior from the stylesheet alone.`)}`)}
     ${section('accessibility-notes', 'Accessibility notes', `<p>${esc(accessibility)}</p><p>Verify keyboard access, focus visibility, forced colors, 200% zoom, and both UIx themes in the consuming workflow.</p>`)}
@@ -791,6 +794,7 @@ const open = (id: string) =>
       ['Copy', '<code>CopyButton</code>', 'icon → check for 1.5 s, <code>aria-live</code>'],
       ['A peak in a rare journey (request submitted)', '<code>SuccessState</code>', 'one success mark, then “what happens next”'],
     ])}<p>Every primitive in this table ships today. See them side by side, with a pretend server to drive them, in <a href="#examples-motion">Examples → State feedback</a>.</p>`)}
+    ${section('modal-origin', 'Experimental: a modal that grows from its trigger', `<p><strong>Experimental, opt-in, and not a decision.</strong> Modals stay centred and rise in calmly; that is the default and stays so. This prototype, from the phone OS motion study (iOS sheets zoom out of the button that summoned them; ColorOS starts from the tap point), is here so it can be compared against today’s rise. It may change or go away.</p><p><code>&lt;Modal origin="trigger"&gt;</code> grows the dialog out of the control a pointer pressed to open it: from <code>scale(.92)</code> plus opacity, about the trigger’s centre (<code>transform-origin</code>), toward the same centred place, on the rise’s own <code>--uix-dur-slow</code> and ease-out with no overshoot. On close it returns toward the trigger while that is still on screen; a trigger that has gone (a menu item whose menu closed) grows the dialog from the tap point and leaves with today’s exit. A keyboard open and <code>instant</code> stay instant, a dialog opened with no recent press (after a fetch, from a timer) opens centred, and reduced motion fades only. In plain HTML, set <code>data-uix-origin="trigger"</code> on the <code>dialog</code> with <code>--uix-dialog-from-x</code> and <code>--uix-dialog-from-y</code> as the trigger’s centre in viewport pixels. Compare the two in <a href="#try-motion" data-toc-link>Try it</a> above.</p>`)}
     ${section('touch-press', 'Experiment: a deeper press under a finger', `<p><strong>Not adopted; a draft for the operator to decide on.</strong> Apple keeps motion fuller under direct touch and quieter on a trackpad, and iOS stretches a switch’s knob while it is held. Under <code>@media (pointer: coarse)</code> only, UIx tries the same: a Button presses to <code>scale(.96)</code> instead of .97, going in over <code>--uix-dur-exit-fast</code> and springing back on <code>--uix-ease-pop</code> over <code>--uix-dur-pop</code>; a Switch’s thumb stretches 1.18× into the track while held (its outer edge stays put) and springs to rest on release. A mouse, a trackpad and a pen keep today’s .97 and a still thumb, so a desktop app such as TENSOR does not change. Under reduced motion (the OS setting or <code>data-motion="reduce"</code>) the experiment is off and the press is today’s; the colour change stays. It is transform only. On a phone or tablet, press and hold the controls below.</p>${demo(`<div class="uix-cluster"><button class="uix-btn uix-btn--primary" type="button">Save</button><button class="uix-btn uix-btn--secondary" type="button">Cancel</button><label class="uix-switch"><input type="checkbox" role="switch"><span class="uix-switch__track"></span>Notifications</label></div>`, `<button class="uix-btn uix-btn--primary" type="button">Save</button>
 <label class="uix-switch"><input type="checkbox" role="switch"><span class="uix-switch__track"></span>Notifications</label>`)}`)}
     ${section('reduced-motion', 'Reduced motion removes movement, not feedback', `<p>Under <code>prefers-reduced-motion: reduce</code>, UIx’s motion layer drops transform, translate, scale and layout glide from every transition and keeps opacity and colour fades, so a popover still fades in but no longer travels. Looping “still working” indicators — Spinner, Button loading, skeleton, indeterminate progress, SaveStatus, a running flow node, Heartbeat — slow to a gentle opacity pulse instead of freezing, so the status survives. Focus rings appear instantly, and motion is never the only signal: a change also changes text or an icon.</p><p>Motion that JavaScript drives (a swipe that follows the pointer, a scripted scroll, a pan or zoom) reads the same preference with <code>useReducedMotion()</code> and lands on the end state.</p>${codeBlock(`import { useReducedMotion } from "@tensor_1/react";
@@ -1079,6 +1083,24 @@ const mountMotionPlayground = (host) => {
     });
 };
 
+/* Live demos on component pages ([data-live-demo="<bundle>"]): same build and lifecycle as the
+   playground above, one bundle per demo in docs/live/dist/. */
+let unmountLiveDemos = [];
+const mountLiveDemos = (host) => {
+  host.querySelectorAll('[data-live-demo]').forEach((el) => {
+    import(`./live/dist/${el.dataset.liveDemo}.js`)
+      .then(({ mount }) => {
+        if (!el.isConnected) return;
+        el.textContent = '';
+        unmountLiveDemos.push(mount(el));
+      })
+      .catch(() => {
+        const status = el.querySelector('[data-live-demo-status]');
+        if (status) status.innerHTML = 'The live demo is not built in this preview. Run <code>node packages/tokens/docs/live/build.mjs</code>, then reload.';
+      });
+  });
+};
+
 const renderPage = () => {
   codeCounter = 0;
   const requested = normalizeHash(location.hash);
@@ -1091,6 +1113,8 @@ const renderPage = () => {
   disposeShowcase();
   unmountPlayground?.();
   unmountPlayground = null;
+  for (const unmount of unmountLiveDemos) unmount();
+  unmountLiveDemos = [];
   host.innerHTML = `${content}${component && !content.includes('data-component-preview=') ? componentPreview(component) : ''}${renderPager(slug)}`;
   document.querySelectorAll('[data-api-report]').forEach((link) => {
     link.href = location.pathname.includes('/packages/tokens/docs/') ? '../../react/etc/uix-react.api.md' : '../react/etc/uix-react.api.md';
@@ -1104,6 +1128,7 @@ const renderPage = () => {
   initFormSpecimens(host);
   initFeedbackDemos(host);
   mountMotionPlayground(host);
+  mountLiveDemos(host);
   const item = NAV_ITEMS.find((entry) => entry.slug === slug) || component || example;
   document.title = `${item?.name || item?.title || 'UIx'} · UIx Docs`;
   if (requested !== slug) history.replaceState(null, '', `#${slug}`);

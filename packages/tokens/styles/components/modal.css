@@ -32,6 +32,18 @@
     .uix-dialog[open] > .uix-dialog__body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
   }
   @starting-style { .uix-dialog[open] { opacity: 0; transform: translateY(8px) scale(.98); } }
+  /* EXPERIMENT, opt-in (Modal origin="trigger"): grows out of the control that opened it toward the same
+     centred place, and exits back toward it. --uix-dialog-from-x/-y: the trigger's centre in viewport px;
+     the dialog is centred, so its origin is that point less its own top-left corner. */
+  .uix-dialog[data-uix-origin="trigger"] {
+    transform-origin: calc(var(--uix-dialog-from-x, 50vw) - 50vw + 50%) calc(var(--uix-dialog-from-y, 50dvh) - 50dvh + 50%);
+    transform: scale(.92);
+  }
+  .uix-dialog[data-uix-origin="trigger"][open] { transform: none; }
+  @starting-style { .uix-dialog[data-uix-origin="trigger"][open] { opacity: 0; transform: scale(.92); } }
+  /* reduced motion fades only (else the closed scale snaps in while the dialog fades out) */
+  @media (prefers-reduced-motion: reduce) { .uix-dialog[data-uix-origin="trigger"] { transform: none; } }
+  @media (prefers-reduced-motion: no-preference) { :root[data-motion="reduce"] .uix-dialog[data-uix-origin="trigger"] { transform: none; } }
   /* 2.60: the page behind softens under --uix-scrim-blur while the dim fades in; only the opacity
      animates (see drawer.css: an animated blur radius starves software rendering) */
   .uix-dialog::backdrop {

@@ -2,6 +2,9 @@
 
 <!-- lesson-skip: 3a34e535 routine: Qodo's low finding (makeRoom switched off mid-drag left rows shifted); one cleanup branch, pinned by a jsdom test -->
 <!-- lesson-skip: 30e903de routine review fixes on unreleased makeRoom (late consumer, removed row, second pointer, resize, order change mid-drag), each named by Qodo and pinned by jsdom or Chromium tests; the jsdom getComputedStyle gap is the 727ea02 family -->
+<!-- lesson-skip: cc6f28ba routine third-round review fix on the opt-in experiment (label-forwarded click), pinned by a spec -->
+<!-- lesson-skip: f5f6c3e5 routine second-round review fix on the opt-in experiment (click attribution), pinned by a spec -->
+<!-- lesson-skip: 8dbda6b6 missed edge cases in an opt-in experiment, caught by review -->
 <!-- lesson-skip: 0f42b0d0 routine review fixes on unreleased rule 10 (cascade-order fold, cross-file aliases, inline TS animations) and a comment over the css-size tolerance the gate named; each pinned by a check-motion test -->
 <!-- lesson-skip: dcef8a8d routine: the review named two more inline-style shapes for the TS scan; pinned by check-motion tests -->
 <!-- lesson-skip: b26c74d2 routine: the review named the cross-class gap; widening rule 10 found the reduced-motion policy pairing component springs with fades, fixed and pinned by a check-motion test -->
@@ -360,5 +363,10 @@ missing or blank.
 <!-- lesson-skip: d39cd90 a transparent stacked layer over a button; one component, now asserted by elementFromPoint in the spec -->
 <!-- lesson-skip: 61956e7 kit title-rhythm rule, the existing gate named the fix -->
 <!-- lesson-skip: a2d7b22 test-only flake; Playwright arms filechooser interception asynchronously, start the wait early -->
+<!-- lesson-skip: 6bce92c8 MotionList renderItem prop pass-through is stated in its JSDoc -->
+<!-- lesson-skip: 6b0f1c20 missed CSS rule; the react-classes-defined gate named it -->
+<!-- lesson-skip: f515ab40 review findings fixed in place; [hidden] !important vs display transitions is noted in task-tray.css -->
 <!-- lesson-skip: 74b2540d design rule applied (text swaps out-then-in); rule now lives on the Motion page and in text-swap.spec.mjs -->
 <!-- lesson-skip: 357e86ff review follow-ups (clamped timing, re-entry, generated caption); the specimen test named the generator -->
+<!-- lesson-skip: b7c91554 flat tone on text; the flat-tone-text gate named the fix -->
+<!-- lesson-skip: 7848505f review finding; derive-state-in-render is standard React -->

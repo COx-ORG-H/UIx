@@ -255,6 +255,14 @@ export type {
   ToastApi, ToastStore, ToastRecord, ToastKind, ToastOptions, ToastAction, ToastDismissReason,
   ToastPromiseMessages, UndoableToastOptions,
 } from './toast-store.js';
+// Background-task tray: tasks.start(…) / tasks.run(…) and the pill that lists them
+export { TaskTray } from './components/TaskTray.js';
+export type { TaskTrayProps, TaskTrayLabels } from './components/TaskTray.js';
+export { tasks, createTaskStore, createTaskApi } from './task-store.js';
+export type {
+  TaskApi, TaskStore, TaskRecord, TaskStatus, TaskHandle, TaskAction, TaskProgress, TaskStartOptions,
+  TaskUpdate, TaskResult, TaskRunOptions,
+} from './task-store.js';
 
 // Data display
 export {
