@@ -125,7 +125,7 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
   const uixLabels = useUixLabels();
   const labels: DatePickerLabels = { ...DEFAULT_DATE_PICKER_LABELS, ...uixLabels.datePicker, ...labelOverrides };
   // The app-wide date format (HAR-2432): UixLabelsProvider `dateFormat`; a prop still wins.
-  const locale = localeProp ?? uixLabels.dateFormat?.locale;
+  const locale = localeProp ?? uixLabels.dateFormat?.locale ?? uixLabels.locale;
   const formatDate = formatDateProp ?? uixLabels.dateFormat?.formatDate;
   const parseDate = parseDateProp ?? uixLabels.dateFormat?.parseDate;
   const placeholder = placeholderProp ?? uixLabels.dateFormat?.placeholder;
@@ -320,7 +320,7 @@ export const DateTimePicker = forwardRef<HTMLInputElement, DateTimePickerProps>(
   const zoneId = `${uid}-zone`;
   const uixLabels = useUixLabels();
   const labels: DateTimePickerLabels = { ...DEFAULT_DATE_TIME_PICKER_LABELS, ...uixLabels.dateTimePicker, ...labelOverrides };
-  const locale = localeProp ?? uixLabels.dateFormat?.locale;
+  const locale = localeProp ?? uixLabels.dateFormat?.locale ?? uixLabels.locale;
   const { date, time } = splitDateTime(value);
   const dateRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);

@@ -10,7 +10,8 @@ import { zonedDateKey, zonedHourSlots, zonedTimeOfDay } from '../calendar-model.
 import type { ZonedHourSlot } from '../calendar-model.js';
 import { layoutDaySpans, layoutTimeGridDay, placesInTopLane, proposeMove } from '../scheduling-calendar-model.js';
 import type { MoveProposal, PlacedDaySpan, TimeGridDayLayout, TimeGridSegment } from '../scheduling-calendar-model.js';
-import { fillLabel } from '../fill-label.js';
+import { fillCountLabel, fillLabel } from '../fill-label.js';
+import { useUixLocale } from '../labels-context.js';
 import type {
   SchedulingCalendarDay, SchedulingCalendarEntry, SchedulingCalendarLabels, SchedulingCalendarOverlay, SchedulingDatePart, SchedulingMarker,
 } from './SchedulingCalendar.js';
@@ -168,6 +169,7 @@ export function SchedulingTimeGrid({
   renderEntry, renderMarker, onSelectEntry, onSelectOverlay, onSelectDate, onShowMore, now, canMove, step: givenStep, onProposeMove,
   topLaneCrossMidnightMinutes, topLaneCap, windowLaneCap, maxLanes, scrollToTime, emptyNote, nothingToShow,
 }: SchedulingTimeGridProps) {
+  const locale = useUixLocale();
   const rootRef = useRef<HTMLDivElement>(null);
   const hintId = useId();
   const [widthCap, setWidthCap] = useState(Infinity);
@@ -533,15 +535,15 @@ export function SchedulingTimeGrid({
         const info = dayInfo?.[date];
         const hiddenIds = dayInfo ? [] : [...columns[index]!.hidden, ...topHiddenOn(date)];
         const more = info ? info.overflowCount + hiddenByWidth[index]! : hiddenIds.length;
-        const moreText = fillLabel(labels.moreEntries, { count: more });
-        const moreName = fillLabel(labels.moreEntriesLabel, { count: more, date: dateText(date, 'day') });
+        const moreText = fillCountLabel(labels.moreEntries, { count: more }, locale);
+        const moreName = fillCountLabel(labels.moreEntriesLabel, { count: more, date: dateText(date, 'day') }, locale);
         // The head is named for its day. With consumer numbers and no consumer label, the count is said too.
         // With a consumer label the name is worded by `dayName`; without one it is the date and the count, whatever `dayName` says.
-        const headName = !info ? dateText(date, 'day') : info.label ? fillLabel(labels.dayName, { date: dateText(date, 'day'), label: info.label }) : `${dateText(date, 'day')}, ${fillLabel(labels.dayCount, { count: info.count })}`;
+        const headName = !info ? dateText(date, 'day') : info.label ? fillLabel(labels.dayName, { date: dateText(date, 'day'), label: info.label }) : `${dateText(date, 'day')}, ${fillCountLabel(labels.dayCount, { count: info.count }, locale)}`;
         return <div key={date} className="uix-scheduling-calendar__tg-dayhead" role="group" aria-label={headName} data-date={date} data-today={index === nowColumn || undefined}>
           <button type="button" className="uix-scheduling-calendar__date" data-calendar-date={date} tabIndex={tabStop === date ? 0 : -1} aria-label={info?.label ? fillLabel(labels.dayName, { date: dateText(date, 'day'), label: info.label }) : dateText(date, 'day')}
             onFocus={() => setActiveDay(date)} onKeyDown={(event) => onHeadKeyDown(event, date)} onClick={onSelectDate ? () => onSelectDate(date) : undefined}>{dateText(date, 'column')}</button>
-          {info && <span className="uix-scheduling-calendar__count" aria-hidden="true">{fillLabel(labels.dayCount, { count: info.count })}</span>}
+          {info && <span className="uix-scheduling-calendar__count" aria-hidden="true">{fillCountLabel(labels.dayCount, { count: info.count }, locale)}</span>}
           {info?.markers && info.markers.length > 0 && <span className="uix-scheduling-calendar__markers">{info.markers.map((marker) => <span key={marker.id}>{renderMarker(marker, true)}</span>)}</span>}
           {more > 0 && (onShowMore
             ? <button type="button" tabIndex={-1} className="uix-scheduling-calendar__more" aria-label={moreName} onClick={() => onShowMore(date, hiddenIds.map((id) => entryById.get(id)!).filter(Boolean))}>{moreText}</button>
@@ -565,8 +567,8 @@ export function SchedulingTimeGrid({
         </button>;
       })}
       {moreWindows > 0 && (onShowMore
-        ? <button type="button" tabIndex={-1} className="uix-scheduling-calendar__rowmore" data-more-date={firstHiddenWindowDay} style={{ gridColumn: days.indexOf(firstHiddenWindowDay) + 2 }} aria-label={fillLabel(labels.moreWindowsLabel, { count: moreWindows, date: dateText(firstHiddenWindowDay, 'day') })} onClick={() => onShowMore(firstHiddenWindowDay, [])}>{fillLabel(labels.moreWindows, { count: moreWindows })}</button>
-        : <span className="uix-scheduling-calendar__rowmore" style={{ gridColumn: days.indexOf(firstHiddenWindowDay) + 2 }}>{fillLabel(labels.moreWindows, { count: moreWindows })}</span>)}
+        ? <button type="button" tabIndex={-1} className="uix-scheduling-calendar__rowmore" data-more-date={firstHiddenWindowDay} style={{ gridColumn: days.indexOf(firstHiddenWindowDay) + 2 }} aria-label={fillCountLabel(labels.moreWindowsLabel, { count: moreWindows, date: dateText(firstHiddenWindowDay, 'day') }, locale)} onClick={() => onShowMore(firstHiddenWindowDay, [])}>{fillCountLabel(labels.moreWindows, { count: moreWindows }, locale)}</button>
+        : <span className="uix-scheduling-calendar__rowmore" style={{ gridColumn: days.indexOf(firstHiddenWindowDay) + 2 }}>{fillCountLabel(labels.moreWindows, { count: moreWindows }, locale)}</span>)}
     </div>}
 
     {(topLanes > 0 || ghostSpan) && <div className="uix-scheduling-calendar__tg-strip uix-scheduling-calendar__tg-top" role="group" aria-label={labels.topLane} style={vars({ '--uix-scheduling-calendar-lanes': Math.max(topLanes, 1) })}>
