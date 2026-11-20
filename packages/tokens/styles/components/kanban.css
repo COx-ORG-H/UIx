@@ -3,7 +3,7 @@
   .uix-kanban { display: flex; gap: var(--uix-space-4); overflow-x: auto; padding-bottom: var(--uix-space-2); }
   .uix-kanban__col { flex: 0 0 260px; background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); display: flex; flex-direction: column; max-height: 460px; }
   .uix-kanban__head { display: flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-3) var(--uix-space-4); font-weight: 600; font-size: var(--uix-text-meta); }
-  .uix-kanban__count { margin-left: auto; color: var(--uix-text-muted); font-weight: 500; }
+  .uix-kanban__count { margin-inline-start: auto; color: var(--uix-text-muted); font-weight: 500; }
   /* a little room on top: the scrolling body would clip a lifted or picked-up card's edge */
   .uix-kanban__body { padding: var(--uix-space-1) var(--uix-space-3) var(--uix-space-3); display: flex; flex-direction: column; gap: var(--uix-space-2); overflow-y: auto; }
   .uix-kanban__card { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); padding: var(--uix-space-3); box-shadow: var(--uix-shadow-sm); cursor: grab; transition: transform var(--uix-dur-fast) var(--uix-ease-out); }
@@ -13,6 +13,12 @@
   .uix-kanban__card[data-uix-drag="lifted"] { transform: scale(1.02); box-shadow: var(--uix-shadow-popover); }
   @media (prefers-reduced-motion: reduce) { .uix-kanban__card[data-uix-drag="lifted"] { transform: none; } }
   .uix-kanban__card-title { font-weight: 500; font-size: var(--uix-text-body); margin-bottom: var(--uix-space-2); }
+  /* The Move menu (WCAG 2.5.7: a card moves with clicks, never only by a drag): a ⋯ button in the
+     top corner; the card's first line keeps clear of it. */
+  .uix-kanban__card--movable { position: relative; }
+  .uix-kanban__card--movable > :first-child { padding-inline-end: var(--uix-space-7); }
+  .uix-kanban__card-move { position: absolute; inset-block-start: var(--uix-space-2); inset-inline-end: var(--uix-space-2); cursor: default; }
+  .uix-kanban__card-move > .uix-btn { color: var(--uix-text-muted); }
   .uix-kanban__card-meta { display: flex; align-items: center; gap: var(--uix-space-2); }
 }
 
