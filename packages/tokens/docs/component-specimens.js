@@ -312,6 +312,11 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-crm-itsm",
     "selector": ".uix-comments"
   },
+  "task-tray": {
+    "route": "examples-overlays",
+    "selector": ".uix-task-tray",
+    "container": "[data-task-tray-example]"
+  },
   "save-status": {
     "route": "examples-crm-itsm",
     "selector": ".uix-save-status"

@@ -1443,6 +1443,12 @@ export interface CountProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'child
 }
 
 // @public
+export function createTaskApi(store: TaskStore): TaskApi;
+
+// @public
+export function createTaskStore(): TaskStore;
+
+// @public
 export function createToastApi(store: ToastStore): ToastApi;
 
 // @public
@@ -8165,6 +8171,161 @@ export interface TagInputProps {
     value: readonly string[];
 }
 
+// @public
+export interface TaskAction {
+    download?: boolean | string;
+    // (undocumented)
+    href?: string;
+    keep?: boolean;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    onClick?: () => void;
+}
+
+// @public (undocumented)
+export interface TaskApi {
+    cancel: (id: string) => void;
+    clearFinished: () => void;
+    dismiss: (id?: string) => void;
+    run: <T>(title: string, work: (task: TaskHandle) => Promise<T>, options?: TaskRunOptions<T>) => Promise<T>;
+    start: (title: string, options?: TaskStartOptions) => TaskHandle;
+    store: TaskStore;
+}
+
+// @public
+export interface TaskHandle {
+    cancel: () => void;
+    complete: (result?: TaskResult) => void;
+    dismiss: () => void;
+    fail: (result?: TaskResult) => void;
+    // (undocumented)
+    readonly id: string;
+    readonly signal: AbortSignal;
+    update: (patch: TaskUpdate) => void;
+}
+
+// @public (undocumented)
+export interface TaskProgress {
+    max?: number;
+    step?: string;
+    value?: number | null;
+    valueText?: string;
+}
+
+// @public (undocumented)
+export interface TaskRecord {
+    // (undocumented)
+    action?: TaskAction;
+    // (undocumented)
+    cancellable: boolean;
+    // (undocumented)
+    finishedAt?: number;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    max: number;
+    // (undocumented)
+    message?: string;
+    run: number;
+    startedAt: number;
+    // (undocumented)
+    status: TaskStatus;
+    // (undocumented)
+    step?: string;
+    // (undocumented)
+    title: string;
+    // (undocumented)
+    value?: number | null;
+    // (undocumented)
+    valueText?: string;
+    version: number;
+}
+
+// @public (undocumented)
+export interface TaskResult {
+    // (undocumented)
+    action?: TaskAction;
+    dismissAfter?: number;
+    message?: string;
+}
+
+// @public (undocumented)
+export interface TaskRunOptions<T> extends Omit<TaskStartOptions, 'onCancel'> {
+    cancellable?: boolean;
+    error?: string | TaskResult | ((error: unknown) => string | TaskResult);
+    // (undocumented)
+    onCancel?: () => void;
+    success?: string | TaskResult | ((value: T) => string | TaskResult);
+}
+
+// @public
+export const tasks: TaskApi;
+
+// @public (undocumented)
+export interface TaskStartOptions extends TaskProgress {
+    cancellable?: boolean;
+    id?: string;
+    onCancel?: () => void;
+}
+
+// @public
+export type TaskStatus = 'running' | 'done' | 'failed' | 'cancelled';
+
+// @public (undocumented)
+export interface TaskStore {
+    dismiss: (id?: string) => void;
+    finish: (id: string, status: Exclude<TaskStatus, 'running'>, result?: TaskResult) => void;
+    // (undocumented)
+    get: (id: string) => TaskRecord | undefined;
+    // (undocumented)
+    getSnapshot: () => readonly TaskRecord[];
+    // (undocumented)
+    start: (title: string, options?: TaskStartOptions) => TaskHandle;
+    // (undocumented)
+    subscribe: (listener: () => void) => () => void;
+    // (undocumented)
+    update: (id: string, patch: TaskUpdate) => void;
+}
+
+// @public
+export function TaskTray(input: TaskTrayProps): react.JSX.Element;
+
+// @public
+export interface TaskTrayLabels {
+    announceFinished?: (status: Exclude<TaskStatus, 'running'>, title: string, message?: string) => string;
+    announceStarted: (title: string) => string;
+    cancel: string;
+    cancelled: (count: number) => string;
+    clearFinished: string;
+    dismiss: string;
+    done: (count: number) => string;
+    failed: (count: number) => string;
+    formatPercent: (fraction: number) => string;
+    region: string;
+    running: (count: number) => string;
+    status: Record<Exclude<TaskStatus, 'running'>, string>;
+}
+
+// @public (undocumented)
+export interface TaskTrayProps extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+    defaultOpen?: boolean;
+    // (undocumented)
+    labels?: Partial<TaskTrayLabels>;
+    // (undocumented)
+    onOpenChange?: (open: boolean) => void;
+    open?: boolean;
+    position?: 'bottom-center' | 'bottom-start' | 'bottom-end';
+    regionLabel?: string;
+    store?: TaskStore;
+}
+
+// @public (undocumented)
+export interface TaskUpdate extends TaskProgress {
+    // (undocumented)
+    title?: string;
+}
+
 // @public (undocumented)
 export function Td(input: TdProps): react.JSX.Element;
 
@@ -8956,6 +9117,7 @@ export interface UixLabels {
     };
     sortableList?: Partial<SortableListLabels>;
     tagInput?: Partial<TagInputLabels>;
+    taskTray?: Partial<TaskTrayLabels>;
     // (undocumented)
     textDiff?: Partial<TextDiffLabels>;
     timePicker?: Partial<TimePickerLabels>;
