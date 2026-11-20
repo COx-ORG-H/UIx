@@ -59,22 +59,33 @@ async function toWebContent(page) {
 
 /** One scripted step: Playwright puts DOM focus on the widget, NVDA reports what it landed on,
  * then every key goes through NVDA as a user would press it. `wait:` lets a debounce or a live
- * region settle; `type:` types characters. */
+ * region settle; `type:` types characters. `expect:` is evaluated in the page after the keys and
+ * must hold: the focus report alone is not evidence that the keys did anything. */
 const steps = [
   { id: 'data-workspace', title: 'DataWorkspace: the first row, ArrowDown, Tab to its checkbox, Space',
-    focus: '#workspace tbody tr[tabindex="0"]', keys: ['ArrowDown', 'Tab', 'Space'] },
+    focus: '#workspace tbody tr[tabindex="0"]', keys: ['ArrowDown', 'Tab', 'Space'],
+    expect: () => !!document.querySelector('#workspace [role="checkbox"][aria-checked="true"], #workspace input[type="checkbox"]:checked') },
   { id: 'data-workspace-sort', title: 'DataWorkspace: Enter on the Priority header button',
-    focus: '#workspace th:nth-child(4) button', keys: ['Enter', 'wait:500'] },
+    focus: '#workspace th:nth-child(4) button', keys: ['Enter', 'wait:500'],
+    expect: () => /ascending|descending/.test(document.querySelector('#workspace th:nth-child(4)')?.getAttribute('aria-sort') ?? '') },
   { id: 'command-palette', title: 'CommandPalette (in place): the field, type "rep", ArrowDown',
-    focus: '#palette-inline input', keys: ['type:rep', 'wait:800', 'ArrowDown'] },
+    focus: '#palette-inline input', keys: ['type:rep', 'wait:800', 'ArrowDown'],
+    expect: () => {
+      const input = document.querySelector('#palette-inline input');
+      return !!input && (document.getElementById(input.getAttribute('aria-activedescendant') ?? '')?.textContent ?? '').startsWith('Reports');
+    } },
   { id: 'combobox', title: 'Combobox: Category, ArrowDown twice, Enter',
-    focus: '#combobox input', keys: ['ArrowDown', 'ArrowDown', 'Enter'] },
+    focus: '#combobox input', keys: ['ArrowDown', 'ArrowDown', 'Enter'],
+    expect: () => (document.querySelector('#combobox input')?.value ?? '').length > 0 },
   { id: 'entity-picker', title: 'EntityPicker: Assignee, type "am", ArrowDown, Enter',
-    focus: '#entity-input', keys: ['type:am', 'wait:1200', 'ArrowDown', 'Enter'] },
+    focus: '#entity-input', keys: ['type:am', 'wait:1200', 'ArrowDown', 'Enter'],
+    expect: () => [...document.querySelectorAll('#entity button')].some((b) => /^Clear /.test(b.getAttribute('aria-label') ?? b.textContent ?? '')) },
   { id: 'date-picker', title: 'DatePicker: Due date, ArrowDown opens the calendar, ArrowLeft, Escape',
-    focus: '#date-input', keys: ['ArrowDown', 'wait:400', 'ArrowLeft', 'Escape'] },
+    focus: '#date-input', keys: ['ArrowDown', 'wait:400', 'ArrowLeft', 'Escape'],
+    expect: () => document.activeElement?.id === 'date-input' && (document.getElementById('date-input')?.value ?? '') !== '' },
   { id: 'diff-viewer', title: 'DiffViewer: "Accept incoming for $.priority", Enter',
-    focus: '#diff button[aria-label^="Accept incoming"]', keys: ['Enter', 'wait:800'] },
+    focus: '#diff button[aria-label^="Accept incoming"]', keys: ['Enter', 'wait:800'],
+    expect: () => document.querySelector('#diff button[aria-label^="Accept incoming"]')?.getAttribute('aria-pressed') === 'true' },
   { id: 'toast-polite', title: 'Toast: Enter on "Show success toast", wait',
     focus: '#toast-polite', keys: ['Enter', 'wait:2000'], mustSpeak: 'Incident INC-1002 saved' },
   { id: 'toast-assertive', title: 'Toast: Enter on "Show error toast", wait',
