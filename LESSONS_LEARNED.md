@@ -339,3 +339,4 @@ missing or blank.
 <!-- lesson-skip: 61956e7 kit title-rhythm rule, the existing gate named the fix -->
 <!-- lesson-skip: a2d7b22 test-only flake; Playwright arms filechooser interception asynchronously, start the wait early -->
 <!-- lesson-skip: 9f4490fb pseudo-element margin missed the border-box reset; the 1 px visual diff pointed at it -->
+<!-- lesson-skip: 6a8ed528 routine: two table variants (card mode, bottom caption) missed by the edge exceptions; found in review -->
