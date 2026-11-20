@@ -9,6 +9,36 @@ import {
 import type {
   Row, SortKey, ColumnFilter, ViewState, SelectAllState,
 } from '../table-engine.js';
+import { fillCountLabel, fillLabel } from '../fill-label.js';
+import { useUixLabels, useUixLocale } from '../labels-context.js';
+import type { UixCountLabel } from '../plural.js';
+
+/**
+ * The words of `useTable`'s `announcement` (`UixLabelsProvider` `table`). `{…}` are placeholders.
+ */
+export interface UseTableLabels {
+  /** After a sort change: `{field}` (the row field) and `{dir}` (`ascending` or `descending`). */
+  sorted: string;
+  /** The `{dir}` of an ascending sort. */
+  ascending: string;
+  /** The `{dir}` of a descending sort. */
+  descending: string;
+  /** After the last sort key was removed. */
+  sortCleared: string;
+  /** After a filter or search: `{count}` rows. Plural-aware: the forms or a function of the count. */
+  results: UixCountLabel;
+  /** After the selection changed: `{count}` rows. Plural-aware. */
+  selected: UixCountLabel;
+}
+
+export const DEFAULT_USE_TABLE_LABELS: UseTableLabels = {
+  sorted: 'Sorted by {field}, {dir}',
+  ascending: 'ascending',
+  descending: 'descending',
+  sortCleared: 'Sort cleared',
+  results: { one: '{count} result', other: '{count} results' },
+  selected: '{count} selected',
+};
 
 export interface UseTableOptions {
   /** row field used as the stable id (selection / pinning). Default: 'id'. */
@@ -20,6 +50,8 @@ export interface UseTableOptions {
   searchFields?: readonly string[];
   /** ids kept present + hoisted regardless of filter/sort. */
   initialPinned?: Iterable<string>;
+  /** The announcement's words. Default: `UixLabelsProvider` `table`, then English. */
+  labels?: Partial<UseTableLabels>;
 }
 
 export interface UseTableResult<T> {
@@ -104,18 +136,24 @@ export function useTable<T extends Row>(data: readonly T[], options: UseTableOpt
   // render's memo, so the count is already the post-change value.
   const [announcement, setAnnouncement] = useState('');
   const mounted = useRef(false);
+  const labels: UseTableLabels = { ...DEFAULT_USE_TABLE_LABELS, ...useUixLabels().table, ...options.labels };
+  const locale = useUixLocale();
+  // the latest words, read when a facet changes; a new labels object must not re-announce
+  const words = useRef({ labels, locale });
+  words.current = { labels, locale };
   useEffect(() => {
     if (!mounted.current) return;
     const key = sort[0];
-    setAnnouncement(key ? `Sorted by ${key.field}, ${key.dir}` : 'Sort cleared');
+    const { labels: l } = words.current;
+    setAnnouncement(key ? fillLabel(l.sorted, { field: key.field, dir: key.dir === 'descending' ? l.descending : l.ascending }) : l.sortCleared);
   }, [sort]);
   useEffect(() => {
     if (!mounted.current) return;
-    setAnnouncement(`${rows.length} result${rows.length === 1 ? '' : 's'}`);
+    setAnnouncement(fillCountLabel(words.current.labels.results, { count: rows.length }, words.current.locale));
   }, [filters, query]);
   useEffect(() => {
     if (!mounted.current) return;
-    setAnnouncement(`${selected.size} selected`);
+    setAnnouncement(fillCountLabel(words.current.labels.selected, { count: selected.size }, words.current.locale));
   }, [selected]);
   useEffect(() => { mounted.current = true; }, []); // declared last → runs after the announcers
 

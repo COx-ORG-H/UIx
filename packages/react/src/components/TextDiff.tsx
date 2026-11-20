@@ -4,7 +4,9 @@ import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../cx.js';
 import { fillLabel } from '../fill-label.js';
-import { useUixLabels } from '../labels-context.js';
+import { useUixLabels, useUixLocale } from '../labels-context.js';
+import { countLabel } from '../plural.js';
+import type { UixCountLabel } from '../plural.js';
 import { diffText, textDiffRows } from '../text-diff-model.js';
 import type { TextDiffGranularity, TextDiffLine, TextDiffRow, TextDiffSegment } from '../text-diff-model.js';
 
@@ -18,8 +20,8 @@ export interface TextDiffLabels {
   removed: string;
   /** Read before added text. */
   added: string;
-  /** Fold button. `{count}`. */
-  showUnchanged: string;
+  /** Fold button. `{count}`. Plural-aware: the forms or a function of the count. */
+  showUnchanged: UixCountLabel;
   tooLarge: string;
 }
 
@@ -83,6 +85,7 @@ function Cell({ line, side, kind, labels }: { line?: TextDiffLine; side: 'before
 
 function Rows({ rows, view, labels, focusFirst }: { rows: TextDiffRow[]; view: 'split' | 'unified'; labels: TextDiffLabels; focusFirst?: boolean }) {
   const [open, setOpen] = useState<ReadonlySet<number>>(() => new Set());
+  const locale = useUixLocale();
   const first = useRef<HTMLDivElement>(null);
   // The fold button is replaced by the lines it hid: keep keyboard focus there, not on <body>.
   useEffect(() => { if (focusFirst) first.current?.focus(); }, [focusFirst]);
@@ -95,7 +98,7 @@ function Rows({ rows, view, labels, focusFirst }: { rows: TextDiffRow[]; view: '
           return (
             <div key={index} className="uix-text-diff__row" data-kind="fold">
               <button type="button" className="uix-text-diff__fold" onClick={() => setOpen((s) => new Set(s).add(index))}>
-                {fillLabel(labels.showUnchanged, { count: row.count })}
+                {fillLabel(countLabel(labels.showUnchanged, row.count, locale), { count: row.count })}
               </button>
             </div>
           );

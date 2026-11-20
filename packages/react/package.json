@@ -70,6 +70,36 @@
       "types": "./dist/icons-intrinsic.d.ts",
       "import": "./dist/icons-intrinsic.js",
       "require": "./dist/icons-intrinsic.cjs"
+    },
+    "./locales/en": {
+      "types": "./dist/locales/en.d.ts",
+      "import": "./dist/locales/en.js",
+      "require": "./dist/locales/en.cjs"
+    },
+    "./locales/de": {
+      "types": "./dist/locales/de.d.ts",
+      "import": "./dist/locales/de.js",
+      "require": "./dist/locales/de.cjs"
+    },
+    "./locales/bs": {
+      "types": "./dist/locales/bs.d.ts",
+      "import": "./dist/locales/bs.js",
+      "require": "./dist/locales/bs.cjs"
+    },
+    "./locales/hr": {
+      "types": "./dist/locales/hr.d.ts",
+      "import": "./dist/locales/hr.js",
+      "require": "./dist/locales/hr.cjs"
+    },
+    "./locales/sr-Latn": {
+      "types": "./dist/locales/sr-Latn.d.ts",
+      "import": "./dist/locales/sr-Latn.js",
+      "require": "./dist/locales/sr-Latn.cjs"
+    },
+    "./locales/sr-Cyrl": {
+      "types": "./dist/locales/sr-Cyrl.d.ts",
+      "import": "./dist/locales/sr-Cyrl.js",
+      "require": "./dist/locales/sr-Cyrl.cjs"
     }
   },
   "scripts": {

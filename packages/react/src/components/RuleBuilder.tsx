@@ -10,7 +10,9 @@ import {
 } from '../rule-builder-model.js';
 import type { RuleAction, RuleCheck, RuleCondition, RuleDefinition, RuleGroup, RuleValidationIssue } from '../rule-builder-model.js';
 import { fillLabel } from '../fill-label.js';
-import { useUixLabels } from '../labels-context.js';
+import { useUixLabels, useUixLocale } from '../labels-context.js';
+import { countLabel } from '../plural.js';
+import type { UixCountLabel } from '../plural.js';
 import { Select } from './Select.js';
 
 export interface RuleValueEditorProps {
@@ -71,9 +73,11 @@ export interface RuleBuilderLabels {
   actionType: string;
   valid: string;
   issuesOne: string;
-  issuesMany: string;
+  /** `{count}`. Takes the plural forms or a function of the count too; then `issuesOne` is not read. */
+  issuesMany: UixCountLabel;
   summaryIssuesOne: string;
-  summaryIssuesMany: string;
+  /** `{count}`. Plural-aware like `issuesMany`. */
+  summaryIssuesMany: UixCountLabel;
   addCondition: string;
   addGroup: string;
   addAction: string;
@@ -333,8 +337,9 @@ export function RuleBuilder({
     ...(addActionLabel != null ? { addAction: addActionLabel } : {}),
     ...labelOverrides,
   };
-  const issuesText = (template1: string, templateN: string) =>
-    fillLabel(issues.length === 1 ? template1 : templateN, { count: issues.length });
+  const locale = useUixLocale();
+  const issuesText = (template1: string, templateN: UixCountLabel) =>
+    fillLabel(countLabel(templateN, issues.length, locale, template1), { count: issues.length });
   const builtIn = validateRuleDefinition(value, maxDepth, {
     messages: {
       duplicateId: labels.issueDuplicateId,

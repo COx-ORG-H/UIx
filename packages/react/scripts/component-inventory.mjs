@@ -15,6 +15,13 @@ const sources = {
   './chart/preset': 'chart-preset.tsx', './rich-text': 'rich-text.ts',
   './markdown': 'markdown.ts', './emoji': 'emoji.ts', './icons': 'icons.ts',
   './icons/intrinsic': 'icons-intrinsic.ts',
+  // the label packs (plural labels): data, no components
+  './locales/en': 'locales/en.ts',
+  './locales/de': 'locales/de.ts',
+  './locales/bs': 'locales/bs.ts',
+  './locales/hr': 'locales/hr.ts',
+  './locales/sr-Latn': 'locales/sr-Latn.ts',
+  './locales/sr-Cyrl': 'locales/sr-Cyrl.ts',
 };
 
 // Components are public PascalCase values callable as React elements. Types, hooks, utilities,

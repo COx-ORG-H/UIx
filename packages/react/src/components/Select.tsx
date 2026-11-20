@@ -6,7 +6,9 @@ import type {
   SyntheticEvent,
 } from 'react';
 import { cx } from '../cx.js';
-import { useUixLabels } from '../labels-context.js';
+import { useUixLabels, useUixLocale } from '../labels-context.js';
+import { countLabel } from '../plural.js';
+import type { UixCountLabel } from '../plural.js';
 import { useAnchoredPosition, zoomOf } from '../hooks/useAnchoredPosition.js';
 import { blurIn, keyboardInitiated, tokenEase, tokenMs, tokenPx, watchInputModality } from '../motion.js';
 import { prefersReducedMotion } from '../hooks/useReducedMotion.js';
@@ -43,10 +45,13 @@ export interface SelectLabels {
   clear: string;
   /** Multi-select on a phone: closes the sheet. */
   done: string;
-  /** Multi-select trigger, spoken after the "+N". `{count}` = how many are selected. */
-  selectedCount: string;
-  /** Announced after filtering. `{count}`. */
-  results: string;
+  /**
+   * Multi-select trigger, spoken after the "+N". `{count}` = how many are selected. Takes the plural
+   * forms (`{ one, few, other }`) or a function of the count too.
+   */
+  selectedCount: UixCountLabel;
+  /** Announced after filtering. `{count}`. Plural-aware like `selectedCount`. */
+  results: UixCountLabel;
 }
 
 const DEFAULT_LABELS: SelectLabels = {
@@ -63,7 +68,7 @@ const DEFAULT_LABELS: SelectLabels = {
   results: '{count} options',
 };
 
-const fill = (template: string, count: number): string => template.replace('{count}', String(count));
+const fill = (template: UixCountLabel, count: number, locale: string | undefined): string => countLabel(template, count, locale).replace('{count}', String(count));
 
 export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
   /** `sm` 28 px, `md` 36 px (default), `lg` 44 px, the public touch-target size (HAR-1812). */
@@ -245,6 +250,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   } = props;
   const uixLabels = useUixLabels();
   const labels: SelectLabels = { ...DEFAULT_LABELS, ...uixLabels.select, ...labelsProp };
+  const locale = useUixLocale();
 
   const uid = useId();
   const listId = `${uid}-listbox`;
@@ -878,12 +884,12 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
 
   const toolbar = multiple && values.length > 0 && mode === 'popover' && (
     <div className="uix-select__toolbar">
-      <span>{fill(labels.selectedCount, values.length)}</span>
+      <span>{fill(labels.selectedCount, values.length, locale)}</span>
       <button type="button" className="uix-btn uix-btn--link uix-btn--sm" tabIndex={-1} onMouseDown={(e) => e.preventDefault()} onClick={clearAll}>{labels.clear}</button>
     </div>
   );
 
-  const live = isSearchable && open && query ? fill(labels.results, entries.length) : '';
+  const live = isSearchable && open && query ? fill(labels.results, entries.length, locale) : '';
   const body = (
     <>
       {searchField}
@@ -931,7 +937,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
         {more > 0 && (
           <span className="uix-select__more">
             <span aria-hidden="true">+{more}</span>
-            <span className="uix-visually-hidden">{`, ${fill(labels.selectedCount, values.length)}`}</span>
+            <span className="uix-visually-hidden">{`, ${fill(labels.selectedCount, values.length, locale)}`}</span>
           </span>
         )}
       </button>
