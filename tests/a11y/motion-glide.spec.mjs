@@ -10,7 +10,7 @@
  *   - axe finds nothing serious in either theme.
  * The markup contract is unit-tested in packages/react/src/motion-glide-dom.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/motion-glide/harness.html';
 

@@ -5,7 +5,7 @@
  * (WCAG 2.1.4) turns single keys and their hints off while Ctrl/⌘ shortcuts stay; a remap shows in
  * every hint at once; axe finds nothing serious with the sheet open, in both themes. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/shortcut-registry/harness.html';
 const GATED = new Set(['serious', 'critical']);

@@ -19,7 +19,7 @@
  * and at 375 px the timeline scrolls inside itself while the page does not.
  * The harness is tests/scheduling-timeline/; logic is in packages/react/src/scheduling-timeline-lanes-dom.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { settleAnimations } from './settle.mjs';
 
 const HARNESS = '../../tests/scheduling-timeline/harness.html';

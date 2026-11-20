@@ -116,7 +116,7 @@ export { Switch } from './components/Switch.js';
 export type { SwitchProps } from './components/Switch.js';
 
 export { Field } from './components/Field.js';
-export type { FieldProps } from './components/Field.js';
+export type { FieldProps, FieldAi } from './components/Field.js';
 
 // Overlays
 export { Modal } from './components/Modal.js';
@@ -264,6 +264,27 @@ export type {
   ToastApi, ToastStore, ToastRecord, ToastKind, ToastOptions, ToastAction, ToastDismissReason,
   ToastPromiseMessages, UndoableToastOptions, ToastPriority, ToastRateLimit, ToastStoreConfig, ToastUndoResult,
 } from './toast-store.js';
+// AI proposals v1 (enterprise-UX study #5/#6; spec Docs/specs/2026-11-20-ai-proposals.md)
+export { AiLabel, SourceList, useAiLabels } from './components/AiLabel.js';
+export type { AiLabelProps, AiExplanation, AiSource, SourceListProps } from './components/AiLabel.js';
+export { AiSuggestion } from './components/AiSuggestion.js';
+export type { AiSuggestionProps } from './components/AiSuggestion.js';
+export { ProposalReview } from './components/ProposalReview.js';
+export type { ProposalReviewProps, ProposalChange, ProposalStatus } from './components/ProposalReview.js';
+export { AiOutputCard, useStreamingText } from './components/AiOutputCard.js';
+export type { AiOutputCardProps, AiOutputStatus } from './components/AiOutputCard.js';
+export { AiActor } from './components/AiActor.js';
+export type { AiActorProps } from './components/AiActor.js';
+export { useAiFieldValue } from './hooks/useAiFieldValue.js';
+export type { UseAiFieldValueOptions, UseAiFieldValueResult } from './hooks/useAiFieldValue.js';
+export { DEFAULT_AI_LABELS } from './ai-labels.js';
+export type { AiLabels } from './ai-labels.js';
+export { PROPOSAL_EVENT, ID_PATTERN, TYPE_PATTERN, emitProposalEvent, onProposalEvent, isProposalId, isProposalType, consequencePolicy } from './ai-events.js';
+export type {
+  ProposalAction, ProposalKind, ConsequenceBand, ProposalEventDetail, ProposalEventInput, ConsequencePolicy,
+} from './ai-events.js';
+export { AI_HEARTBEAT_MS, startAiGeneration } from './ai-announcer.js';
+export type { AiGeneration, AiGenerationOptions } from './ai-announcer.js';
 // Background-task tray: tasks.start(…) / tasks.run(…) and the pill that lists them
 export { TaskTray } from './components/TaskTray.js';
 export type { TaskTrayProps, TaskTrayLabels } from './components/TaskTray.js';

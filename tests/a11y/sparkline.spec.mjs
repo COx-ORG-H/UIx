@@ -8,7 +8,7 @@
  * Markup and scaling are pinned in packages/react/src/sparkline-dom.test.mjs; colours in
  * packages/tokens/tests/sparkline-contrast.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/sparkline/harness.html';
 const GATED = new Set(['serious', 'critical']);

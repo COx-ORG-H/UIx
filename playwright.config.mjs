@@ -33,7 +33,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
+  // the JSON report feeds tests/report-flaky.mjs, which names every test that passed only on its retry
+  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }], ['json', { outputFile: 'test-results/playwright-results.json' }]] : 'list',
   expect: {
     // tolerate sub-pixel AA noise even on the same OS; a real regression moves far more pixels
     toHaveScreenshot: { maxDiffPixelRatio: 0.01, animations: 'disabled', caret: 'hide', scale: 'css' },

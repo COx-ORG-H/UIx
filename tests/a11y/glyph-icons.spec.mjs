@@ -3,7 +3,7 @@
  * colour, and all of them stay visible in forced colours. The guard and the markup are tested in
  * packages/react/src/glyph-icons.test.mjs. Harness: tests/glyph-icons/harness.tsx. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/glyph-icons/harness.html';
 

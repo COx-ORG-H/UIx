@@ -2,7 +2,7 @@
  * the star shows (hover, keyboard focus), and sits beside a pinned star. The label keeps the rest of
  * the row: "Benachrichtigungen" with a count reads in full at the kit's 248 px sidebar. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 test.beforeEach(async ({ page }, testInfo) => {
   const theme = testInfo.project.name === 'dark' ? 'dark' : 'light';

@@ -22,7 +22,7 @@
  * Geometry is the same in both themes, so only the light project runs it.
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { SHOWCASE_PAGES } from '../../packages/tokens/docs/showcase-data.js';
 
