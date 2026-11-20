@@ -1,0 +1,73 @@
+name: AT evidence (NVDA)
+
+# Real NVDA speech for the six AT-evidence widgets (Docs/a11y/scripts/, enterprise-UX study item #4),
+# on a GitHub Windows runner: Guidepup installs a portable NVDA, tests/at-nvda/run.mjs drives it
+# with Chrome for Testing over tests/at-evidence/harness.html and keeps what NVDA spoke as the
+# `nvda-transcript` artifact. Automated speech capture, not a human pass: the results files in
+# Docs/a11y/results/ cite a run of this workflow by date and run id.
+#
+# Not part of CI's gate set (ci.yml) and not a release precondition: a hosted Windows desktop with
+# a screen reader is slower and less steady than the Linux gates. It runs when the harness, the
+# runner or this file changes, and by hand (Actions → AT evidence (NVDA) → Run workflow).
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'tests/at-evidence/**'
+      - 'tests/at-nvda/**'
+      - '.github/workflows/at-nvda.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: at-nvda-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  nvda:
+    runs-on: windows-latest
+    # NVDA download + npm ci on Windows take most of this; the run itself is about two minutes.
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install (workspace)
+        run: npm ci
+
+      - name: Build styleguide CSS (tokens)
+        run: npm run build
+
+      - name: Install Playwright chromium
+        run: npx playwright install chromium
+
+      # Exact pins, not in package-lock: the lane is the only user, and a lockfile change would
+      # collide with every other open PR.
+      - name: Install Guidepup and a portable NVDA
+        run: |
+          npm install --no-save @guidepup/guidepup@0.40.0
+          npx --yes @guidepup/setup@0.29.3
+
+      - name: Build the AT-evidence harness
+        run: node tests/at-evidence/build.mjs
+
+      - name: Drive NVDA over the harness
+        shell: bash
+        run: |
+          npx serve -l 4178 . > serve.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4178/tests/at-evidence/harness.html > /dev/null && break; sleep 1; done
+          node tests/at-nvda/run.mjs
+
+      - name: Upload NVDA transcript
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: nvda-transcript
+          path: tests/at-nvda/out/
+          retention-days: 90
