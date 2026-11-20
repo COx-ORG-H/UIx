@@ -16,6 +16,7 @@ import type { FilterField, FilterSummaryLabels, FilterValue, SummarizeFilterOpti
 import { useResolvedFilterLabels } from '../hooks/useResolvedFilterLabels.js';
 import { useVirtualRows } from '../hooks/useVirtualRows.js';
 import { playArrival } from '../hooks/arrival.js';
+import { useViewTransition } from '../hooks/useViewTransition.js';
 import type { UseVirtualRowsResult } from '../hooks/useVirtualRows.js';
 import { BusyRegion } from './BusyRegion.js';
 import { Button } from './Button.js';
@@ -361,7 +362,11 @@ export interface DataWorkspaceProps<T, S extends DataWorkspaceSortState = DataWo
   onSaveViewAs?: () => void;
   /** When Save as shows: `changed` (default) with `viewChanged`; `always`, to keep any view under a name (HAR-2622). */
   saveViewAs?: 'changed' | 'always';
-  /** Toolbar: a maximize toggle; Escape restores, unless an open popover or menu takes it first. */
+  /**
+   * Toolbar: a maximize toggle; Escape restores, unless an open popover or menu takes it first.
+   * Picked with the pointer, the workspace grows into the window and shrinks back to its place
+   * (a view transition, `useViewTransition`); from the keyboard and under reduced motion it jumps.
+   */
   maximized?: boolean;
   onMaximizedChange?: (maximized: boolean) => void;
   /**
@@ -522,6 +527,12 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
   const id = useId();
   const searchRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLElement>(null);
+  // Maximize is occasional, so it may travel: the workspace morphs between its place and the window.
+  const morph = useViewTransition();
+  const setMaximized = (next: boolean) => {
+    if (!onMaximizedChange) return;
+    morph(() => onMaximizedChange(next), { parts: () => [['workspace', rootRef.current]] });
+  };
   /** The row a Shift-click range starts from: the last row clicked without Shift. */
   const anchor = useRef<string | null>(null);
 
@@ -748,7 +759,7 @@ export function DataWorkspace<T, S extends DataWorkspaceSortState = DataWorkspac
             {showSaveAs && <MenuItem onSelect={() => onSaveViewAs?.()}>{labels.saveViewAs}</MenuItem>}
             {toolbarMenu}
             {onMaximizedChange && (
-              <MenuItemCheckbox checked={maximized} onCheckedChange={(next) => onMaximizedChange(next)} closeOnSelect icon={<MaximizeIcon restore={maximized} />}>
+              <MenuItemCheckbox checked={maximized} onCheckedChange={setMaximized} closeOnSelect icon={<MaximizeIcon restore={maximized} />}>
                 {labels.maximize}
               </MenuItemCheckbox>
             )}
