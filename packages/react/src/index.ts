@@ -468,6 +468,11 @@ export {
   selectionScopeMatcher, setInSelectionScope, toggleInSelectionScope,
 } from './selection-scope.js';
 export type { SelectionScope, SelectionScopeIds, SelectionScopeQuery } from './selection-scope.js';
+// The per-item action panel (roadmap #10): Enter runs the primary action, Mod+K lists every action with its keys.
+export { ActionPanel, ActionPanelScope, ACTION_PANEL_SHORTCUT_ID, DEFAULT_ACTION_PANEL_LABELS } from './components/ActionPanel.js';
+export type { ActionPanelProps, ActionPanelScopeProps, ActionPanelLabels } from './components/ActionPanel.js';
+export { groupActionPanelActions } from './action-panel-model.js';
+export type { ActionPanelAction, ActionPanelConfirm, ActionPanelGroup } from './action-panel-model.js';
 // Typed column filters (HAR-1365): FilterEditor content + a pure model for values and chip summaries
 export { FilterEditor, DEFAULT_FILTER_EDITOR_LABELS } from './components/FilterEditor.js';
 export type { FilterEditorProps, FilterEditorLabels } from './components/FilterEditor.js';

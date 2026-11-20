@@ -6,6 +6,14 @@
       "subpath": "."
     },
     {
+      "name": "ActionPanel",
+      "subpath": "."
+    },
+    {
+      "name": "ActionPanelScope",
+      "subpath": "."
+    },
+    {
       "name": "AiActor",
       "subpath": "."
     },
