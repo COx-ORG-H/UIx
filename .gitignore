@@ -32,7 +32,12 @@ tests/visual/__screenshots__/*-darwin.png
 # Playwright harness bundles: tests/<name>/build.mjs writes tests/<name>/dist/. One pattern for all
 # of them: a line per harness was a line every harness PR appended here, so they conflicted.
 tests/*/dist/
+# The NVDA lane's transcript (tests/at-nvda/run.mjs); CI keeps it as an artifact.
+tests/at-nvda/out/
 
 # The docs' live motion playground bundle: packages/tokens/docs/live/build.mjs writes it; the docs
 # site workflow builds it before deploying.
 packages/tokens/docs/live/dist/
+
+# tests/perf/bench.mjs reports (CI uploads them as artifacts)
+perf-report/

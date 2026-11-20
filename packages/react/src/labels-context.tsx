@@ -39,6 +39,7 @@ import type { TagInputLabels } from './components/TagInput.js';
 import type { AccountMenuLabels } from './components/AccountMenu.js';
 import type { DisplayPreferencesLabels } from './components/DisplayPreferences.js';
 import type { TaskTrayLabels } from './components/TaskTray.js';
+import type { ShortcutLabels } from './components/ShortcutSheet.js';
 import type { ButtonResultLabels } from './components/ButtonFeedback.js';
 import type { AuditLogLabels } from './components/AuditLog.js';
 import type { DataWorkspaceLabels } from './components/DataWorkspace.js';
@@ -69,6 +70,8 @@ export interface UixLabels {
   toaster?: { region?: string };
   /** `TaskTray`: the landmark's name, its buttons, the pill's count words and the announcements. */
   taskTray?: Partial<TaskTrayLabels>;
+  /** The shortcut registry: `ShortcutSheet`, the "then" of a sequence in `KbdCombo`, and the names of the kit's own shortcuts. */
+  shortcuts?: Partial<ShortcutLabels>;
   /**
    * `openNav`: the phone-tier button that opens the navigation drawer; `navigation`: that
    * drawer's title (HAR-1371).

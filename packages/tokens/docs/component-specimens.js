@@ -153,6 +153,11 @@ export const COMPONENT_SPECIMENS = {
     "route": "examples-navigation",
     "selector": ".uix-cmdk"
   },
+  "shortcut-sheet": {
+    "route": "examples-navigation",
+    "selector": ".uix-shortcut-sheet",
+    "parts": ["[data-uix-open=\"#docs-shortcut-sheet\"]", "#docs-shortcut-sheet"]
+  },
   "menu": {
     "route": "examples-navigation",
     "selector": ".uix-menu"
