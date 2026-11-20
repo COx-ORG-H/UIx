@@ -118,7 +118,7 @@ export interface ConflictNoticeProps extends Omit<HTMLAttributes<HTMLDivElement>
   labels?: Partial<ConflictNoticeLabels>;
 }
 
-const keyOf = (path: string) => (path === '$' ? path : path.replace(/^\$\./, ''));
+const keyOf = (path: string) => (path === '$' ? path : path.replace(/^\$\./, '').replace(/\\(.)/g, '$1'));
 
 /**
  * "Changed by someone else while you were editing" (the UIx enterprise UX study, forms notes
@@ -140,7 +140,8 @@ export const ConflictNotice = forwardRef<HTMLDivElement, ConflictNoticeProps>(fu
   /** Their change to a field you left alone is taken; a field you both changed waits for a choice. */
   const seeded = (list: readonly RecordConflictChange[]) => Object.fromEntries(list.map((change) => [change.path, (change.overlap ? 'pending' : 'accept') as DiffResolution]));
   const [resolutions, setResolutions] = useState<Record<string, DiffResolution>>(() => seeded(changes));
-  const signature = changes.map((change) => `${change.path}:${change.overlap}`).join('|');
+  // The values count too: a later conflict on the same fields with other values is a new question.
+  const signature = JSON.stringify(changes.map((change) => [change.path, change.overlap, change.base ?? null, change.yours ?? null, change.theirs ?? null]));
   // A new conflict (another save arrived) starts the choices again.
   useEffect(() => { setResolutions(seeded(changes)); }, [signature]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -157,22 +158,28 @@ export const ConflictNotice = forwardRef<HTMLDivElement, ConflictNoticeProps>(fu
 
   return (
     <div className={cx('uix-conflict-notice', className)} data-uix-conflict-notice="">
+      {/* The banner is the focus target and the alert sits inside it, around the words only, as in
+          ErrorSummary (GOV.UK v4.4.0): JAWS read only the heading of an alert that was also focused,
+          and buttons inside an alert are read out with it. */}
       <Alert
         ref={ref}
         tone="warning"
         tabIndex={-1}
-        title={title}
+        role={undefined}
         {...props}
       >
-        <p className="uix-conflict-notice__line">{labels.kept}</p>
-        {changes.length > 0 && (
-          <p className="uix-conflict-notice__line">
-            {labels.changed} <strong className="uix-conflict-notice__fields">{joinList(changes.map((change) => textOf(change.path)))}</strong>
-          </p>
-        )}
-        {overlapping.length > 0 && (
-          <p className="uix-conflict-notice__line">{fillLabel(labels.overlap, { fields: joinList(overlapping.map((change) => textOf(change.path))) })}</p>
-        )}
+        <div role="alert" className="uix-conflict-notice__message">
+          <div className="uix-alert__title uix-conflict-notice__title">{title}</div>
+          <p className="uix-conflict-notice__line">{labels.kept}</p>
+          {changes.length > 0 && (
+            <p className="uix-conflict-notice__line">
+              {labels.changed} <strong className="uix-conflict-notice__fields">{joinList(changes.map((change) => textOf(change.path)))}</strong>
+            </p>
+          )}
+          {overlapping.length > 0 && (
+            <p className="uix-conflict-notice__line">{fillLabel(labels.overlap, { fields: joinList(overlapping.map((change) => textOf(change.path))) })}</p>
+          )}
+        </div>
         {/* Under the text, not in the alert's side slot: three choices beside the words squeeze
             them to nothing on a phone, and a row that wraps keeps every button whole. */}
         <div className="uix-conflict-notice__actions">

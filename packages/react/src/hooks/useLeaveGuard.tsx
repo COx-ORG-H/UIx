@@ -52,7 +52,9 @@ export interface LeaveGuardApi {
   /**
    * The hook point for in-app navigation, whatever the router. Inactive: runs `proceed` at once.
    * Active: asks "Discard changes?" with focus on "Keep editing"; "Discard" runs `proceed`,
-   * "Keep editing" (or Escape) runs `stay`. Returns whether it proceeded at once.
+   * "Keep editing" (or Escape) runs `stay`. A second call while it asks replaces the first, whose
+   * `stay` runs. If nothing is at risk any more while it asks (the save finished), `proceed` runs.
+   * Returns whether it proceeded at once.
    */
   confirm: (proceed: () => void, stay?: () => void) => boolean;
   /** The step. Render it once, anywhere in the page. */
@@ -74,7 +76,13 @@ export function useLeaveGuard({ dirty = false, saveState, fields, locale, labels
   const uix = useUixLabels();
   const labels = { ...DEFAULT_DISCARD_LABELS, ...DEFAULT_LEAVE_GUARD_LABELS, ...uix.discardPrompt, ...uix.leaveGuard, ...labelsProp };
   const active = dirty || saveState === 'saving' || saveState === 'failed';
-  const [asking, setAsking] = useState<{ proceed: () => void; stay?: () => void } | null>(null);
+  const [asking, setAskingState] = useState<{ proceed: () => void; stay?: () => void } | null>(null);
+  /** The attempt being asked about, at once: a second `confirm` in the same task must see it. */
+  const askingRef = useRef<{ proceed: () => void; stay?: () => void } | null>(null);
+  const setAsking = useCallback((next: { proceed: () => void; stay?: () => void } | null) => {
+    askingRef.current = next;
+    setAskingState(next);
+  }, []);
   const activeRef = useRef(active);
   activeRef.current = active;
 
@@ -91,9 +99,13 @@ export function useLeaveGuard({ dirty = false, saveState, fields, locale, labels
 
   const confirm = useCallback((proceed: () => void, stay?: () => void) => {
     if (!activeRef.current) { proceed(); return true; }
+    // A newer attempt replaces the one being asked about, which is told to stay (a router's blocker
+    // resets), so no attempt is ever left waiting for an answer.
+    const earlier = askingRef.current;
     setAsking({ proceed, stay });
+    earlier?.stay?.();
     return false;
-  }, []);
+  }, [setAsking]);
 
   // Nothing left to lose (the save finished while asking): the step has no question any more.
   useEffect(() => {
@@ -102,7 +114,7 @@ export function useLeaveGuard({ dirty = false, saveState, fields, locale, labels
       setAsking(null);
       proceed();
     }
-  }, [active, asking]);
+  }, [active, asking, setAsking]);
 
   const description = saveState === 'saving' ? labels.saving
     : saveState === 'failed' ? labels.failed

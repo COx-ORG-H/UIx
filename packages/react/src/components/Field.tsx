@@ -12,8 +12,8 @@ export interface FieldProps {
   error?: ReactNode;
   /**
    * How a new `error` is announced. `'assertive'` (default) interrupts (`role="alert"`). `'polite'`
-   * waits for the screen reader to finish (`role="status"`): an error found when the person left
-   * the field should not cut into what the next one reads. `'off'` adds no live region: the error
+   * waits for the screen reader to finish, through a hidden polite region that only ever holds the
+   * error: an error found when the person left the field should not cut into what the next one reads. `'off'` announces nothing: the error
    * is still the control's description, read when it is focused, for errors a summary already
    * announced (`useFormErrors` picks these for you).
    */
@@ -115,10 +115,7 @@ export function Field({ label, hint, error, errorAnnounce = 'assertive', errorPr
       {/* Always rendered with a reserved min-height so an error appearing never shifts the layout.
           role="alert" announces the error the moment it's inserted, role="status" the success
           (polite, so it doesn't interrupt), as is a warning; error > warning > success > hint. */}
-      {/* A polite error needs a region that is already there when the error arrives (a region
-          inserted together with its text is often not read), so the message line itself becomes
-          that region for as long as the field asks for it. */}
-      <div className="uix-field__msg" id={msgId} aria-live={errorAnnounce === 'polite' ? 'polite' : undefined}>
+      <div className="uix-field__msg" id={msgId}>
         {error ? (
           <span className="uix-field__error" role={errorAnnounce === 'assertive' ? 'alert' : undefined}>
             {errorPrefix && <span className="uix-visually-hidden">{`${errorPrefix} `}</span>}
@@ -132,6 +129,16 @@ export function Field({ label, hint, error, errorAnnounce = 'assertive', errorPr
           <span className="uix-field__hint">{hint}</span>
         ) : null}
       </div>
+      {/* A polite error needs a region that is already there when the error arrives (a region
+          inserted together with its text is often not read). It is its own hidden region, holding
+          the error only, so a hint, warning or success taking the error's place is not read out. */}
+      {/* Mounted for 'off' too (empty), so a field that goes from 'off' to 'polite' with a new
+          error has its region in place already. */}
+      {errorAnnounce !== 'assertive' && (
+        <span className="uix-visually-hidden" aria-live="polite" data-uix-field-announce="">
+          {errorAnnounce === 'polite' && error ? <>{errorPrefix ? `${errorPrefix} ` : null}{error}</> : null}
+        </span>
+      )}
     </div>
   );
 }

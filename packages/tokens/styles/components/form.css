@@ -40,6 +40,8 @@
   /* ConflictNotice: the warning banner, and the comparison under it */
   .uix-conflict-notice { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--uix-space-3); }
   .uix-conflict-notice > .uix-alert:focus { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-conflict-notice__message { min-width: 0; }
+  .uix-conflict-notice__title { font-size: var(--uix-text-body); color: var(--uix-text); }
   .uix-conflict-notice__line { margin: 0; }
   .uix-conflict-notice__line + .uix-conflict-notice__line { margin-block-start: var(--uix-space-1); }
   .uix-conflict-notice__fields { font-weight: 600; color: var(--uix-text); }

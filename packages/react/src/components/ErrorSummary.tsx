@@ -132,8 +132,13 @@ export function errorTitle(title: string, prefix: string = `${DEFAULT_ERROR_SUMM
   return title.startsWith(prefix) ? title : `${prefix}${title}`;
 }
 
-/** How many mounted callers hold the prefix, so two summaries on one page add it once and the last one out removes it. */
+/**
+ * How many mounted callers hold the prefix, so two summaries on one page add it once and the last
+ * one out removes it; and whether the prefix is ours to remove (a title that already said "Error: "
+ * before any summary showed keeps it).
+ */
 let titleHolders = 0;
+let titleOwned = false;
 
 /**
  * While `active`, the page title starts with `prefix` ("Error: "), GOV.UK's signal that the page
@@ -144,10 +149,15 @@ export function useErrorTitle(active: boolean, prefix: string = `${DEFAULT_ERROR
   useEffect(() => {
     if (!active || typeof document === 'undefined') return;
     titleHolders += 1;
-    document.title = errorTitle(document.title, prefix);
+    if (!document.title.startsWith(prefix)) {
+      document.title = `${prefix}${document.title}`;
+      titleOwned = true;
+    }
     return () => {
       titleHolders -= 1;
-      if (titleHolders === 0 && document.title.startsWith(prefix)) document.title = document.title.slice(prefix.length);
+      if (titleHolders > 0) return;
+      if (titleOwned && document.title.startsWith(prefix)) document.title = document.title.slice(prefix.length);
+      titleOwned = false;
     };
   }, [active, prefix]);
 }

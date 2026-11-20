@@ -69,8 +69,17 @@ export interface FormErrorsApi<V extends object> {
   failedSubmits: number;
 }
 
-/** Where a shown error came from: leaving the field, a submit, or the server. */
+/** Where a shown error came from: leaving the field, or a submit. */
 type Source = 'blur' | 'submit';
+
+/** A summary entry: the field, and the words the summary showed for it. */
+interface Listed { name: string; message: ReactNode }
+
+/**
+ * Whether a field still says what the summary said. Text compares as text; a node (a sentence with a
+ * link) is a new object every render, so two nodes count as the same message.
+ */
+const sameMessage = (a: ReactNode, b: ReactNode) => (typeof a === 'string' || typeof b === 'string' || typeof a === 'number' || typeof b === 'number' ? a === b : true);
 
 const present = (message: ReactNode) => message !== undefined && message !== null && message !== false && message !== '';
 
@@ -103,12 +112,12 @@ export function useFormErrors<V extends object>({ values, validate, isEmpty = de
   /** The server's errors, each with the value it was about. */
   const [server, setServer] = useState<Partial<Record<string, { message: ReactNode; value: unknown }>>>({});
   const [formErrors, setFormErrors] = useState<readonly ReactNode[]>([]);
-  /** The fields the last failed submit listed, in form order. */
-  const [listed, setListed] = useState<readonly string[]>([]);
+  /** The fields the last failed submit listed, in form order, with the words the summary showed. */
+  const [listed, setListed] = useState<readonly Listed[]>([]);
   const [failedSubmits, setFailedSubmits] = useState(0);
 
-  const latest = useRef({ values, checked, isEmpty });
-  latest.current = { values, checked, isEmpty };
+  const latest = useRef({ values, checked, isEmpty, server });
+  latest.current = { values, checked, isEmpty, server };
 
   const valueOf = (name: string) => (values as Record<string, unknown>)[name];
   const serverError = (name: string) => {
@@ -131,20 +140,30 @@ export function useFormErrors<V extends object>({ values, validate, isEmpty = de
 
   const handleSubmit = useCallback((onValid: (values: V) => unknown) => (event?: FormEvent) => {
     event?.preventDefault();
-    const { values: now, checked: errors } = latest.current;
-    const failing = Object.keys(errors).filter((name) => present((errors as Record<string, ReactNode>)[name]));
+    const { values: now, checked: errors, server: fromServer } = latest.current;
+    const own = errors as Record<string, ReactNode>;
+    const failing = Object.keys(own).filter((name) => present(own[name]));
+    // A refusal from the server still stands while its field holds the value it refused: submitting
+    // that again would only be refused again.
+    const refused = Object.keys(fromServer).filter((name) => !failing.includes(name)
+      && Object.is(fromServer[name]?.value, (now as Record<string, unknown>)[name]));
     setFormErrors([]);
-    if (!failing.length) {
+    if (!failing.length && !refused.length) {
       setListed([]);
       onValid(now);
       return;
     }
+    // Every field the summary lists is silent at the field from now on, a blurred one included:
+    // the summary announces it.
     setRevealed((current) => {
       const next = { ...current };
-      for (const name of failing) next[name] = current[name] ?? 'submit';
+      for (const name of failing) next[name] = 'submit';
       return next;
     });
-    setListed(failing);
+    setListed([
+      ...failing.map((name) => ({ name, message: own[name] })),
+      ...refused.map((name) => ({ name, message: fromServer[name]?.message })),
+    ]);
     setFailedSubmits((count) => count + 1);
   }, []);
 
@@ -153,7 +172,7 @@ export function useFormErrors<V extends object>({ values, validate, isEmpty = de
     const names = Object.keys(errors).filter((name) => present((errors as Record<string, ReactNode>)[name]));
     setServer(Object.fromEntries(names.map((name) => [name, { message: (errors as Record<string, ReactNode>)[name], value: now[name] }])));
     setFormErrors(form.filter(present));
-    setListed(names);
+    setListed(names.map((name) => ({ name, message: (errors as Record<string, ReactNode>)[name] })));
     if (names.length || form.some(present)) setFailedSubmits((count) => count + 1);
   }, []);
 
@@ -170,13 +189,17 @@ export function useFormErrors<V extends object>({ values, validate, isEmpty = de
     if (present(message)) errors[name] = message;
   }
 
+  /** The summary still says what the field says: the entry stands. */
+  const standing = (entry: Listed) => present(errors[entry.name]) && sameMessage(entry.message, errors[entry.name]);
+
   // Clear early: a revealed field that now passes goes back to waiting for its next blur, so
   // breaking it again while typing does not flag it mid-word; a server error goes once its field
-  // changed; and either leaves the summary until the next submit (an entry coming back into the
-  // summary's alert region would interrupt).
+  // changed. A summary entry goes once its field passes or says something else (a new message in
+  // the summary's alert region would interrupt the typing; the field announces it politely), and
+  // stays gone until the next submit.
   const passed = Object.keys(revealed).filter((name) => !present((checked as Record<string, ReactNode>)[name]));
   const stale = Object.keys(server).filter((name) => !Object.is(server[name]?.value, valueOf(name)));
-  const gone = listed.filter((name) => !present(errors[name]));
+  const gone = listed.filter((entry) => !standing(entry)).map((entry) => entry.name);
   useEffect(() => {
     const drop = <T extends object>(names: string[]) => (current: T) => {
       const next = { ...current } as Record<string, unknown>;
@@ -185,20 +208,22 @@ export function useFormErrors<V extends object>({ values, validate, isEmpty = de
     };
     if (passed.length) setRevealed(drop(passed));
     if (stale.length) setServer(drop(stale));
-    if (gone.length) setListed((current) => current.filter((name) => !gone.includes(name)));
+    if (gone.length) setListed((current) => current.filter((entry) => !gone.includes(entry.name)));
   }, [passed.join('|'), stale.join('|'), gone.join('|')]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const summaryErrors: ErrorSummaryItem[] = [
     ...formErrors.map((message, index) => ({ message, key: `form-${index}` })),
-    ...listed.filter((name) => present(errors[name])).map((name) => ({ message: errors[name], target: idOf(name) })),
+    ...listed.filter(standing).map((entry) => ({ message: errors[entry.name], target: idOf(entry.name) })),
   ];
 
   return {
     errors: errors as FormFieldErrors<V>,
     field: (name: Name) => ({
       error: errors[name],
-      // An error the summary listed was announced there; one found on leaving the field is polite.
-      errorAnnounce: revealed[name] === 'submit' || (!revealed[name] && present(errors[name])) ? 'off' : 'polite',
+      // An error the summary lists was announced there; any other (found on leaving the field, or
+      // a new message where the summary's was) is polite. 'polite' also while there is no error, so
+      // the field's announcing region is in place before one arrives.
+      errorAnnounce: listed.some((entry) => entry.name === name && standing(entry)) ? 'off' : 'polite',
       errorPrefix: labels.errorPrefix,
     }),
     control: (name: Name) => ({ id: idOf(name), name, onBlur: () => onBlurOf(name) }),

@@ -68,7 +68,9 @@ test('a failed submit: the summary takes focus in view, names every error with t
     await expect(control).toHaveAttribute('aria-invalid', 'true');
     await expect(control).toHaveAccessibleDescription(`Error: ${message}`);
     // Silent at the field: the summary already announced it.
-    await expect(control.locator('xpath=ancestor::div[contains(@class,"uix-field")]').locator('[role="alert"], [aria-live]')).toHaveCount(0);
+    const field = control.locator('xpath=ancestor::div[contains(@class,"uix-field")]');
+    await expect(field.locator('[role="alert"]')).toHaveCount(0);
+    await expect(field.locator('[data-uix-field-announce]')).toHaveText('');
   }
   await axe(page, '#incident');
 });
@@ -101,7 +103,9 @@ test('leaving a filled field flags it politely; an empty one waits; the fixing k
   await email.fill('ana@');
   await page.keyboard.press('Tab');
   await expect(email).toHaveAttribute('aria-invalid', 'true');
-  await expect(field.locator('.uix-field__msg')).toHaveAttribute('aria-live', 'polite');
+  await expect(field.locator('.uix-field__msg')).not.toHaveAttribute('aria-live', /./);
+  await expect(field.locator('[data-uix-field-announce]')).toHaveAttribute('aria-live', 'polite');
+  await expect(field.locator('[data-uix-field-announce]')).toHaveText('Error: Enter an email address in the correct format, like name@example.com');
   await expect(field.locator('[role="alert"]')).toHaveCount(0);
   await expect(email).toHaveAccessibleDescription('Error: Enter an email address in the correct format, like name@example.com');
   await expect(page.locator('.uix-validation-summary')).toHaveCount(0);
@@ -110,6 +114,7 @@ test('leaving a filled field flags it politely; an empty one waits; the fixing k
   await page.keyboard.type('example.com');
   await expect(email).not.toHaveAttribute('aria-invalid', 'true');
   await expect(email).toHaveAccessibleDescription('The person who reported it'); // back to the hint
+  await expect(field.locator('[data-uix-field-announce]')).toHaveText(''); // and the hint is not read out
   await axe(page, '#incident');
 });
 
@@ -166,6 +171,8 @@ test('the conflict banner: who and when, what they changed, review and apply a c
   await page.locator('#simulate-conflict').click();
   const notice = page.locator('.uix-conflict-notice');
   const banner = notice.getByRole('alert');
+  await expect(notice.locator('.uix-alert')).not.toHaveAttribute('role', /./); // the focus target is not the alert
+  await expect(banner.getByRole('button')).toHaveCount(0);
   await expect(banner).toContainText('Alex Novak changed this at 14:02 while you were editing');
   await expect(banner).toContainText('Your changes are not saved yet, and they are still here.');
   await expect(banner).toContainText('You both changed Priority.');

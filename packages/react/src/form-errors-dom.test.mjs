@@ -159,11 +159,15 @@ test('Field: errorAnnounce picks the live behaviour; errorPrefix is visually hid
   assert.equal(a.querySelector('.uix-field__error').getAttribute('role'), 'alert', 'default unchanged');
   assert.equal(a.querySelector('.uix-visually-hidden'), null, 'no prefix unless asked');
   assert.equal(b.querySelector('.uix-field__error').getAttribute('role'), null);
-  assert.equal(b.querySelector('.uix-field__msg').getAttribute('aria-live'), 'polite', 'polite errors use the persistent message line');
+  assert.equal(b.querySelector('.uix-field__msg').getAttribute('aria-live'), null, 'the visible line (hint, warning) is never live');
+  assert.equal(b.querySelector('[data-uix-field-announce]').getAttribute('aria-live'), 'polite');
+  assert.equal(b.querySelector('[data-uix-field-announce]').textContent, 'Error: Enter B', 'a hidden region holds the error only');
   assert.equal(b.querySelector('.uix-visually-hidden').textContent, 'Error: ');
   assert.equal(b.querySelector('.uix-field__error').textContent, 'Error: Enter B');
   assert.equal(c.querySelector('.uix-field__error').getAttribute('role'), null);
   assert.equal(c.querySelector('.uix-field__msg').getAttribute('aria-live'), null);
+  assert.equal(c.querySelector('[data-uix-field-announce]').textContent, '', 'off: the region is there, empty');
+  assert.equal(a.querySelector('[data-uix-field-announce]'), null, 'assertive: no extra region');
   assert.equal(c.querySelector('input').getAttribute('aria-invalid'), 'true', 'still invalid and described');
 });
 
@@ -199,7 +203,7 @@ test('useFormErrors: leaving an empty field flags nothing; leaving a filled wron
   assert.equal(errorOf(el, 'title'), null, 'nothing while typing');
   await blur(title);
   assert.equal(errorOf(el, 'title'), 'Title must be 10 characters or fewer');
-  assert.equal(fieldOf(el, 'title').querySelector('.uix-field__msg').getAttribute('aria-live'), 'polite');
+  assert.equal(fieldOf(el, 'title').querySelector('[data-uix-field-announce]').textContent, 'Error: Title must be 10 characters or fewer', 'announced politely');
   assert.equal(el.querySelector('.uix-validation-summary'), null, 'no summary before a submit');
 });
 
@@ -229,7 +233,7 @@ test('useFormErrors: a failed submit shows every error, silent at the fields, an
   assert.deepEqual(links.map((a) => a.textContent), [errorOf(el, 'title'), errorOf(el, 'team')], 'word for word the field messages');
   for (const name of ['title', 'team']) {
     const field = fieldOf(el, name);
-    assert.equal(field.querySelector('.uix-field__msg').getAttribute('aria-live'), null, 'the summary announced it');
+    assert.equal(field.querySelector('[data-uix-field-announce]').textContent, '', 'the summary announced it');
     assert.equal(field.querySelector('.uix-field__error').getAttribute('role'), null);
     assert.equal(field.querySelector('.uix-visually-hidden').textContent, 'Error: ');
     assert.equal(field.querySelector('input').getAttribute('aria-invalid'), 'true');
@@ -347,14 +351,17 @@ test('ConflictNotice: who and when, the fields they changed, the overlap, Reload
     onReload: (merged) => { reloaded = merged; },
     onApply: (merged, resolutions) => { applied = { merged, resolutions }; },
   }));
-  const alert = el.querySelector('.uix-alert');
-  assert.equal(alert.getAttribute('role'), 'alert');
-  assert.ok(alert.classList.contains('uix-alert--warning'), 'attention, not critical');
-  assert.equal(alert.querySelector('.uix-alert__title').textContent, 'Alex changed this at 14:02 while you were editing');
+  const banner = el.querySelector('.uix-alert');
+  assert.equal(banner.getAttribute('role'), null, 'the focus target is not the alert (GOV.UK v4.4.0)');
+  assert.equal(banner.getAttribute('tabindex'), '-1');
+  assert.ok(banner.classList.contains('uix-alert--warning'), 'attention, not critical');
+  const alert = banner.querySelector('[role="alert"]');
+  assert.equal(alert.querySelector('.uix-conflict-notice__title').textContent, 'Alex changed this at 14:02 while you were editing');
+  assert.equal(alert.querySelector('button'), null, 'the buttons are outside the alert');
   assert.match(alert.textContent, /Your changes are not saved yet, and they are still here\./);
   assert.equal(alert.querySelector('.uix-conflict-notice__fields').textContent, 'Priority and Title');
-  assert.ok(alert.querySelector('.uix-conflict-notice__actions button'), 'the actions sit under the text, not in the side slot');
-  assert.equal(alert.querySelector('.uix-alert__actions'), null);
+  assert.ok(banner.querySelector('.uix-conflict-notice__actions button'), 'the actions sit under the text, not in the side slot');
+  assert.equal(banner.querySelector('.uix-alert__actions'), null);
   assert.match(alert.textContent, /You both changed Priority\./);
   const button = (name) => [...el.querySelectorAll('button')].find((b) => b.textContent === name);
   assert.equal(button('Review changes').getAttribute('aria-expanded'), 'true', 'opens itself when a field needs a choice');
@@ -375,7 +382,7 @@ test('ConflictNotice: nobody named, no overlap: the plain title, the comparison 
   const el = await render(h(ui.ConflictNotice, {
     base: { a: 1, b: 1 }, yours: { a: 2, b: 1 }, theirs: { a: 1, b: 3 }, onReload: () => {},
   }));
-  assert.equal(el.querySelector('.uix-alert__title').textContent, 'Changed by someone else while you were editing');
+  assert.equal(el.querySelector('.uix-conflict-notice__title').textContent, 'Changed by someone else while you were editing');
   assert.doesNotMatch(el.textContent, /You both changed/);
   const review = el.querySelector('.uix-conflict-notice__review');
   assert.equal(review.hidden, true);
@@ -383,4 +390,87 @@ test('ConflictNotice: nobody named, no overlap: the plain title, the comparison 
   await click(toggle);
   assert.equal(review.hidden, false);
   assert.equal([...el.querySelectorAll('button')].find((b) => b.textContent === 'Apply'), undefined);
+});
+
+// ---------- review findings (PR #306) ----------
+
+test('useFormErrors: resubmitting a value the server refused does not save, and keeps it in the summary', async () => {
+  const api = {};
+  let saved = 0;
+  const el = await render(h(Form, { api, onValid: () => { saved += 1; } }));
+  await type(el.querySelector('#f-title'), 'Outage');
+  await type(el.querySelector('#f-team'), 'Network');
+  await act(async () => api.form.setServerErrors({ title: 'An incident with this title is already open' }));
+  el.querySelector('#f-team').focus();
+  await submit(el.querySelector('form'));
+  assert.equal(saved, 0, 'the same refused value is not sent again');
+  assert.deepEqual([...el.querySelectorAll('.uix-validation-summary a')].map((a) => a.textContent), ['An incident with this title is already open']);
+  assert.equal(document.activeElement, el.querySelector('.uix-validation-summary'));
+  await type(el.querySelector('#f-title'), 'Outage 2');
+  await submit(el.querySelector('form'));
+  assert.equal(saved, 1, 'a changed value goes');
+});
+
+test('useFormErrors: a field flagged on blur and then listed by a submit is silent at the field', async () => {
+  const el = await render(h(Form));
+  const title = el.querySelector('#f-title');
+  await type(title, 'Far too long a title');
+  await blur(title);
+  assert.notEqual(fieldOf(el, 'title').querySelector('[data-uix-field-announce]').textContent, '');
+  await submit(el.querySelector('form'));
+  assert.equal(fieldOf(el, 'title').querySelector('[data-uix-field-announce]').textContent, '', 'the summary speaks for it');
+});
+
+test('useFormErrors: a listed field whose message changes leaves the summary and is announced at the field', async () => {
+  const el = await render(h(Form));
+  await submit(el.querySelector('form'));
+  const before = [...el.querySelectorAll('.uix-validation-summary a')].map((a) => a.textContent);
+  assert.deepEqual(before, ['Enter a title', 'Enter a team']);
+  await type(el.querySelector('#f-title'), 'Far too long a title');
+  assert.deepEqual([...el.querySelectorAll('.uix-validation-summary a')].map((a) => a.textContent), ['Enter a team'], 'the alert region does not change words mid-typing');
+  assert.equal(errorOf(el, 'title'), 'Title must be 10 characters or fewer');
+  assert.equal(fieldOf(el, 'title').querySelector('[data-uix-field-announce]').textContent, 'Error: Title must be 10 characters or fewer');
+});
+
+test('useErrorTitle: a title that already said "Error: " keeps it when the summary goes', async () => {
+  document.title = 'Error: Existing page';
+  await render(h(ui.ErrorSummary, { errors: [{ message: 'Enter a title' }] }));
+  assert.equal(document.title, 'Error: Existing page', 'not prefixed twice');
+  await act(async () => root.render(h(ui.ErrorSummary, { errors: [] })));
+  assert.equal(document.title, 'Error: Existing page', 'a prefix the hook did not add stays');
+});
+
+test('useLeaveGuard: a second attempt while asking sends the first one back (its stay runs)', async () => {
+  const api = {};
+  const el = await render(h(Guarded, { dirty: true, api }));
+  const log = [];
+  await act(async () => { api.leave.confirm(() => log.push('go 1'), () => log.push('stay 1')); });
+  await act(async () => { api.leave.confirm(() => log.push('go 2'), () => log.push('stay 2')); });
+  assert.deepEqual(log, ['stay 1']);
+  const dialog = el.querySelector('dialog[open]');
+  await click([...dialog.querySelectorAll('button')].find((b) => b.textContent === 'Discard'));
+  assert.deepEqual(log, ['stay 1', 'go 2']);
+});
+
+test('mergeRecordConflict: a removed subtree goes; __proto__ and dotted keys stay plain fields', () => {
+  assert.deepEqual(ui.mergeRecordConflict({ profile: { name: 'A' }, x: 1 }, { profile: { name: 'A' }, x: 2 }, { x: 1 }), { x: 2 }, 'no empty profile left behind');
+  const theirs = JSON.parse('{"title":"T","__proto__":{"isAdmin":true}}');
+  const merged = ui.mergeRecordConflict({ title: 'T' }, { title: 'T' }, theirs);
+  assert.equal(merged.isAdmin, undefined, 'no inherited property');
+  assert.equal(Object.getPrototypeOf(merged), Object.prototype);
+  assert.ok(Object.prototype.hasOwnProperty.call(merged, '__proto__'), 'kept as an own field');
+  assert.deepEqual(merged['__proto__'], { isAdmin: true });
+  const dotted = ui.mergeRecordConflict({ 'a.b': 1 }, { 'a.b': 1 }, { 'a.b': 2 });
+  assert.deepEqual(dotted, { 'a.b': 2 }, 'a key with a dot is one key');
+  assert.equal(ui.recordConflictChanges({ 'a.b': 1 }, { 'a.b': 1 }, { 'a.b': 2 })[0].path, '$.a\\.b');
+});
+
+test('ConflictNotice: a later conflict on the same field with other values asks again', async () => {
+  const props = (theirs) => ({ base: { p: 'P3' }, yours: { p: 'P2' }, theirs, onReload: () => {}, onApply: () => {} });
+  const el = await render(h(ui.ConflictNotice, props({ p: 'P1' })));
+  await click(el.querySelector('button[aria-label="Keep yours for p"]'));
+  const apply = () => [...el.querySelectorAll('button')].find((b) => b.textContent === 'Apply');
+  assert.equal(apply().getAttribute('aria-disabled'), null);
+  await act(async () => root.render(h(ui.ConflictNotice, props({ p: 'P4' }))));
+  assert.equal(apply().getAttribute('aria-disabled'), 'true', 'the earlier choice does not carry over');
 });
