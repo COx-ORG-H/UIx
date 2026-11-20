@@ -23,6 +23,9 @@ import type { OrgChartLabels } from './components/OrgChart.js';
 import type { InlineEditLabels } from './components/InlineEdit.js';
 import type { DiscardPromptLabels } from './components/DiscardPrompt.js';
 import type { SessionTimeoutLabels } from './components/SessionTimeout.js';
+import type { ErrorSummaryLabels } from './components/ErrorSummary.js';
+import type { ConflictNoticeLabels } from './components/ConflictNotice.js';
+import type { LeaveGuardLabels } from './hooks/useLeaveGuard.js';
 import type { SearchBarLabels } from './components/SearchBar.js';
 import type { KeyboardGrabLabels } from './hooks/useKeyboardGrab.js';
 import type { LightboxLabels } from './components/Lightbox.js';
@@ -78,6 +81,15 @@ export interface UixLabels {
   discardPrompt?: Partial<DiscardPromptLabels>;
   /** `SessionTimeout`: the warning, its countdown and actions, and the "signed out" notice. */
   sessionTimeout?: Partial<SessionTimeoutLabels>;
+  /**
+   * `ErrorSummary` and `useFormErrors`: the summary's heading, and the "Error:" before each field
+   * error and the page title while a summary shows.
+   */
+  errorSummary?: Partial<ErrorSummaryLabels>;
+  /** `useLeaveGuard`: the descriptions of the leave step; its title and buttons are `discardPrompt`'s. */
+  leaveGuard?: Partial<LeaveGuardLabels>;
+  /** `ConflictNotice`: the banner, its actions, and the comparison's version names and buttons. */
+  conflictNotice?: Partial<ConflictNoticeLabels>;
   peek?: { previous?: string; next?: string; close?: string };
   /** `ToolbarMore` (HAR-3090): the overflow menu's trigger word. */
   toolbar?: { more?: string };

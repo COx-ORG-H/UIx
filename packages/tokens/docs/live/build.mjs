@@ -1,5 +1,4 @@
-/* Bundles the docs' live demos (motion-playground.tsx, task-tray-demo.tsx, ai-assistance-demo.tsx, shortcut-demo.tsx, toast-undo-demo.tsx and session-timeout-demo.tsx: React plus the real
- * components, from source) into packages/tokens/docs/live/dist/. Not committed. The docs site workflow runs it
+/* Bundles the docs' live demos (the entryPoints below: React plus the real components, from source) into packages/tokens/docs/live/dist/. Not committed. The docs site workflow runs it
  * before assembling the site; run it locally to see the playground in the repository preview:
  *   node packages/tokens/docs/live/build.mjs */
 import { build } from 'esbuild';
@@ -10,7 +9,16 @@ const here = dirname(fileURLToPath(import.meta.url));
 
 export async function buildDocsLive() {
   await build({
-    entryPoints: [join(here, 'motion-playground.tsx'), join(here, 'task-tray-demo.tsx'), join(here, 'ai-assistance-demo.tsx'), join(here, 'shortcut-demo.tsx'), join(here, 'toast-undo-demo.tsx'), join(here, 'session-timeout-demo.tsx')],
+    // One demo per line, so two PRs that each add a demo do not edit the same line.
+    entryPoints: [
+      'motion-playground.tsx',
+      'task-tray-demo.tsx',
+      'ai-assistance-demo.tsx',
+      'shortcut-demo.tsx',
+      'toast-undo-demo.tsx',
+      'form-errors-demo.tsx',
+      'session-timeout-demo.tsx',
+    ].map((file) => join(here, file)),
     outdir: join(here, 'dist'),
     bundle: true,
     format: 'esm',

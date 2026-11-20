@@ -65,7 +65,7 @@ table — do not re-maintain a parallel "backlog" list elsewhere.
 | Drawer | drawer.css | ✓ `Drawer` | Stable | no | Overlay. HAR-2029: `dirty` asks "Discard changes?" (anchored, focus on Keep editing) on Escape, ×, backdrop and `DialogClose`; `pending` blocks them. |
 | FileUpload | file-upload.css | absent | Planned | no | Planned wrapper (interactive — needs real logic). |
 | Flow | flow.css | ✓ `Flow` | Beta | no | Also `FlowNode`; presentational graph shell with explicit state text and consumer-owned geometry. |
-| Form | form.css | ✓ `Field` | Stable | no | Also `ToggleRow`; `FormGrid`/`Fieldset` still planned. |
+| Form | form.css | ✓ `Field` | Stable | no | Also `ToggleRow`; `FormGrid`/`Fieldset` still planned. Forms error recovery (UIx enterprise UX study, First five #2; spec `Docs/specs/2026-11-20-form-errors.md`): `ErrorSummary` over `.uix-validation-summary`, `useFormErrors`, `useErrorTitle` / `errorTitle`, `Field` `errorAnnounce` / `errorPrefix`, `useLeaveGuard`, `ConflictNotice` + `mergeRecordConflict`. Follow-ups: SaveStatus dirty / offline states, a submit-error taxonomy, Alert side actions at 320 px. |
 | Heartbeat | heartbeat.css | ✓ `Heartbeat` | Beta | no | The pulsing status dot (`live`, `idle`, `warning`, `danger`), decorative unless labelled; also `LiveIndicator` (dot + state text). Landed 2.32.0 (HAR-1606). |
 | Inbox | inbox.css | ✓ `Inbox` | Beta | no | Also `InboxList`, `InboxItem`, `InboxDetail`. ITSM capability; recently landed. |
 | Icon | icon.css | ✓ `Icon` (`@tensor_1/react/icons`) | Beta | no | 237 Lucide glyphs (ISC) as tree-shakeable `<Name>Icon` components plus a name-based `Icon`; sized by `--uix-icon-*`, decorative unless labelled. Landed 2.29.0 (HAR-996). |

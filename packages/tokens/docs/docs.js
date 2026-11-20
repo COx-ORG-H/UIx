@@ -104,6 +104,7 @@ const NAV_ITEMS = [
   { name: 'Chart', slug: 'chart', group: 'Components', summary: 'Accessible analytical cards, legends, metrics, and renderer slots.', keywords: ['graph', 'visualization', 'echarts', 'mission control'] },
   { name: 'Calendar model', slug: 'calendar-model', group: 'Patterns', summary: 'Zoned days, real hour slots, "+1 day" and lane packing for calendar views.', keywords: ['time zone', 'dst', 'daylight saving', 'hour slots', 'packLanes', 'zonedDayBounds', 'addZonedDays'] },
   { name: 'App shell', slug: 'app-shell', group: 'Patterns', summary: 'Sidebar, top bar, and responsive workspace layout.', keywords: ['layout', 'navigation', 'sidebar'] },
+  { name: 'Form errors', slug: 'form-errors', group: 'Patterns', summary: 'The error summary, validation timing, leaving with unsaved work, and saving over someone else’s change.', keywords: ['error summary', 'validation', 'ErrorSummary', 'useFormErrors', 'useLeaveGuard', 'ConflictNotice', 'unsaved changes', 'beforeunload', 'conflict', '409', 'gov.uk'] },
   { name: 'Data workflows', slug: 'data-workflows', group: 'Patterns', summary: 'Filters, saved views, pinning, and record peek.', keywords: ['table', 'filters', 'peek', 'pin'] },
   { name: 'Pipeline', slug: 'pipeline', group: 'Patterns', summary: 'Compact and detailed stage rails for operational progress.', keywords: ['workflow', 'stage', 'approval', 'duration', 'mission control'] },
   { name: 'Session timeout', slug: 'session-timeout', group: 'Patterns', summary: 'Warn before a session ends, let the person stay with one press, and keep their drafts when it does end.', keywords: ['SessionTimeout', 'useSessionTimeout', 'timeout', 'idle', 'sign out', 'expiry', 'drafts', 'wcag 2.2.1', 'timing adjustable', '2.2.6', 'one-time code', 'otp', 'paste', '3.3.8'] },
@@ -1165,10 +1166,72 @@ const { lanes, clusters } = packLanes(dayEntries, 3);       // lane: number | nu
     ${section('wayfinding', 'Wayfinding rules', `<ul><li>Every primary surface gets a persistent visible entry; a command palette is a shortcut, not the only route.</li><li>Personal actions live under the person or account, not tenant administration.</li><li>Use one canonical start surface per persona.</li><li>Collapse to an icon rail only when icons have clear accessible names and a discoverable expansion path.</li></ul>`)}
     ${section('responsive', 'Responsive behavior', `<p>On narrow screens the sidebar becomes a modal navigation drawer, the top bar preserves the current context, and the working canvas owns the viewport. Do not shrink a desktop rail until labels become unreadable.</p>`)}`,
 
+  'form-errors': () => {
+    const live = (part, label) => `<div class="uix-docs__live" data-live-demo="form-errors-demo" data-demo="${part}"><p class="uix-docs__live-status" data-live-demo-status role="status">Loading the live demo: ${label}…</p></div>`;
+    const table = (head, rows) => `<table class="uix-docs__token-table uix-docs__token-table--prose"><thead><tr>${head.map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+    return `${pageHeader('Patterns', 'Form errors', 'When a form cannot be saved, the person learns what to fix, where, in the same words everywhere, and never loses what they typed: an error summary on submit, field errors on blur that clear on the fixing keystroke, a guard before unsaved work is left, and a banner when someone else saved first.', ['GOV.UK error summary', 'reward early, punish late', 'nothing typed is lost'])}
+    ${section('timing', 'When an error shows', `<p>The default follows GOV.UK’s error summary and the one controlled study of validation timing (Etre for Luke Wroblewski, n=22, where checking a field after the person leaves it beat checking only on submit): <strong>validate late, clear early</strong>. <code>useFormErrors</code> does this for you over <code>Field</code>; it holds no values and is not a form library.</p>${table(['Moment', 'What happens', 'What a screen reader hears'], [
+      ['Typing in a field that shows no error', 'Nothing. Nobody is told off mid-word.', 'Nothing'],
+      ['Leaving a filled-in field', 'Its error shows under it.', 'The error, politely, after what it is reading'],
+      ['Leaving an empty field', 'Nothing yet: the person may be skipping ahead. Empty required fields are checked on submit.', 'Nothing'],
+      ['Typing in a field that shows an error', 'It is checked on every change; the error goes on the keystroke that fixes it.', 'Nothing'],
+      ['Submitting with errors', 'Every error shows, the summary appears at the top and takes focus, the page title starts with “Error: ”.', 'The summary, once: “There is a problem” and each error'],
+      ['The server refuses a field (400 / 422)', '<code>form.setServerErrors()</code>: the same field and summary channels; it goes once that field changes.', 'The summary'],
+    ])}${callout('Never disable Save to signal errors', 'A disabled button explains nothing and cannot be focused. Keep Save enabled; a press with errors shows the summary.', 'warning')}`)}
+    ${section('error-summary', 'The error summary', `<p>Submit the empty form, then follow a link in the summary. Fix a field and watch it leave the summary; fix them all and the summary and the title prefix go.</p>${live('summary', 'error summary')}<ul><li>Always shown on a failed submit, even for a single error, at the top of the form.</li><li>The heading is “There is a problem” (<code>errorSummary.title</code>).</li><li>One entry per error, in the order of the form, in the <strong>same words</strong> as the field. The entry links to the control (the first one of a group); following it focuses the control and scrolls its whole field into view, inside a Drawer or a pane too.</li><li>An error of the whole form (“The change window overlaps a freeze”) is an entry without a link.</li><li>Focus moves to the summary when it appears and on every later failed submit (<code>focusKey</code>). <code>role="alert"</code> sits on an element inside it, as GOV.UK moved it there for JAWS.</li><li>While it shows, the page title starts with “Error: ” (<code>useErrorTitle</code>; a router that sets titles itself uses <code>errorTitle(title)</code>).</li></ul>${codeBlock(`const [values, setValues] = useState({ title: '', email: '' });
+const form = useFormErrors({
+  values,
+  validate: (v) => ({
+    title: !v.title.trim() ? 'Enter a title' : undefined,
+    email: !v.email.trim() ? 'Enter the requester’s email address' : undefined,
+  }),
+});
+
+<form noValidate onSubmit={form.handleSubmit(save)}>
+  <ErrorSummary {...form.summary} />
+  <Field label="Title" {...form.field('title')}>
+    <Input {...form.control('title')} value={values.title}
+      onChange={(e) => setValues({ ...values, title: e.currentTarget.value })} />
+  </Field>
+  …
+</form>`, 'tsx')}<p><code>form.field(name)</code> gives <code>Field</code> its error, how to announce it and the hidden “Error:” prefix; <code>form.control(name)</code> gives the control its id (the summary links there), <code>name</code> and the blur that checks it. For a <code>Combobox</code>, pass that id as <code>inputId</code>. Use <code>noValidate</code> so the browser’s own bubbles do not compete.</p>`)}
+    ${section('writing', 'Writing the messages', `<p>GOV.UK’s rules: say what happened and how to fix it, in plain words. Missing input is an instruction, a wrong format names the format, a limit says the limit.</p>${table(['Write', 'Not'], [
+      ['Enter a title', 'This field is required'],
+      ['Enter an email address in the correct format, like name@example.com', 'Invalid email'],
+      ['Title must be 60 characters or fewer', 'Oops! Title is too long'],
+      ['Select the team that owns this incident', 'Please select an option'],
+    ])}<p>Avoid “please”, “sorry”, “invalid”, “oops”, “forbidden”, “you forgot” and error codes. The summary repeats the field message word for word, so write it once, in <code>validate</code>.</p>`)}
+    ${section('leaving', 'Leaving with unsaved work', `<p><code>useLeaveGuard</code> asks before work is lost, and only then: it is on while there are unsaved changes (<code>dirty</code>) or a save is running or failed (<code>saveState</code>, as <code>SaveStatus</code> shows it), and off once saved, so an autosaved form does not cry wolf. Type a note, then follow the link; step the save state to see the words change.</p>${live('leave', 'leave guard')}<ul><li>Reload, closing the tab and links out of the app get the browser’s own prompt (<code>beforeunload</code>; browsers show their own words).</li><li>In-app navigation calls <code>leave.confirm(proceed, stay)</code>: the same “Discard changes?” step a dirty Drawer or Modal asks (<code>discardPrompt</code> words), with focus on Keep editing. With <code>fields</code> it names what is at risk.</li></ul>${codeBlock(`const leave = useLeaveGuard({ dirty, saveState, fields: ['Impact', 'Description'] });
+
+// React Router
+const blocker = useBlocker(leave.active);
+useEffect(() => {
+  if (blocker.state === 'blocked') leave.confirm(blocker.proceed, blocker.reset);
+}, [blocker.state]);
+
+// Any router: a link's click
+<a href="/incidents" onClick={(e) => { e.preventDefault(); leave.confirm(() => router.push('/incidents')); }}>…</a>
+
+return <>{form}{leave.dialog}</>;`, 'tsx')}`)}
+    ${section('conflict', 'Someone else saved first', `<p>When a save comes back 409 or 412 (the record’s version moved on), show <code>ConflictNotice</code> above the form: a banner, not a toast. It says who and when, keeps everything the person typed, and lists the fields the other person changed. <strong>Reload latest</strong> continues from their record with the person’s changes kept; where both changed a field it takes theirs and says so. <strong>Review changes</strong> opens <code>DiffViewer</code>, field by field, and only the fields both changed need a choice before Apply.</p>${live('conflict', 'conflict notice')}${codeBlock(`<ConflictNotice
+  base={openedVersion} yours={formValues} theirs={error.latest}
+  changedBy={error.latest.updatedBy} changedAt={formatTime(error.latest.updatedAt)}
+  labelFor={(path) => FIELD_NAMES[path]}
+  onReload={(merged) => loadIntoForm(merged, error.latest.version)}
+  onApply={(merged) => loadIntoForm(merged, error.latest.version)}
+/>`, 'tsx')}<p><code>mergeRecordConflict(base, yours, theirs, resolutions)</code> is the merge both buttons use, for a product that resolves without the banner. Presence (“Alex is editing”) is a hint and never replaces the server’s version check. <code>InlineEdit</code> keeps its own per-field “Reload latest” through <code>renderError</code>.</p>`)}
+    ${section('labels', 'Words', `<p>Every word comes from <code>UixLabelsProvider</code> with English defaults: <code>errorSummary</code> (<code>title</code>, <code>errorPrefix</code>), <code>leaveGuard</code> (<code>fieldsAtRisk</code>, <code>saving</code>, <code>failed</code>; the title and buttons are <code>discardPrompt</code>’s) and <code>conflictNotice</code>. <code>Field</code> itself stays server-renderable, so it takes <code>errorPrefix</code> and <code>errorAnnounce</code> as props; <code>useFormErrors</code> passes them.</p>`)}`;
+  },
   'data-workflows': () => `${pageHeader('Patterns', 'Data workflows', 'UIx connects filtering, saved views, row pinning, record peek, operational pipelines, and analytical feedback into one predictable loop for high-volume operators.', ['filter → inspect → act', 'pipeline visibility', 'recoverable states'])}
     ${section('model', 'The working loop', `<ol class="uix-docs__steps"><li><h3>Shape the queue</h3><p>Search and filters change the real query; active criteria remain visible and removable.</p></li><li><h3>Preserve a useful view</h3><p>Saved views capture query and presentation preferences with a clear scope.</p></li><li><h3>Inspect without losing place</h3><p>Peek opens a record preview while keeping the queue, scroll position, and selection intact. It opens and closes at once; closing lands focus on the row of the record it showed last, which plays the arrival cue once (<code>DataWorkspace peekRowId</code>, an experiment).</p></li><li><h3>Act with feedback</h3><p>Mutations confirm the outcome, update the row, and expose partial failures.</p></li></ol>`)}
     ${section('pin-peek-favorite', 'Pin, peek, and favorite are different', `<table class="uix-docs__token-table"><thead><tr><th>Pattern</th><th>Meaning</th><th>Scope</th></tr></thead><tbody><tr><td>Pin</td><td>Keep a record visible above sort or filter results.</td><td>Table + saved view</td></tr><tr><td>Peek</td><td>Inspect a record without navigating away.</td><td>Current list context</td></tr><tr><td>Favorite</td><td>Promote a destination into persistent navigation.</td><td>User navigation</td></tr></tbody></table>`)}
     ${section('states', 'Every branch has a next action', `<p>Loading, empty, filtered-empty, error, forbidden, and end-of-results are different states. Each one should explain what happened and provide the most likely recovery action.</p>${callout('Empty is not one state', '“No records exist” may lead to Create. “No matches” should lead to Clear filters. “No access” should lead to Request access or Return. The control must match the actual branch.')}`)}
+    ${section('search-sort-language', 'Search and sort in the reader’s language', `<p>Every kit search folds case and diacritics, and every kit sort collates in the locale of the <code>UixLabelsProvider</code>: its <code>locale</code> (a label pack sets it), then <code>dateFormat.locale</code>. People in Bosnia and Herzegovina, Croatia and Serbia often type without diacritics, so “cevapi” finds “Ćevapi”. Unicode cannot split đ, so it answers to “dj” and to “d”: “djordje” and “dorde” both find “Đorđe”. In German, ß answers to “ss” and ü to “u” and “ue”. In a Bosnian, Croatian or Serbian locale, Serbian Cyrillic answers to Latin and back (“djordje” finds “Ђорђе”), with љ, њ and џ as lj, nj and dz. Sorts put numbers in value order (INC-2 before INC-10) and follow the locale’s alphabet: Croatian puts č and ć after c. Plain ASCII matches and sorts as it always did.</p><p>CommandPalette, Combobox, Select, SearchSuggest (and so EntityPicker), TagInput, FilterEditor, the Menu and Tree typeahead and <code>useTable</code> do this themselves. A DataWorkspace leaves search and sort to you: use the same helpers so its rows agree with the rest of the kit. <code>Highlighted</code> is server-safe and takes <code>locale</code> as a prop.</p>${codeBlock(`import { compareFor, multiSort, searchMatcher } from "@tensor_1/react";
+
+const matches = searchMatcher(query, "sr-Latn"); // "djordje" finds "Đorđe" and "Ђорђе"
+const shown = rows.filter((row) => matches(row.title) || matches(row.id));
+const sorted = multiSort(shown, [{ field: "id", dir: "ascending" }], "hr"); // INC-2 before INC-10
+owners.sort(compareFor("hr")); // Cvitan, Čolić, Ćosić`, 'tsx')}<p>For a server-side search, store <code>foldForSearch(title, locale).text</code> next to the record and fold the query the same way, so the server finds what the kit marks.</p>`)}
     ${section('operational-feedback', 'Make progress and evidence reusable', `<p>Use <a href="#pipeline">Pipeline</a> for ordered stage progress, <a href="#flow">Flow</a> for branching process structure, and <a href="#chart">Chart</a> for outcome, throughput, residence-time, and health evidence. These primitives keep presentation consistent while Mission Control owns telemetry, workflow rules, permissions, and actions.</p>`)}
     ${section('journey-budget', 'Set a journey budget', `<p>For a frequent queue workflow, define an observable budget: for example, reach the assigned queue in one navigation action, inspect a record in one more, and complete the common transition without leaving the keyboard. Measure the real journey—not only component render speed.</p>`)}`,
 };

@@ -361,7 +361,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   useEffect(() => () => request.current?.abort(), []);
 
   const isSearchable = searchable === true || (searchable === 'auto' && countSelectOptions(staticItems) > 12);
-  const listItems = hasLoader ? asyncState.items : isSearchable ? filterSelectItems(staticItems, query) : staticItems;
+  const listItems = hasLoader ? asyncState.items : isSearchable ? filterSelectItems(staticItems, query, locale) : staticItems;
   const listModel = useMemo(() => buildSelectModel(listItems), [listItems]);
   const entries = listModel.entries;
   const activeEntry: SelectEntry | undefined = active >= 0 ? entries[active] : undefined;
@@ -493,7 +493,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
     const selected = selectedIndexIn(base);
     let next = target === 'first' ? firstEnabled(base) : target === 'last' ? lastEnabled(base) : selected >= 0 ? selected : firstEnabled(base);
     if (typedText) {
-      const found = typeahead(base, typedText, selected);
+      const found = typeahead(base, typedText, selected, locale);
       if (found >= 0) next = found;
     }
     setActive(next);
@@ -548,7 +548,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
     if (state.timer) clearTimeout(state.timer);
     state.text += char;
     state.timer = setTimeout(() => { state.text = ''; state.timer = null; }, TYPEAHEAD_MS);
-    return typeahead(list, state.text, from);
+    return typeahead(list, state.text, from, locale);
   };
   useEffect(() => () => { if (typed.current.timer) clearTimeout(typed.current.timer); }, []);
 

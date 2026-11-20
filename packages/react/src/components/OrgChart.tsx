@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, FocusEvent, HTMLAttributes, KeyboardEvent, MouseEvent, PointerEvent } from 'react';
 import { cx } from '../cx.js';
+import { foldContext, textMatcher } from '../locale-text.js';
 import { fillLabel } from '../fill-label.js';
 import { useUixLabels, useUixLocale } from '../labels-context.js';
 import { countLabel } from '../plural.js';
@@ -705,11 +706,11 @@ export function OrgChart({
         }
         // A letter: the next visible person whose name starts with it.
         if (!handled && e.key.length === 1 && e.key.trim() !== '') {
-          const ch = e.key.toLocaleLowerCase();
-          const nameOf = (el: HTMLElement) => document.getElementById(el.getAttribute('aria-labelledby') ?? '')?.textContent?.trim().toLocaleLowerCase() ?? '';
+          const startsWith = textMatcher(e.key, foldContext(), 'startsWith'); // "c" reaches "Čolić"
+          const nameOf = (el: HTMLElement) => document.getElementById(el.getAttribute('aria-labelledby') ?? '')?.textContent?.trim() ?? '';
           const people = items.filter((el) => !syntheticOf(el.dataset.id ?? ''));
           const start = people.indexOf(cur);
-          const next = [...people.slice(start + 1), ...people.slice(0, start + 1)].find((el) => nameOf(el).startsWith(ch));
+          const next = [...people.slice(start + 1), ...people.slice(0, start + 1)].find((el) => startsWith(nameOf(el)));
           if (next) { focusItem(next); handled = true; }
         }
     }

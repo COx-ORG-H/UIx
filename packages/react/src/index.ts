@@ -87,8 +87,11 @@ export type { ToolbarMoreProps } from './components/ToolbarMore.js';
 export { EntityPicker, DEFAULT_ENTITY_PICKER_LABELS } from './components/EntityPicker.js';
 export type { EntityPickerProps, EntityPickerLabels, EntityPickerSearchError, EntityPickerSearchResult } from './components/EntityPicker.js';
 export type { SearchSuggestProps, SearchSuggestOption, SearchSuggestAction } from './components/SearchSuggest.js';
-export { searchSegments, foldForSearch } from './search-suggest-model.js';
-export type { SearchSegment, FoldedText } from './search-suggest-model.js';
+export { searchSegments } from './search-suggest-model.js';
+export type { SearchSegment } from './search-suggest-model.js';
+// Locale-aware search folding and collation for every kit search and sort (roadmap #15)
+export { foldForSearch, searchMatcher, compareFor } from './locale-text.js';
+export type { FoldedText, FoldOptions } from './locale-text.js';
 
 export { Textarea } from './components/Textarea.js';
 export type { TextareaProps } from './components/Textarea.js';
@@ -114,6 +117,16 @@ export type { SwitchProps } from './components/Switch.js';
 
 export { Field } from './components/Field.js';
 export type { FieldProps, FieldAi } from './components/Field.js';
+export { ErrorSummary, DEFAULT_ERROR_SUMMARY_LABELS, errorTitle, useErrorTitle } from './components/ErrorSummary.js';
+export type { ErrorSummaryItem, ErrorSummaryLabels, ErrorSummaryProps } from './components/ErrorSummary.js';
+export { useFormErrors } from './hooks/useFormErrors.js';
+export type { FormErrorsApi, FormErrorsControlProps, FormErrorsFieldProps, FormFieldErrors, UseFormErrorsOptions } from './hooks/useFormErrors.js';
+export { useLeaveGuard, DEFAULT_LEAVE_GUARD_LABELS } from './hooks/useLeaveGuard.js';
+export type { LeaveGuardApi, LeaveGuardLabels, UseLeaveGuardOptions } from './hooks/useLeaveGuard.js';
+export { ConflictNotice, DEFAULT_CONFLICT_NOTICE_LABELS } from './components/ConflictNotice.js';
+export type { ConflictNoticeLabels, ConflictNoticeProps } from './components/ConflictNotice.js';
+export { mergeRecordConflict, recordConflictChanges, recordConflictEntries } from './conflict-model.js';
+export type { RecordConflictChange } from './conflict-model.js';
 
 // Overlays
 export { Modal } from './components/Modal.js';
