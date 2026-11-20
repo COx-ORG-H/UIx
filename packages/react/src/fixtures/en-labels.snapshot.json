@@ -168,7 +168,42 @@
     "narrower": "Narrower",
     "wider": "Wider",
     "fitColumn": "Fit to content",
-    "defaultColumnWidth": "Default width"
+    "defaultColumnWidth": "Default width",
+    "selectedAll": "{count} selected · all rows",
+    "selectedAllMatching": "{count} selected · all matching {query}",
+    "selectionPage": {
+      "one": "{count} row on this page is selected.",
+      "other": "All {count} rows on this page are selected."
+    },
+    "selectAllMatching": "Select all {count} matching",
+    "selectionAll": {
+      "one": "{count} row is selected.",
+      "other": "All {count} rows are selected."
+    },
+    "selectionAllMatching": {
+      "one": "{count} row matching {query} is selected.",
+      "other": "All {count} rows matching {query} are selected."
+    },
+    "selectionExcept": {
+      "one": "{count} of {total} rows is selected.",
+      "other": "{count} of {total} rows are selected."
+    },
+    "selectionExceptMatching": {
+      "one": "{count} of {total} rows matching {query} is selected.",
+      "other": "{count} of {total} rows matching {query} are selected."
+    },
+    "clearSelection": "Clear selection",
+    "selectionCleared": "Selection cleared: the filter changed.",
+    "selectionStale": {
+      "one": "The filter changed, so the {count} row selected under the previous filter is not selected here.",
+      "other": "The filter changed, so the {count} rows selected under the previous filter are not selected here."
+    },
+    "dismiss": "Dismiss",
+    "querySearch": "the search “{search}”",
+    "querySeparator": "; ",
+    "shortcutToggleRow": "Select or deselect the row",
+    "shortcutSelectRange": "Select from the last row picked to this one",
+    "shortcutSelectPage": "Select every row on this page"
   },
   "DEFAULT_DATE_PICKER_LABELS": {
     "open": "Choose date",

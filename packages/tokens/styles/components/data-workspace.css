@@ -46,6 +46,27 @@
     max-inline-size: 20rem; padding: var(--uix-space-2) var(--uix-space-3); border-bottom: 1px solid var(--uix-border);
     color: var(--uix-text-muted); font-size: var(--uix-text-meta);
   }
+  /* Selection scope (roadmap #12): the banner under the bulk bar that says which rows a bulk
+     action runs on (this page, or every record matching the filter) and offers the next step.
+     Quiet: a subtle band, not an alert; the words are spoken by the page's polite region. */
+  .uix-data-workspace__scope {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--uix-space-1) var(--uix-space-3); min-width: 0;
+    padding: var(--uix-space-2) var(--uix-space-3); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
+    background: var(--uix-bg-subtle); color: var(--uix-text); font-size: var(--uix-text-meta); text-align: center;
+  }
+  /* under the bulk bar it reads as the bar's second line: 4 px apart, not the workspace's gap
+     plus the bar's own margin */
+  .uix-data-workspace > .uix-bulkbar + .uix-data-workspace__scope { margin-block-start: calc(-1 * (var(--uix-space-3) + var(--uix-space-2))); }
+  /* the bulk bar's count under "all matching" restates the filter: it wraps inside the bar
+     (.uix-bulkbar__count is nowrap for a plain "25 selected") */
+  .uix-data-workspace .uix-bulkbar__count:has(> .uix-data-workspace__bulk-scope) { min-width: 0; white-space: normal; }
+  .uix-data-workspace__bulk-scope { overflow-wrap: anywhere; }
+  .uix-data-workspace__scope-text { margin: 0; min-width: 0; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+  .uix-data-workspace__scope-actions { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: var(--uix-space-1) var(--uix-space-3); }
+  /* the bulk bar acts on the selection: a row's own verbs are off (inert) and look it */
+  .uix-data-workspace .uix-table__actions[data-uix-disabled] > * { opacity: .45; }
+  @media (forced-colors: active) { .uix-data-workspace .uix-table__actions[data-uix-disabled] > * { opacity: 1; color: GrayText; } }
+
   /* "Nothing matches" with the product's action beside Clear filters */
   .uix-data-workspace__state-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--uix-space-2); }
 
@@ -147,4 +168,7 @@
   .uix-data-workspace .uix-table--cards .uix-data-workspace__group-label { flex: 1 1 auto; }
   .uix-data-workspace .uix-table--cards .uix-data-workspace__group-title { position: static; }
   .uix-data-workspace .uix-table--cards .uix-data-workspace__group-agg:empty { display: none; }
+
+  /* DataWorkspace: the row's ⋯ button that opens its panel, after the row's own actions (getRowActions, spec Docs/specs/2026-11-20-action-panel.md) */
+  .uix-data-workspace__panel-trigger { flex: none; }
 }

@@ -460,7 +460,19 @@ export { DataWorkspace, DEFAULT_DATA_WORKSPACE_LABELS } from './components/DataW
 export type {
   DataWorkspaceProps, DataWorkspaceColumn, DataWorkspaceIdColumn, DataWorkspaceLabels, DataWorkspacePagination, DataWorkspaceSort,
   DataWorkspaceSortState, DataWorkspaceSortValue, DataWorkspaceGroup, DataWorkspaceVirtualize, DataWorkspaceRowActionsContext,
+  DataWorkspaceQuery, DataWorkspaceSelectionScope,
 } from './components/DataWorkspace.js';
+// Selection scope (roadmap #12): by id, or every record matching a query except some; plain JSON for a bulk endpoint
+export {
+  EMPTY_SELECTION_SCOPE, isInSelectionScope, isSelectionScopeEmpty, selectAllMatching, selectionQueryKey, selectionScopeCount,
+  selectionScopeMatcher, setInSelectionScope, toggleInSelectionScope,
+} from './selection-scope.js';
+export type { SelectionScope, SelectionScopeIds, SelectionScopeQuery } from './selection-scope.js';
+// The per-item action panel (roadmap #10): Enter runs the primary action, Mod+K lists every action with its keys.
+export { ActionPanel, ActionPanelScope, ACTION_PANEL_SHORTCUT_ID, DEFAULT_ACTION_PANEL_LABELS } from './components/ActionPanel.js';
+export type { ActionPanelProps, ActionPanelScopeProps, ActionPanelLabels } from './components/ActionPanel.js';
+export { groupActionPanelActions } from './action-panel-model.js';
+export type { ActionPanelAction, ActionPanelConfirm, ActionPanelGroup } from './action-panel-model.js';
 // Typed column filters (HAR-1365): FilterEditor content + a pure model for values and chip summaries
 export { FilterEditor, DEFAULT_FILTER_EDITOR_LABELS } from './components/FilterEditor.js';
 export type { FilterEditorProps, FilterEditorLabels } from './components/FilterEditor.js';
@@ -506,6 +518,17 @@ export type {
 // Items mode (HAR-1378): the palette filters, groups and runs commands itself
 export { filterCommandItems, groupCommandItems } from './command-palette-model.js';
 export type { CommandPaletteItem, CommandPaletteGroup } from './command-palette-model.js';
+// Roadmap #9: server sources, pages, aliases, context boost and frecency
+export type { CommandPalettePage, CommandPaletteSource } from './command-palette-model.js';
+export { rankCommandItems, commandFoldFor, defaultCommandFold, FRECENCY_WEIGHT } from './command-palette-rank.js';
+export type { RankedCommand, RankCommandOptions, CommandFold } from './command-palette-rank.js';
+export {
+  COMMAND_FRECENCY_STORAGE_KEY, COMMAND_FRECENCY_HALF_LIFE, COMMAND_FRECENCY_MAX_ENTRIES,
+  commandFrecencyScore, decayedFrecency, recordCommandUse, parseCommandFrecency, localCommandFrecencyStorage,
+} from './command-frecency.js';
+export type { CommandFrecencyEntry, CommandFrecencyEntries, CommandFrecencyStorage } from './command-frecency.js';
+export { useCommandFrecency } from './hooks/useCommandFrecency.js';
+export type { UseCommandFrecencyOptions, CommandFrecency } from './hooks/useCommandFrecency.js';
 
 // ITSM capability
 export { Inbox, InboxList, InboxItem, InboxDetail } from './components/Inbox.js';

@@ -52,6 +52,7 @@ import type { ShortcutLabels } from './components/ShortcutSheet.js';
 import type { ButtonResultLabels } from './components/ButtonFeedback.js';
 import type { AuditLogLabels } from './components/AuditLog.js';
 import type { DataWorkspaceLabels } from './components/DataWorkspace.js';
+import type { ActionPanelLabels } from './components/ActionPanel.js';
 import type { AiLabels } from './ai-labels.js';
 import type { UseTableLabels } from './hooks/useTable.js';
 import { countLabel } from './plural.js';
@@ -122,8 +123,13 @@ export interface UixLabels {
    * `resultsOne` / `resultsMany`: the polite result count; `{count}`. `resultsMany` also takes the
    * plural forms (`{ one, few, other }`) or a function of the count, and then `resultsOne` is not
    * read. Items mode (HAR-1378): `empty` when nothing matches, `recent` the heading of the recent items.
+   * Sources and pages (roadmap #9): `loading` and `failed` name a source's rows (`{source}`),
+   * `retry` its button, `breadcrumb` the trail of pages.
    */
-  commandPalette?: { input?: string; resultsOne?: string; resultsMany?: UixCountLabel; empty?: string; recent?: string };
+  commandPalette?: {
+    input?: string; resultsOne?: string; resultsMany?: UixCountLabel; empty?: string; recent?: string;
+    loading?: string; failed?: string; retry?: string; breadcrumb?: string;
+  };
   /** `QrCode` (HAR-1251): the text shown when the value is too long for a QR code. */
   qrCode?: Partial<QrCodeLabels>;
   /** `CodeDisplay` (HAR-1253): the countdown, the expiry announcements, the copy button's words. */
@@ -172,6 +178,8 @@ export interface UixLabels {
   ai?: Partial<AiLabels>;
   /** `DataWorkspace` (HAR-1388): the toolbar, selection, footer and states. */
   dataWorkspace?: Partial<DataWorkspaceLabels>;
+  /** `ActionPanel` (roadmap #10): the panel's title and search, the item's Mod+K, the confirm step. */
+  actionPanel?: Partial<ActionPanelLabels>;
   filterEditor?: Partial<FilterEditorLabels>;
   /**
    * `summarizeFilter` as a filter chip shows it (DataWorkspace): the operators, ranges and the
