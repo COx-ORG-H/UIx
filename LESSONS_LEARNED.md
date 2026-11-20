@@ -2,6 +2,7 @@
 
 <!-- lesson-skip: 33e42718 routine: the target-size ratchet named the undersized mark and the catalogue link; the contrast flake is the known settle-before-axe pattern (task-tray.spec waits 400 ms) -->
 <!-- lesson-skip: ac833023 routine review fixes on unreleased AI primitives (URL scheme allow-list reuses url-policy, prototype-key fallback, effect order, stale state), each named by Qodo and pinned by jsdom or Chromium tests -->
+<!-- lesson-skip: fba14325 routine: a baseline left stale by two PRs merging in the wrong order (#308 then #303); the entry-size gate named it -->
 <!-- lesson-skip: 526b38f1 routine review fix from Qodo on #303 (a US-only physical-key fallback gated on the browser's layout map), pinned by matcher tests; the size gate named the baseline -->
 <!-- lesson-skip: 4a8bdc29 routine review fix from Qodo on #303 (shifted punctuation in the Alt physical-key fallback), pinned by matcher tests -->
 <!-- lesson-skip: 60f840c5 routine review fix from Qodo on #303 (a scoped command's hint resolved against focus or its own control), pinned by a jsdom test -->
