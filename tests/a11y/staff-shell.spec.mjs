@@ -11,7 +11,7 @@
  *   - axe is clean.
  * Harness: tests/staff-shell/harness.tsx. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/staff-shell/harness.html';
 

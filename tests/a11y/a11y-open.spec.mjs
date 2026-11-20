@@ -6,7 +6,7 @@
  * spot. Same bar as the base gate: serious/critical WCAG 2.1 A/AA violations fail.
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { settleAnimations } from './settle.mjs';
 
 const GATED = new Set(['serious', 'critical']);

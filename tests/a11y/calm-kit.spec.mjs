@@ -10,7 +10,7 @@
  * The token values are pinned in packages/tokens/tests/calm-kit.test.mjs. Screenshots at four
  * widths are attached to the report (calm-<width>-<theme>.png). */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 

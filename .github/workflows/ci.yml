@@ -203,7 +203,11 @@ jobs:
     # container needed, unlike VR).
     runs-on: ubuntu-latest
     steps:
+      # depth 2: on a pull_request the checkout is GitHub's merge commit, and HEAD^1 (master's tip)
+      # is what "the specs this PR adds or changes" is measured against (the repeat step below)
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - uses: actions/setup-node@v4
         with:
@@ -238,6 +242,25 @@ jobs:
 
       - name: Accessibility (axe)
         run: npm run test:a11y
+
+      # A test that failed and then passed on its retry is green but racy: name each one on the run.
+      - name: Report tests that passed only on retry
+        if: ${{ !cancelled() }}
+        run: node tests/report-flaky.mjs test-results/playwright-results.json
+
+      # A new or changed spec runs 5 more times with no retry, so a race shows up in its own PR
+      # instead of in the next PR that happens to be unlucky. Skipped on the merge queue (the PR
+      # already did it) and when a PR touches more than 10 specs (a mechanical sweep).
+      - name: Repeat new and changed specs (flake check)
+        if: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        run: |
+          specs=$(git diff --name-only --diff-filter=AM HEAD^1 HEAD -- 'tests/a11y/*.spec.mjs')
+          count=$(printf '%s' "$specs" | grep -c . || true)
+          if [ "$count" -eq 0 ]; then echo "no new or changed specs"; exit 0; fi
+          if [ "$count" -gt 10 ]; then echo "::notice::$count specs changed; skipping the 5x repeat (a sweep, not new tests)"; exit 0; fi
+          echo "repeating $count spec(s) 5x:"; echo "$specs"
+          npx playwright test $specs --project=light --repeat-each=5 --retries=0 --reporter=list
 
       - name: Component documentation coverage and interactions
         run: |

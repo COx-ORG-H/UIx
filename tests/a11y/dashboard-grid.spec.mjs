@@ -9,7 +9,7 @@
  *   - widgets in one row share a height; axe in both themes.
  * The class contract itself is in packages/react/src/dashboard-grid-dom.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/dashboard-grid/harness.html';
 const GATED = new Set(['serious', 'critical']);

@@ -6,7 +6,7 @@
  * (Playwright's default), so a template names what must be there and in what order.
  * Harness: tests/at-evidence/harness.tsx (English kit defaults, StrictMode). */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/at-evidence/harness.html';
 const GATED = new Set(['serious', 'critical']);

@@ -5,7 +5,7 @@
  * values resolve to sRGB), composites the backgrounds up the tree, and needs 4.5:1 for preset
  * and option text in both themes at 320 px. Behaviour is in packages/react/src/filter-presets-dom.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { settleAnimations } from './settle.mjs';
 
 const ROUTE = 'docs/explorer.html#examples-data-display';
