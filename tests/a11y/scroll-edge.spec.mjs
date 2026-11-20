@@ -76,6 +76,18 @@ test.describe('scroll edges without a motion preference', () => {
     }
   });
 
+  test('the table edge takes no room, and only a header row pinned at the top gets one', async ({ page }, testInfo) => {
+    await open(page, testInfo);
+    // a wrap that fits is exactly as tall as its table: the divider's box gives back its own height
+    const fit = await page.locator('#table-short').evaluate((w) => [w.scrollHeight, w.querySelector('table').offsetHeight]);
+    expect(fit[0]).toBe(fit[1]);
+    test.skip(!(await timelines(page)), 'no divider without scroll timelines');
+    const read = (id) => page.locator(id).evaluate((w) => { w.scrollTop = 60; return { content: getComputedStyle(w, '::before').content, padTop: getComputedStyle(w).scrollPaddingTop }; });
+    expect(await read('#table-headless'), 'no <thead>: no divider, nothing to clear').toEqual({ content: 'none', padTop: '0px' });
+    expect((await read('#table-caption')).content, 'a caption above the header: no divider').toBe('none');
+    expect((await read('#table')).padTop, 'a pinned header: rows stop below it').toBe('44px');
+  });
+
   test('without scroll timelines every edge is the static one', async ({ page }, testInfo) => {
     await open(page, testInfo);
     test.skip(await timelines(page), 'this engine runs scroll timelines');

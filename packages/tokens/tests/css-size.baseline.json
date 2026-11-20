@@ -587,9 +587,9 @@
       "brotli": 3085
     },
     "styles/scroll-edge.css": {
-      "raw": 9325,
-      "gzip": 2954,
-      "brotli": 2517
+      "raw": 10101,
+      "gzip": 3201,
+      "brotli": 2741
     },
     "styles/utilities.css": {
       "raw": 1310,

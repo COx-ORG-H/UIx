@@ -44,10 +44,12 @@
     scroll-padding-block: var(--uix-scroll-edge-start) var(--uix-scroll-edge-end);
   }
   /* A scroller with its own sticky header has a hard top edge: the header is the edge. The table
-     wrap's rows also stop below its 44 px header when the keyboard brings one into view, not
-     under it. */
+     wrap's rows also stop below its header when the keyboard brings one into view, not under it.
+     The header's height is --uix-table-head-h (44 px; table.css sizes the header cells with it):
+     set it on the wrap or above to change both. A table with no <thead> has nothing to clear. */
   :where(.uix-scroll-edge--hard, .uix-table-wrap) { --uix-scroll-edge-start: 0px; }
-  :where(.uix-table-wrap) { --uix-scroll-edge-head: 44px; scroll-padding-block: var(--uix-scroll-edge-head) var(--uix-scroll-edge-end); }
+  :where(.uix-table-wrap) { --uix-scroll-edge-head: var(--uix-table-head-h, 44px); scroll-padding-block: var(--uix-scroll-edge-head) var(--uix-scroll-edge-end); }
+  :where(.uix-table-wrap:not(:has(> .uix-table > thead))) { --uix-scroll-edge-head: 0px; }
   /* the divider a sticky header gains once content is under it: firmer than the hairline */
   :where(.uix-scroll-edge-head, .uix-table-wrap) {
     --uix-scroll-edge-line: var(--uix-border-strong);
@@ -88,7 +90,7 @@
          an inactive timeline and shows nothing. */
       :root:not([data-motion="reduce"]) :where(.uix-scroll-edge-head)::after,
       :root:not([data-motion="reduce"]) :where(.uix-table-wrap)::before {
-        content: ""; pointer-events: none;
+        content: ""; pointer-events: none; box-sizing: border-box;
         border-top: 1px solid var(--uix-scroll-edge-line);
         background: linear-gradient(var(--uix-scroll-edge-shade), transparent);
         opacity: 0;
@@ -101,10 +103,14 @@
       }
       :root:not([data-motion="reduce"]) :where(.uix-table-wrap)::before {
         display: block; position: sticky; top: calc(var(--uix-scroll-edge-head) - 1px); left: 0; z-index: calc(var(--uix-z-sticky) + var(--uix-z-raised));
-        height: var(--uix-scroll-edge-shade-size); margin-bottom: calc(-1 * var(--uix-scroll-edge-shade-size) - 1px);
+        /* border-box: the 1 px line is inside the height, so the margin takes back exactly what the
+           box adds and the wrap keeps its height */
+        height: var(--uix-scroll-edge-shade-size); margin-bottom: calc(-1 * var(--uix-scroll-edge-shade-size));
       }
-      /* a card-mode table has no header row to put an edge under */
-      :root:not([data-motion="reduce"]) :where(.uix-table-wrap:has(> .uix-table--cards))::before { content: none; }
+      /* No edge where the header is not a row pinned at the top of the wrap: a card-mode table, a
+         table with no <thead>, and one with a <caption> above its header (the header only pins
+         once the caption has scrolled away, so a divider tied to the first pixels would cross it). */
+      :root:not([data-motion="reduce"]) :where(.uix-table-wrap:is(:has(> .uix-table--cards), :not(:has(> .uix-table > thead)), :has(> .uix-table > caption)))::before { content: none; }
     }
   }
 

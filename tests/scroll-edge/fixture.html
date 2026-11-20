@@ -63,6 +63,25 @@
         </table>
       </div>
     </section>
+    <section>
+      <h2>A table that fits (the edge takes no room)</h2>
+      <div class="uix-table-wrap" id="table-short">
+        <table class="uix-table"><thead><tr><th scope="col">ID</th><th scope="col">State</th></tr></thead>
+          <tbody><tr><td>INC-1</td><td>Open</td></tr><tr><td>INC-2</td><td>Open</td></tr></tbody></table>
+      </div>
+    </section>
+    <section>
+      <h2>A scrolling table with no header</h2>
+      <div class="uix-table-wrap uix-table-wrap--scroll" id="table-headless" style="--uix-table-max-height: 10rem">
+        <table class="uix-table"><tbody id="rows-headless"></tbody></table>
+      </div>
+    </section>
+    <section>
+      <h2>A scrolling table with a caption</h2>
+      <div class="uix-table-wrap uix-table-wrap--scroll" id="table-caption" style="--uix-table-max-height: 12rem">
+        <table class="uix-table"><caption>Open incidents</caption><thead><tr><th scope="col">ID</th><th scope="col">State</th></tr></thead><tbody id="rows-caption"></tbody></table>
+      </div>
+    </section>
   </main>
   <script>
     const words = ['Disk pressure on db-03', 'Login latency above SLO', 'Certificate renewal due', 'Queue backlog on billing', 'Packet loss in fra-2', 'Backup job exceeded window'];
@@ -71,6 +90,8 @@
     fill('drawer-body', 12, (i) => `<p>Note ${i + 1}: ${words[i % words.length]}. The on-call engineer checked the dashboards and left the next step for the morning shift.</p>`);
     fill('menu', 16, (i) => `<div class="uix-listbox__option" role="option" aria-selected="false">${words[i % words.length]}</div>`);
     fill('headed', 24, (i) => `<p>Ticket ${i + 1} · ${words[i % words.length]}</p>`);
+    fill('rows-headless', 12, (i) => `<tr><td>INC-${3000 + i}</td><td>Open</td></tr>`);
+    fill('rows-caption', 12, (i) => `<tr><td>INC-${4000 + i}</td><td>Open</td></tr>`);
     fill('rows', 40, (i) => `<tr><td>INC-${2000 + i}</td><td>${words[i % words.length]}</td><td>Open</td><td>Alex Morgan</td><td>${(i % 12) + 1} min ago</td><td>eu-central</td><td>payments-api</td></tr>`);
   </script>
 </body>
