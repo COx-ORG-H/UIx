@@ -2,6 +2,7 @@
 
 <!-- lesson-skip: 33e42718 routine: the target-size ratchet named the undersized mark and the catalogue link; the contrast flake is the known settle-before-axe pattern (task-tray.spec waits 400 ms) -->
 <!-- lesson-skip: ac833023 routine review fixes on unreleased AI primitives (URL scheme allow-list reuses url-policy, prototype-key fallback, effect order, stale state), each named by Qodo and pinned by jsdom or Chromium tests -->
+<!-- lesson-skip: d097584f routine: a Card and a horizontal Step title had no overflow-wrap, so a long compound pushed the header action out and painted over the next step; same rule as the page-header title (overflow-wrap: anywhere; hyphens: auto), now held by the pseudo-locale lane -->
 <!-- lesson-skip: fba14325 routine: a baseline left stale by two PRs merging in the wrong order (#308 then #303); the entry-size gate named it -->
 <!-- lesson-skip: 526b38f1 routine review fix from Qodo on #303 (a US-only physical-key fallback gated on the browser's layout map), pinned by matcher tests; the size gate named the baseline -->
 <!-- lesson-skip: 4a8bdc29 routine review fix from Qodo on #303 (shifted punctuation in the Alt physical-key fallback), pinned by matcher tests -->
