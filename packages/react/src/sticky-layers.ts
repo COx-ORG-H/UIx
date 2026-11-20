@@ -6,7 +6,10 @@
  * a ResizeObserver: `--uix-sticky-top` (how far fixed top layers reach down from the viewport's top
  * edge) and `--uix-sticky-bottom` (how far fixed bottom layers reach up from its bottom edge). The
  * stylesheet turns them into `scroll-padding` on the page's scrollers, so the browser stops a
- * focused element clear of the layers (base.css, app-shell.css).
+ * focused element clear of the layers (base.css, app-shell.css). `scroll-padding` adds no scroll
+ * range, so while a bottom layer is up (`data-uix-sticky-bottom` on `<html>`) the stylesheet also
+ * adds room after the page's last content as tall as the layers' reach: the last row can scroll
+ * clear of a toast too.
  *
  * CSS cannot help a scroller that ends under a layer when the page around it cannot scroll any
  * further (a 640 px table at the bottom of the window, a toast over its last rows). While any layer
@@ -39,6 +42,8 @@ const listeners = (registry.listeners ??= new Set());
 export const STICKY_TOP_PROPERTY = '--uix-sticky-top';
 /** The CSS custom property for how far fixed bottom layers reach up, written on `<html>`. */
 export const STICKY_BOTTOM_PROPERTY = '--uix-sticky-bottom';
+/** Set on `<html>` while a bottom layer reaches over the viewport; the stylesheet adds trailing room under it. */
+const STICKY_BOTTOM_ATTRIBUTE = 'data-uix-sticky-bottom';
 
 const viewportHeight = (doc: Document) => doc.documentElement.clientHeight || doc.defaultView?.innerHeight || 0;
 
@@ -83,6 +88,9 @@ function write() {
   }
   if (next.bottom !== registry.written.bottom) {
     if (next.bottom) root.setProperty(STICKY_BOTTOM_PROPERTY, `${next.bottom}px`); else root.removeProperty(STICKY_BOTTOM_PROPERTY);
+    // the stylesheet's trailing room after the page's and the kit scrollers' last content exists only
+    // while this is set (scroll-padding adds no scroll range; base.css)
+    document.documentElement.toggleAttribute(STICKY_BOTTOM_ATTRIBUTE, next.bottom > 0);
   }
   if (next.top === registry.written.top && next.bottom === registry.written.bottom) return;
   registry.written = next;

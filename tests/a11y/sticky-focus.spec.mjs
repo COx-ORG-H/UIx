@@ -119,6 +119,8 @@ async function tabThrough(page) {
 
 for (const scene of ['page', 'shell']) {
   test(`${scene}: Tab through every control of a 60-row workspace; nothing that takes focus is under the header, the bulk bar, the toasts or the task tray`, async ({ page }, testInfo) => {
+    // some 240 Tab stops, each hit-tested two frames later: WebKit on a CI runner needs more than 30 s
+    testInfo.setTimeout(120_000);
     await open(page, testInfo, `scene=${scene}`);
     await expect(page.getByRole('toolbar', { name: /bulk/i })).toBeVisible();
     await layersUp(page);
@@ -178,17 +180,21 @@ test('the offsets follow the layers: none without toasts or a tray, the stack an
   const read = () => page.evaluate(() => ({
     bottom: getComputedStyle(document.documentElement).getPropertyValue('--uix-sticky-bottom').trim(),
     padding: getComputedStyle(document.documentElement).scrollPaddingBottom,
+    // the room after the page's content (scroll-padding adds no scroll range)
+    room: document.documentElement.hasAttribute('data-uix-sticky-bottom') ? getComputedStyle(document.body, '::after').blockSize : null,
   }));
-  expect(await read()).toEqual({ bottom: '', padding: '0px' });
+  expect(await read()).toEqual({ bottom: '', padding: '0px', room: null });
   await page.evaluate(() => window.__uix.toast.info('One toast', { duration: null }));
   await expect(page.locator('.uix-toaster > [data-toast-id]')).toHaveCount(1);
   await expect.poll(async () => parseFloat((await read()).bottom) || 0).toBeGreaterThan(40);
-  const { bottom, padding } = await read();
+  const { bottom, padding, room } = await read();
   expect(padding).toBe(bottom);
+  expect(room).toBe(bottom);
   // the stack's own reach: the viewport's bottom edge to the toast's top
   const reach = await page.evaluate(() => Math.ceil(document.documentElement.clientHeight - document.querySelector('.uix-toaster').getBoundingClientRect().top));
   expect(parseFloat(bottom)).toBe(reach);
   await page.evaluate(() => window.__uix.toast.dismiss());
   await expect(page.locator('.uix-toaster > [data-toast-id]')).toHaveCount(0);
   await expect.poll(async () => (await read()).bottom).toBe('');
+  expect((await read()).room).toBeNull();
 });

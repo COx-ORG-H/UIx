@@ -60,6 +60,8 @@ test('a fixed bottom layer writes how far it reaches up; a top layer how far dow
   const offHeader = ui.registerStickyLayer(header.el, 'top');
   assert.equal(property(ui.STICKY_BOTTOM_PROPERTY), '216px');
   assert.equal(property(ui.STICKY_TOP_PROPERTY), '56px');
+  // the stylesheet's trailing room hangs off this while a bottom layer is up
+  assert.equal(document.documentElement.hasAttribute('data-uix-sticky-bottom'), true);
   assert.deepEqual(ui.stickyInsets(document), { top: 56, bottom: 216 });
 
   // the stack grows (a third toast): the observer measures it at the next frame
@@ -71,6 +73,7 @@ test('a fixed bottom layer writes how far it reaches up; a top layer how far dow
 
   offToaster();
   assert.equal(property(ui.STICKY_BOTTOM_PROPERTY), '');
+  assert.equal(document.documentElement.hasAttribute('data-uix-sticky-bottom'), false);
   offHeader();
   assert.equal(property(ui.STICKY_TOP_PROPERTY), '');
   toaster.el.remove();
