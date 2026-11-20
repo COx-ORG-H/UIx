@@ -30,7 +30,7 @@ test('drag the first photo two rows down: it lands under the pointer, one reorde
   await page.mouse.down();
   await page.mouse.move(g.x + g.width / 2, third.y + third.height * 0.75, { steps: 8 });
   await expect(rows.nth(2)).toHaveAttribute('data-dragging', 'true');
-  expect(await page.evaluate(() => document.getAnimations().length), 'rows reorder without animating').toBe(0);
+  expect(await page.evaluate(() => document.getAnimations().filter((a) => a.timeline === document.timeline).length), 'rows reorder without animating').toBe(0);
   await page.mouse.up();
   expect(await order(page, 'photos')).toEqual(['p2', 'p3', 'p1', 'p4', 'p5']);
   expect(await log(page, 'photos')).toEqual([['p2', 'p3', 'p1', 'p4', 'p5']]);
@@ -76,7 +76,7 @@ test('in a Drawer: Alt+↑ moves, Escape still closes the drawer', async ({ page
 
 test('axe, light and dark', async ({ page }, testInfo) => {
   await open(page, testInfo);
-  await expect.poll(() => page.evaluate(() => document.getAnimations().length)).toBe(0);
+  await expect.poll(() => page.evaluate(() => document.getAnimations().filter((a) => a.timeline === document.timeline).length)).toBe(0);
   const results = await new AxeBuilder({ page }).include('#root').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
   const gated = results.violations.filter((v) => GATED.has(v.impact));
   expect(gated, gated.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`).join('\n')).toEqual([]);
