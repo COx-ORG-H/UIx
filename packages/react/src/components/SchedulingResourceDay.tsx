@@ -87,11 +87,13 @@ interface ColumnProps {
  *  same time (a double booking) are two stops, and only one of them is current. */
 const stopKey = (column: number, item: ResourceDayItem) => `${column}:${item.key}`;
 
-function itemName(resource: SchedulingResource, item: ResourceDayItem, timeZone: string, labels: SchedulingResourceLabels) {
+/** `shown` is what a booking chip shows ("09:00 Lejla M."): it is the `{label}` of the name, so a voice
+ *  command made of the words on screen finds the chip (WCAG 2.5.3, label in name). */
+function itemName(resource: SchedulingResource, item: ResourceDayItem, timeZone: string, labels: SchedulingResourceLabels, shown?: string) {
   if (item.span.accessibleName && item.kind !== 'free') return item.span.accessibleName;
   const name = fillLabel(labels.slotName, {
     resource: resource.label, start: zonedTimeOfDay(item.start, timeZone), end: zonedTimeOfDay(item.end, timeZone),
-    kind: labels.availability[item.kind], label: item.span.label ?? '',
+    kind: labels.availability[item.kind], label: shown ?? item.span.label ?? '',
   });
   // An empty `{label}` leaves no dangling comma.
   return name.replace(/,\s*$/, '').replace(/,\s*,/g, ',');
@@ -118,7 +120,7 @@ const Column = memo(function Column({ index, resource, items, slots, timeZone, l
         'data-rs-start': item.start,
         'data-selected': selected || undefined,
         'aria-current': selected ? ('true' as const) : undefined,
-        'aria-label': itemName(resource, item, timeZone, labels),
+        'aria-label': itemName(resource, item, timeZone, labels, item.kind === 'free' ? undefined : `${time} ${item.span.label ?? labels.availability.booked}`),
         onClick: () => onSelect(resource, item),
       };
       // A slot of free time is open paper: no box, no words, until it is hovered or focused,

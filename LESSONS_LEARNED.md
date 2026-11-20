@@ -2,6 +2,7 @@
 
 <!-- lesson-skip: 37c6e9e2 same trap as the b6d558eb entry (scroll-padding adds no scroll range; the end of a scroller needs room), now for the page and the shell main; pinned by the sticky-focus spec -->
 <!-- lesson-skip: ea12d0c2 routine: the contract gate named two 0px fallbacks; a hit-test grid sampled a rounded button's corners (calibration of this PR's own new spec) -->
+<!-- lesson-skip: 7589b7cb routine: the new label-in-name and forced-colors lanes named each case on first run; the gate is tests/a11y/label-in-name.spec.mjs and forced-colors.lane.spec.mjs -->
 <!-- lesson-skip: ddba5324 routine: a scripted edit without an assertion did not apply, and the merge resolution assumed it had; the dts build named it -->
 <!-- lesson-skip: 9f537ee4 routine: an empty flex item centred in a box a parent stretched; found by looking at the harness shot, the mark now sits on the text baseline -->
 <!-- lesson-skip: 17320c27 routine review fixes on unreleased form-errors code (server refusals on resubmit, announcement regions, title ownership, leave-attempt policy, prototype-safe key-path merge); each pinned by a jsdom test -->
@@ -125,6 +126,9 @@
 
 ### 2026-11-20 · focus not obscured at the end of a scroller · `b6d558eb`
 - **Rule:** `scroll-padding` (WCAG technique C43) only moves where a scroll stops inside the existing range; it never adds room. The last item of a scroller already at its end stays under a fixed layer (toasts, a tray) unless the scroller gets trailing space as tall as the layer's reach. Check it with a hit-test that wants every point of a full-width row, not "partly visible": a row is wider than any toast and always passes that.  **Why:** the windowed DataWorkspace's End row sat under the tray in all three engines while every other row was clear.  **Gate:** `tests/a11y/sticky-focus.spec.mjs` virtual case (End, C43 check; select-cross-browser).  **Tag:** a11y, wcag-2.4.11, scroll-padding, virtualization
+
+### 2026-11-20 · screenshots of scroll-driven effects · `86b3f381`
+- **Rule:** never pass `animations: 'disabled'` to a Playwright screenshot of anything drawn by a scroll-timeline animation (a revealed divider, a scroll fade); it resets the animation to its start, so the pixels show the unscrolled state. Scroll, wait two frames, shoot without it.  **Why:** Playwright finishes or cancels every CSS animation for the shot, scroll-driven ones included; the forced-colours lane read a drawn divider as missing.  **Gate:** `tests/a11y/forced-colors.lane.spec.mjs` (pinned header) shoots without it; ⚠ TODO no lint for the option on scroll-timeline subjects.  **Tag:** false-red, motion, test-double-fidelity
 
 ### 2026-11-20 · a timing budget taken on one hosted runner · `f509fa08`
 - **Rule:** never gate a browser benchmark on raw milliseconds from one GitHub-hosted runner; time a fixed calibration (script and DOM work, no code under test) in the same throttled page and divide by the runner's speed before comparing.  **Why:** two `ubuntu-latest` runs of the same commit read 1.4× apart on every metric (sort 168 vs 256 ms) with a tight spread inside each run, so a +50% budget failed on hardware.  **Gate:** `tests/perf/stats.test.mjs` (judge scales by calibration; a normalized lane with no calibration baseline fails).  **Tag:** perf, ci, hosted-runner, false-red
@@ -406,3 +410,6 @@ missing or blank.
 <!-- lesson-skip: 6a8ed528 routine: two table variants (card mode, bottom caption) missed by the edge exceptions; found in review -->
 
 <!-- lesson-skip: 488ac745 routine: out-of-scope docs helper (the ReferenceError named it) plus a spec repair; docs.test.js now renders the Toast page -->
+
+<!-- lesson-records: Docs/lesson-records -->
+<!-- Frozen for new skip and record lines (2026-11-20): every PR that added its lesson-skip line at the top of this file conflicted with every other open PR that did. The lesson-capture hook now asks for one new file per decision in Docs/lesson-records/ (skip-<sha>.md, or <date>-<slug>.md for a rule). The entries above stay as they are. -->

@@ -175,13 +175,14 @@ test('Tree: each treeitem is named by its own row, not by its expanded subtree',
   await open(page, testInfo);
   const tree = page.getByRole('tree', { name: 'Organigramm' });
   const items = tree.getByRole('treeitem');
-  const expected = ['Grace Hopper', 'Alice Lovelace', 'Bob Builder', 'Cleo Ruiz', 'Mira Kovač', 'Jan Novak', 'Ana Petrović'];
+  const expected = ['Grace Hopper', 'Alice Lovelace', 'Bob Builder', 'Cleo Ruiz', 'Mira Kovač, Leitung Netzwerk, 2 Berichte', 'Jan Novak', 'Ana Petrović'];
   await expect(items).toHaveCount(expected.length);
   for (const [i, name] of expected.entries()) await expect(items.nth(i)).toHaveAccessibleName(name);
   await expect(tree.getByRole('treeitem', { name: 'Grace Hopper', exact: true })).toHaveAttribute('aria-expanded', 'true');
   await expect(tree.getByRole('treeitem', { name: /Alice Lovelace/ }), 'only Alice matches, not her manager').toHaveCount(1);
   await expect(tree.getByRole('treeitem', { name: /Cleo/ })).toHaveCount(1);
-  await expect(tree.getByRole('treeitem', { name: 'Mira Kovač', exact: true }), 'the rich row is named by ariaLabel').toHaveCount(1);
+  // ariaLabel leaves out the avatar but says every word the row shows (WCAG 2.5.3, tests/a11y/label-in-name.spec.mjs)
+  await expect(tree.getByRole('treeitem', { name: 'Mira Kovač, Leitung Netzwerk, 2 Berichte', exact: true }), 'the rich row is named by ariaLabel').toHaveCount(1);
   // Each level is indented past its parent (the `.uix-tree ul` reset used to win: every row at x 0).
   const lefts = await tree.locator('.uix-tree__label').evaluateAll((labels) => labels.map((l) => Math.round(l.getBoundingClientRect().left)));
   const [grace, alice, bob, cleo, mira] = lefts;

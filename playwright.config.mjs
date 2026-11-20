@@ -20,6 +20,22 @@ export const CROSS_BROWSER_SPECS = ['select', 'stat-row', 'description-list', 'd
 const CROSS_BROWSER_MATCH = new RegExp(String.raw`[\\/](${CROSS_BROWSER_SPECS.join('|')})\.spec\.mjs$`);
 const BASE = `http://localhost:${PORT}/packages/tokens/`;
 
+/**
+ * The accessibility lanes (roadmap #18): user settings a page cannot see, emulated in Chromium.
+ * Each lane runs only its *.lane.spec.mjs file; light and dark never run a lane file.
+ *   forced-colors  a Windows contrast theme (tests/a11y/forced-colors.lane.spec.mjs)
+ *   text-spacing   the WCAG 1.4.12 values on every element (tests/a11y/text-settings.lane.spec.mjs)
+ *   font-20/24     the browser's default font size at 20 and 24 px (the same file)
+ */
+const LANE_FILE = /\.lane\.spec\.mjs$/;
+const TEXT_SETTINGS = /[\\/]text-settings\.lane\.spec\.mjs$/;
+export const A11Y_LANES = [
+  { name: 'forced-colors', testMatch: /[\\/]forced-colors\.lane\.spec\.mjs$/, use: { browserName: 'chromium', colorScheme: 'dark', forcedColors: 'active' } },
+  { name: 'text-spacing', testMatch: TEXT_SETTINGS, metadata: { textSpacing: true }, use: { browserName: 'chromium', colorScheme: 'light' } },
+  { name: 'font-20', testMatch: TEXT_SETTINGS, metadata: { defaultFontSize: 20 }, use: { browserName: 'chromium', colorScheme: 'light' } },
+  { name: 'font-24', testMatch: TEXT_SETTINGS, metadata: { defaultFontSize: 24 }, use: { browserName: 'chromium', colorScheme: 'light' } },
+];
+
 export default defineConfig({
   // covers tests/visual (VR) + tests/a11y (axe); the scripts filter by subdir. The
   // smoke-consumer fixtures aren't *.spec.* so they're never picked up.
@@ -45,8 +61,9 @@ export default defineConfig({
     deviceScaleFactor: 1,
   },
   projects: [
-    { name: 'light', use: { browserName: 'chromium', colorScheme: 'light' } },
-    { name: 'dark', use: { browserName: 'chromium', colorScheme: 'dark' } },
+    { name: 'light', testIgnore: LANE_FILE, use: { browserName: 'chromium', colorScheme: 'light' } },
+    { name: 'dark', testIgnore: LANE_FILE, use: { browserName: 'chromium', colorScheme: 'dark' } },
+    ...A11Y_LANES,
     // Cross-engine keyboard/focus/placement for the Select listbox (HAR-1572), the stat tiles of
     // one stretched row (HAR-1753: a <button> as a flex container), and the four 2.42.0 kit
     // changes (HAR-2417: the description list's container query, the discard step's focus and

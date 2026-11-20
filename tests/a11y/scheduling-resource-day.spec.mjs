@@ -59,7 +59,8 @@ test('truthful: no free slot where no schedule exists; off and booked are words'
   expect(firstFree).toMatch(/, 10:00 – 10:15, Slobodno$/);
   await expect(third.locator('[data-kind="off"]')).toContainText('Pauza');
   const booked = page.locator('.uix-scheduling-calendar__rs-column').first().locator('[data-kind="booked"]').first();
-  await expect(booked).toHaveAttribute('aria-label', 'dr. Amra Hadžić, 09:00 – 09:30, Zauzeto, Lejla M.');
+  // The chip shows "09:00 Lejla M.", so those words are the {label} of its name (WCAG 2.5.3, label in name).
+  await expect(booked).toHaveAttribute('aria-label', 'dr. Amra Hadžić, 09:00 – 09:30, Zauzeto, 09:00 Lejla M.');
 });
 
 test('the gutter and the heads stay in view while the grid scrolls', async ({ page }, testInfo) => {

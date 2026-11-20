@@ -94,7 +94,7 @@ const ORG = [
     ],
   },
   {
-    id: 'mira', ariaLabel: 'Mira Kovač',
+    id: 'mira', ariaLabel: 'Mira Kovač, Leitung Netzwerk, 2 Berichte',
     label: <span>Mira Kovač <small style={{ color: 'var(--uix-text-hushed)' }}>Leitung Netzwerk · 2 Berichte</small></span>,
     children: [{ id: 'jan', label: 'Jan Novak' }, { id: 'ana', label: 'Ana Petrović' }],
   },

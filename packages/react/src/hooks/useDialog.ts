@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useLayoutEffect } from 'react';
+import { useRef, useEffect, useLayoutEffect, useState, useCallback } from 'react';
 import { markKeyOpened, watchInputModality } from '../motion.js';
 import { registerModalLayer } from './dialog-layer.js';
 
@@ -58,7 +58,22 @@ function unlockBodyScroll() {
  * a passive cleanup ran after the element was removed, and focus fell to `<body>`.
  */
 export function useDialog(open: boolean, onClose?: () => void, keepOpen?: () => boolean): React.RefObject<HTMLDialogElement> {
+  return useDialogSync(open, onClose, keepOpen).ref;
+}
+
+/**
+ * useDialog plus `resync`: apply `open` to the native dialog again on the next commit, even when
+ * `open` itself did not change. For a toggle that reads the dialog's real state (CommandPalette's
+ * open key): after Escape the dialog is closed natively and its queued `close` event has asked
+ * for `false`, but React has not rendered it yet. Asking for `true` then batches with that `false`
+ * into an unchanged `open`, the effect below would not re-run, and the dialog would stay closed
+ * while React holds it open. `resync` re-runs it, so the dialog is shown again the ordinary way:
+ * scroll lock, modal layer and the stale-close guard included. Internal: not exported from the kit.
+ */
+export function useDialogSync(open: boolean, onClose?: () => void, keepOpen?: () => boolean): { ref: React.RefObject<HTMLDialogElement>; resync: () => void } {
   const ref = useRef<HTMLDialogElement>(null);
+  const [sync, setSync] = useState(0);
+  const resync = useCallback(() => setSync((n) => n + 1), []);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
   const keepOpenRef = useRef(keepOpen);
@@ -109,7 +124,8 @@ export function useDialog(open: boolean, onClose?: () => void, keepOpen?: () => 
       if (locked) { locked = false; unlockBodyScroll(); }
       if (el.open) el.close();
     };
-  }, [open]);
+    // `sync` is resync's signal: no value is read, the effect re-runs to match `open` again.
+  }, [open, sync]);
 
-  return ref;
+  return { ref, resync };
 }

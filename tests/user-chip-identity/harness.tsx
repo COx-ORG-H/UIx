@@ -11,7 +11,7 @@ function Example() {
     <div className="identity-row" data-constrained>
       <UserChip style={{ maxWidth: '100%' }} title={name} avatar={<Avatar size={28}>AM</Avatar>}
         name={<span data-identity-name>{name}</span>} sub={<span data-identity-sub>{sub}</span>}>
-        <Button size="sm" onClick={() => setOpened(true)} aria-label="Profildetails öffnen">Profil</Button>
+        <Button size="sm" onClick={() => setOpened(true)} aria-label="Profil öffnen">Profil</Button>
       </UserChip>
     </div>
     <div data-short><UserChip avatar={<Avatar size={28}>AM</Avatar>} name="Anne Müller" sub="Service-Desk" /></div>

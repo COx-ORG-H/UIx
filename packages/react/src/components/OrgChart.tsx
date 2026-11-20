@@ -275,7 +275,8 @@ function OrgChartItem({ node, level, size, pos, ctx }: { node: OrgChartNode; lev
       {/* The card is the click target, not the item: the item also holds the subtree, and a
           press in the space between someone's reports must not open that manager. */}
       <div className="uix-org-chart__node" onClick={() => ctx.onActivate(node.id)}>
-        <Avatar size="lg" src={node.photo}>{node.initials ?? orgChartInitials(node.name)}</Avatar>
+        {/* the initials repeat the name beside them: decoration (WCAG 2.5.3 — the name is the label) */}
+        <Avatar size="lg" src={node.photo} aria-hidden="true">{node.initials ?? orgChartInitials(node.name)}</Avatar>
         <span className="uix-org-chart__body">
           <span className="uix-org-chart__name" id={nameId}>{node.name}</span>
           <span id={descId} className="uix-org-chart__desc">

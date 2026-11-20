@@ -349,7 +349,8 @@ test('AC12 / AC17: a day header shows the consumer count with its label, its mar
   const head = page.locator(`${P}tg-dayhead[data-date="2026-10-07"]`);
   // The name is the date and the label of the consumer (the count and the signal), HAR-1527.
   await expect(head).toHaveAccessibleName(/^Wednesday,? 7 October 2026, 6 items, 1 needs sign-off$/);
-  await expect(head.locator(`${P}date`)).toHaveAccessibleName(/^Wednesday,? 7 October 2026, 6 items, 1 needs sign-off$/);
+  // The date button starts with the date it shows (WCAG 2.5.3, label in name), then the same words.
+  await expect(head.locator(`${P}date`)).toHaveAccessibleName(/^Wed 07\/10, Wednesday,? 7 October 2026, 6 items, 1 needs sign-off$/);
   // The count says what it counts (labels.dayCount): a bare "6" beside a date read as part of the date.
   await expect(head.locator(`${P}count`)).toHaveText('6 entries');
   await expect(head.locator(`${P}marker-label`)).toBeVisible();
