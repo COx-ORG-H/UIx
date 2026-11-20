@@ -288,7 +288,7 @@ test('integrated examples do not use phantom public UIx classes', () => {
 
 test('React availability mappings are explicit, unique, and catalogue-backed', () => {
   assert.equal(new Set(REACT_COMPONENT_SLUGS).size, REACT_COMPONENT_SLUGS.length);
-  assert.equal(REACT_COMPONENT_SLUGS.length, 116);
+  assert.equal(REACT_COMPONENT_SLUGS.length, 117);
   const catalogueSlugs = new Set(COMPONENT_ITEMS.map((item) => item.slug));
   assert.deepEqual(REACT_COMPONENT_SLUGS.filter((slug) => !catalogueSlugs.has(slug)), []);
 });
@@ -301,7 +301,7 @@ test('React availability mappings point to the shipped component inventory or an
   const aliases = {
     'editorial-home': 'PageIntro', form: 'Field', labels: 'UixLabelsProvider',
     'stat-tile': 'Stat', states: 'LoadingState', 'rich-text': 'RichTextEditor',
-    reactions: 'ReactionBar', 'list-motion': 'MotionList', matrix: 'MatrixInput', 'file-kit': 'FileRow',
+    reactions: 'ReactionBar', 'list-motion': 'MotionList', matrix: 'MatrixInput', 'file-kit': 'FileRow', sla: 'SlaTimer',
     'ai-assistance': 'ProposalReview',
   };
   for (const entry of REACT_COMPONENT_SLUGS) {

@@ -1,4 +1,15 @@
+import { readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { defineConfig } from 'tsup';
+
+// Every .ts/.tsx under src/, in one sorted order. The declaration build hands these to one
+// TypeScript program in this order, and the order the checker meets files in decides how it
+// prints inferred unions (MotionList's intersected HTML attributes, NavItem's ref types). A
+// glob lists files in directory order, which on a fresh Linux runner differs from run to run,
+// so the API report flipped between two CI runs of the same code (merge queue, #322, 2026-11-20).
+// Sorting makes the .d.ts output, and with it the API report, the same on every machine.
+const sourceFiles = (dir: string): string[] => readdirSync(dir, { withFileTypes: true })
+  .flatMap((e) => (e.isDirectory() ? sourceFiles(join(dir, e.name)) : /\.tsx?$/.test(e.name) ? [join(dir, e.name).split('\\').join('/')] : []));
 
 // Optional peers stay external in both formats: Tiptap, marked and the emoji dataset
 // belong to the consumer's install (and the emoji JSON is loaded on demand).
@@ -26,7 +37,7 @@ const external = ['react', 'react/jsx-runtime', 'react-dom', 'echarts', 'echarts
 // scripts/check-dist.mjs fails the build when an `exports` target is missing.
 export default defineConfig([
   {
-    entry: ['src/**/*.ts', 'src/**/*.tsx'],
+    entry: sourceFiles('src').sort(),
     format: ['esm'],
     dts: true,
     bundle: false,
