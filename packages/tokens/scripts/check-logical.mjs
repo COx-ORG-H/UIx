@@ -73,7 +73,7 @@ export function physicalOf(prop, value) {
   if (PHYSICAL_PROPS.has(p)) return { key: p, twin: PHYSICAL_PROPS.get(p) };
   const values = PHYSICAL_VALUES.get(p);
   const v = value.replace(/\s*!important\s*$/i, '').trim().toLowerCase();
-  if (values && values[v]) return { key: `${p}: ${v}`, twin: `${p}: ${values[v]}` };
+  if (values && Object.hasOwn(values, v)) return { key: `${p}: ${v}`, twin: `${p}: ${values[v]}` };
   return null;
 }
 

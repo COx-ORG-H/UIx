@@ -11,14 +11,15 @@
        the two renderings pixel for pixel.
 
        The kit fonts (Inter, IBM Plex Sans) come from Google Fonts with their italic faces, as a product
-       would load them: the kit itself ships no @font-face. `docs-roman` is the face the docs load
-       (upright weights only), where italic is the browser's synthetic slant of the upright letters. -->
+       would load them: the kit itself ships no @font-face. `inter-upright` is the upright face, and
+       `fallback-italic` the system italic, the control that shows the browser applies locl at all. -->
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;1,400;1,600&family=Inter:ital,wght@0,400;1,400;1,600&display=block" rel="stylesheet">
   <style>
     body { margin: 0; padding: 16px; background: #fff; color: #000; font: 13px/1.4 system-ui, sans-serif; }
     table { border-collapse: collapse; }
     td, th { padding: 2px 10px; text-align: start; }
-    [data-lang] { display: inline-block; font-size: 48px; line-height: 1.25; padding-inline: 6px; }
+    /* a fixed, whole-pixel box per letter, so both spans start at the same sub-pixel phase */
+    [data-lang] { display: inline-block; inline-size: 64px; text-align: center; font-size: 48px; line-height: 1.25; }
   </style>
 </head>
 <body>

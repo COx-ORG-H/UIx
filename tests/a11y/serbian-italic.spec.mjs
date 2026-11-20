@@ -41,10 +41,15 @@ test('Serbian italic б г д п т: which kit faces carry the locl forms', asyn
     await Promise.all(window.FACES.map((f) => document.fonts.load(`${f.style} ${f.weight} 48px ${f.family}`, window.LETTERS.join('')).catch(() => [])));
     await document.fonts.ready;
     const faces = [...document.fonts].filter((f) => f.status === 'loaded');
-    const has = (family, style) => faces.some((f) => f.family.replace(/"/g, '') === family && f.style === style);
-    return { inter: has('Inter', 'italic'), plex: has('IBM Plex Sans', 'italic') };
+    // per weight, so a 600 row never passes on a face the browser synthesised from 400
+    const has = (family, weight) => faces.some((f) => f.family.replace(/"/g, '') === family && f.style === 'italic'
+      && String(f.weight).split(' ').some((w, i, all) => (all.length === 2 ? Number(all[0]) <= weight && weight <= Number(all[1]) : Number(w) === weight)));
+    return Object.fromEntries(['Inter', 'IBM Plex Sans'].flatMap((family) => [400, 600].map((w) => [`${family} italic ${w}`, has(family, w)])));
   });
-  test.skip(!loaded.inter || !loaded.plex, `Google Fonts not reachable (Inter italic ${loaded.inter}, Plex italic ${loaded.plex}); nothing to measure`);
+  const missing = Object.entries(loaded).filter(([, ok]) => !ok).map(([face]) => face);
+  // a skip is visible in the report and the CI log; the pin goes unchecked only while Google Fonts is down
+  if (missing.length) console.log(`Serbian italic check skipped: not loaded from Google Fonts: ${missing.join(', ')}`);
+  test.skip(missing.length > 0, `Google Fonts not reachable (${missing.join(', ')}); nothing to measure`);
 
   const faces = await page.evaluate(() => window.FACES.map((f) => f.id));
   const letters = await page.evaluate(() => window.LETTERS);

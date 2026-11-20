@@ -1,11 +1,13 @@
 /* The geometry check of the pseudo-locale lane, run in the page (page.evaluate(probeCase, name)).
  * Self-contained: Playwright serialises the function, so it may not close over anything.
  *
- * For one <section data-case>, three ways longer words break a layout:
+ * For one <section data-case>, four ways longer words break a layout:
  *   - beyond:  a visible box reaches past the case's own box (the component outgrew the width the
  *              product gave it), unless it sits in a scroll container (a table wrap scrolls on purpose);
- *   - clipped: an element that clips its overflow (overflow hidden/clip) cuts its own text, and shows no
- *              truncation affordance (text-overflow: ellipsis or a line clamp) — the words just stop;
+ *   - clipped: a box that clips its overflow (overflow hidden/clip) cuts text, its own or an inline
+ *              child's, and shows no truncation affordance (text-overflow: ellipsis or a line clamp)
+ *              on it or between it and the text — the words just stop;
+ *   - clipped-lines: the same at the bottom, a fixed-height box hiding wrapped lines with no clamp;
  *   - spill:   text runs past the box of the block that holds it (a fixed-width button, a pill) while that
  *              block does not clip, so letters paint over the next control.
  * Returns the problems (empty when the case holds) and the case's size. */
@@ -28,6 +30,7 @@ export function probeCase(name) {
     return false;
   };
   const clips = (s) => /(hidden|clip)/.test(s.overflowX);
+  const clipsY = (s) => /(hidden|clip)/.test(s.overflowY);
   const affordance = (s) => s.textOverflow === 'ellipsis' || (s.webkitLineClamp && s.webkitLineClamp !== 'none');
   const blockOf = (el) => {
     for (let p = el; p && p !== root.parentElement; p = p.parentElement) {
@@ -49,18 +52,30 @@ export function probeCase(name) {
     if (ownText && clips(s) && el.scrollWidth > el.clientWidth + 1 && !affordance(s)) {
       problems.push({ kind: 'clipped', el: describe(el), by: el.scrollWidth - el.clientWidth });
     }
+    // lines cut off at the bottom: a fixed-height box that hides wrapped text, with no line clamp
+    if (ownText && clipsY(s) && el.scrollHeight > el.clientHeight + 2 && !affordance(s)) {
+      problems.push({ kind: 'clipped-lines', el: describe(el), by: el.scrollHeight - el.clientHeight });
+    }
     if (ownText && !inScroller(el)) {
       for (const n of el.childNodes) {
         if (n.nodeType !== 3 || !n.textContent.trim()) continue;
         const range = document.createRange();
         range.selectNodeContents(n);
         const tr = range.getBoundingClientRect();
-        // the nearest box around the text that the text runs out of: any block ancestor, up to the case
+        // the nearest box around the text that the text runs out of: any block ancestor, up to the case.
+        // A clipping holder hides what runs past it: that is `clipped` unless an ellipsis or clamp shows
+        // it (on the holder or an element between it and the text, as `<span lang="de">` in a button).
         for (let holder = blockOf(el); holder && holder !== root.parentElement; holder = blockOf(holder.parentElement)) {
           const hs = getComputedStyle(holder);
-          if (clips(hs)) break;
           const hr = holder.getBoundingClientRect();
           const by = Math.max(tr.right - hr.right, hr.left - tr.left);
+          if (clips(hs)) {
+            if (holder === el) break; // the element's own clip: judged above
+            let shown = affordance(hs);
+            for (let p = el; p && p !== holder && !shown; p = p.parentElement) shown = affordance(getComputedStyle(p));
+            if (by > 1 && !shown) problems.push({ kind: 'clipped', el: describe(el), by: Math.round(by), out: describe(holder) });
+            break;
+          }
           if (by > 1) { problems.push({ kind: 'spill', el: describe(el), by: Math.round(by), out: describe(holder) }); break; }
           if (holder === root) break;
         }

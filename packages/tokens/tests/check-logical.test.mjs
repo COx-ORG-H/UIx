@@ -29,6 +29,7 @@ test("the logical twin is named for every physical key", () => {
   assert.equal(physicalOf("text-align", "right").twin, "text-align: end");
   assert.equal(physicalOf("float", "left").twin, "float: inline-start");
   assert.equal(physicalOf("--foo-left", "0"), null);
+  assert.equal(physicalOf("text-align", "constructor"), null, "a keyword is looked up as an own key, not on the prototype");
 });
 
 test("a logical-allow comment right before a declaration exempts it, with its reason", () => {

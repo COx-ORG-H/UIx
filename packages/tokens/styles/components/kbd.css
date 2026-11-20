@@ -33,7 +33,7 @@
       position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
     }
     /* no gap left where the keys were */
-    .uix-menu__item .uix-menu__shortcut { padding-left: 0; }
+    .uix-menu__item .uix-menu__shortcut { padding-inline-start: 0; }
     .uix-tooltip__bubble .uix-tooltip__shortcut { margin-inline-start: 0; }
   }
 }

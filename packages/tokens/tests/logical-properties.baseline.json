@@ -73,18 +73,12 @@
     "components/insight-card.css": {
       "left": 1
     },
-    "components/kbd.css": {
-      "padding-left": 1
-    },
     "components/license-position-bar.css": {
       "right": 1
     },
     "components/lightbox.css": {
       "left": 2,
       "right": 3
-    },
-    "components/menu.css": {
-      "padding-left": 1
     },
     "components/metric-input.css": {
       "border-bottom-right-radius": 2,
