@@ -7648,6 +7648,8 @@ export interface SortableListProps<T> extends Omit<HTMLAttributes<HTMLUListEleme
     // (undocumented)
     items: readonly T[];
     labels?: Partial<SortableListLabels>;
+    // @experimental
+    makeRoom?: boolean;
     onReorder: (orderedIds: string[]) => void;
     // (undocumented)
     renderItem: (item: T, context: SortableListItemContext) => ReactNode;

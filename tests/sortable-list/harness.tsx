@@ -4,7 +4,9 @@
  *   - #steps: three plain steps (text only);
  *   - #single: one item (both move buttons disabled);
  *   - #empty: no items;
- *   - #in-drawer: the steps again inside a Drawer. */
+ *   - #in-drawer: the steps again inside a Drawer;
+ *   - #room: the photos again with `makeRoom` (experiment, Tier 3 item 16): neighbours move aside;
+ *   - #room-long: 60 rows with `makeRoom` in a 20rem scroll container (#room-scroller). */
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Button, Card, Drawer, SortableList, UixLabelsProvider } from '../../packages/react/src/index.js';
@@ -18,6 +20,7 @@ const PHOTOS: Photo[] = [
   { id: 'p4', title: 'Bibliotheksverwaltungsdienstleistungszentrum', hue: 280 },
   { id: 'p5', title: 'Garderobe', hue: 50 },
 ];
+const LONG = Array.from({ length: 60 }, (_, i) => ({ id: `r${i + 1}`, title: `Zeile ${i + 1}` }));
 const STEPS = [{ id: 's1', title: 'Antrag prüfen' }, { id: 's2', title: 'Freigabe einholen' }, { id: 's3', title: 'Benachrichtigen' }];
 
 function useOrder<T extends { id: string }>(key: string, initial: T[]) {
@@ -30,27 +33,36 @@ function Harness() {
   const photos = useOrder('photos', PHOTOS);
   const steps = useOrder('steps', STEPS);
   const drawerSteps = useOrder('drawer', STEPS);
+  const roomPhotos = useOrder('room', PHOTOS);
+  const roomLong = useOrder('room-long', LONG);
   const [drawer, setDrawer] = useState(false);
   const thumb = (hue: number) => (
     <span aria-hidden="true" style={{ display: 'inline-block', width: 48, height: 36, borderRadius: 'var(--uix-radius-sm)', background: `hsl(${hue} 45% 60%)`, flex: 'none' }} />
+  );
+  const photo = (p: Photo, { index }: { index: number }) => (
+    <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--uix-space-3)', minWidth: 0 }}>
+      {thumb(p.hue)}
+      <span style={{ minWidth: 0 }}>
+        <span style={{ display: 'block', fontWeight: 500 }}>{p.title}</span>
+        <span style={{ display: 'block', fontSize: 'var(--uix-text-meta)', color: 'var(--uix-text-muted)' }}>{index === 0 ? 'Titelbild' : `Bild ${index + 1}`}</span>
+      </span>
+    </span>
   );
   return (
     <UixLabelsProvider labels={{ sortableList: { grip: '{label} ziehen', moveUp: '{label} nach oben', moveDown: '{label} nach unten', moved: '{label} ist jetzt an Position {position} von {count}' } }}>
       <h1>Reihenfolge</h1>
       <Card title="Fotos" titleAs="h2" id="photos-card">
-        <SortableList
-          id="photos" aria-label="Fotos" items={photos.items} getId={(p) => p.id} getLabel={(p) => p.title} onReorder={photos.onReorder}
-          renderItem={(p, { index }) => (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--uix-space-3)', minWidth: 0 }}>
-              {thumb(p.hue)}
-              <span style={{ minWidth: 0 }}>
-                <span style={{ display: 'block', fontWeight: 500 }}>{p.title}</span>
-                <span style={{ display: 'block', fontSize: 'var(--uix-text-meta)', color: 'var(--uix-text-muted)' }}>{index === 0 ? 'Titelbild' : `Bild ${index + 1}`}</span>
-              </span>
-            </span>
-          )}
-        />
+        <SortableList id="photos" aria-label="Fotos" items={photos.items} getId={(p) => p.id} getLabel={(p) => p.title} onReorder={photos.onReorder} renderItem={photo} />
       </Card>
+      <Card title="Fotos, Platz machen (Experiment)" titleAs="h2" id="room-card">
+        <SortableList id="room" aria-label="Fotos, Platz machen" makeRoom items={roomPhotos.items} getId={(p) => p.id} getLabel={(p) => p.title} onReorder={roomPhotos.onReorder} renderItem={photo} />
+      </Card>
+      <section>
+        <h2>Lange Liste, Platz machen</h2>
+        <div id="room-scroller" style={{ maxHeight: '20rem', overflow: 'auto', padding: 'var(--uix-space-2)', border: '1px solid var(--uix-border)', borderRadius: 'var(--uix-radius-md)' }}>
+          <SortableList id="room-long" aria-label="Lange Liste" makeRoom items={roomLong.items} getId={(r) => r.id} getLabel={(r) => r.title} onReorder={roomLong.onReorder} renderItem={(r) => r.title} />
+        </div>
+      </section>
       <section>
         <h2>Schritte</h2>
         <SortableList id="steps" aria-label="Schritte" items={steps.items} getId={(s) => s.id} getLabel={(s) => s.title} onReorder={steps.onReorder} renderItem={(s) => s.title} />
