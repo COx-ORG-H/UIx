@@ -2,7 +2,7 @@
   "about": "Controls under 24 px per page that tests/a11y/target-size.spec.mjs allows: axe = axe-core target-size (WCAG 2.5.8), ownBox = the TENSOR council probe rule. It only shrinks: see that file.",
   "pages": {
     "tables": {
-      "ownBox": 11
+      "ownBox": 3
     },
     "docs": {
       "ownBox": 3
@@ -35,7 +35,7 @@
       "ownBox": 6
     },
     "examples-data-display": {
-      "ownBox": 27
+      "ownBox": 15
     },
     "examples-overlays": {
       "ownBox": 3
