@@ -56,9 +56,15 @@ const serverPlatform = (): KbdPlatform => 'other';
  */
 export function useKbdPlatform(platform?: KbdPlatform): KbdPlatform {
   const detected = useSyncExternalStore(noSubscription, detectPlatform, serverPlatform);
-  // A ShortcutProvider that fixes the platform fixes it for every hint below it too.
+  // A ShortcutProvider that fixes the platform fixes it for every hint below it too, and a change of
+  // it re-renders them (the snapshot is the platform alone, so nothing else does).
   const registry = useContext(ShortcutRegistryContext);
-  return platform ?? registry?.fixedPlatform ?? detected;
+  const fixed = useSyncExternalStore(
+    registry ? registry.subscribe : noSubscription,
+    () => registry?.fixedPlatform,
+    () => registry?.fixedPlatform,
+  );
+  return platform ?? fixed ?? detected;
 }
 
 /**

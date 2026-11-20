@@ -2,6 +2,8 @@
    Docs/specs/2026-11-20-shortcut-registry.md). A `.uix-dialog` whose body lists, per scope, each
    command's words and its keys, and ends with the character-key switch. Depends only on --uix-* tokens. */
 @layer uix.components {
+  /* a little wider than a plain dialog: a command's words and its keys share each row */
+  .uix-dialog.uix-shortcut-sheet { max-width: min(36rem, 92vw); }
   .uix-shortcut-sheet__groups { display: grid; gap: var(--uix-space-5); }
   .uix-shortcut-sheet__group { display: grid; gap: var(--uix-space-1); min-width: 0; }
   .uix-shortcut-sheet__heading,

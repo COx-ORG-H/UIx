@@ -75,7 +75,7 @@ export interface CommandPaletteProps extends HTMLAttributes<HTMLDivElement> {
   /** Items mode: render at most this many found items (the count still says how many were found). Default 100. */
   limit?: number;
   /**
-   * Items mode with `open` / `onOpenChange`: keys that open and close the palette through the
+   * Items mode with `open` and `onOpenChange` (without the callback it binds nothing): keys that open and close the palette through the
    * shortcut registry, e.g. `'Mod+K'`; they work in text fields too, and list in the shortcut
    * sheet under its `shortcutLabel`. A person's remap of `uix.command-palette` applies. Default:
    * none (the product binds its own key, as before).
@@ -238,7 +238,7 @@ function CommandPaletteItems({
   // The palette's own keys, through the registry: in text fields too, and over its own dialog so
   // the same keys close it.
   useShortcut({
-    id: COMMAND_PALETTE_SHORTCUT_ID, keys: shortcut ?? '', enabled: shortcut != null && open !== undefined, scope: 'global',
+    id: COMMAND_PALETTE_SHORTCUT_ID, keys: shortcut ?? '', enabled: shortcut != null && open !== undefined && onOpenChange != null, scope: 'global',
     label: shortcutLabel ?? uixLabels.shortcuts?.openPalette ?? 'Open the command palette',
     allowInInputs: true, allowInModal: true, handler: () => onOpenChange?.(!open),
   });

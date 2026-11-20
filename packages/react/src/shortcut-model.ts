@@ -47,17 +47,34 @@ export function canonicalKey(name: string): string {
   return trimmed;
 }
 
-/** A chord with its modifiers first, in the order Mod, Ctrl, Alt, Shift; `null` unless it has exactly one other key. */
+/** The named (non-character) keys a binding may use. */
+const NAMED_KEYS = new Set([
+  'Enter', 'Escape', 'Tab', 'Backspace', 'Delete', 'Insert', 'Space', 'Home', 'End', 'PageUp', 'PageDown',
+  'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+]);
+const isKeyName = (key: string) => key.length === 1 || NAMED_KEYS.has(key) || /^F([1-9]|1[0-9]|2[0-4])$/.test(key);
+/** A punctuation mark or symbol: the layout decides which Shift state types it, so a binding names the character. */
+const isPunctuation = (key: string) => key.length === 1 && key !== ' ' && !/^[A-Z0-9]$/.test(key);
+
+/**
+ * A chord with its modifiers first, in the order Mod, Ctrl, Alt, Shift; `null` unless it has
+ * exactly one other key and that key is a character, a named key or F1–F24. On a punctuation mark
+ * Shift is dropped: the character decides (`Shift+?` is `?`; for Shift+/ on a US keyboard write `?`).
+ */
 function normalizeChord(keys: readonly string[]): KeyShortcut | null {
-  const names = keys.map((key) => (typeof key === 'string' ? canonicalKey(key) : '')).filter(Boolean);
-  const mods = MODIFIERS.filter((mod) => names.includes(mod));
+  const names = keys.map((key) => (typeof key === 'string' ? canonicalKey(key) : ''));
+  if (names.some((name) => !name)) return null;
   const rest = names.filter((name) => !isModifier(name));
-  if (rest.length !== 1) return null;
+  if (rest.length !== 1 || !isKeyName(rest[0])) return null;
+  const mods = MODIFIERS.filter((mod) => names.includes(mod) && !(mod === 'Shift' && isPunctuation(rest[0])));
   return [...mods, rest[0]];
 }
 
-/** Split `Mod+K` / `Mod++` / `+` into key names: a `+` right after a separator is the key itself. */
-function splitChord(step: string): string[] {
+/**
+ * Split `Mod+K` / `Mod++` / `+` into key names: a `+` right after a separator is the key itself.
+ * `null` for a separator with no key after it (`A+`, `Mod+K+`), so a mistyped remap is refused.
+ */
+function splitChord(step: string): string[] | null {
   const parts: string[] = [];
   let rest = step;
   while (rest) {
@@ -65,6 +82,7 @@ function splitChord(step: string): string[] {
     if (at < 0) { parts.push(rest); break; }
     parts.push(rest.slice(0, at));
     rest = rest.slice(at + 1);
+    if (!rest) return null;
   }
   return parts;
 }
@@ -77,8 +95,9 @@ export function parseShortcut(binding: ShortcutBinding | null | undefined): KeyS
   if (binding == null) return null;
   let chords: readonly (readonly string[])[];
   if (typeof binding === 'string') {
-    const steps = binding.trim().split(/\s+/).filter(Boolean);
-    chords = steps.map(splitChord);
+    const steps = binding.trim().split(/\s+/).filter(Boolean).map(splitChord);
+    if (steps.some((step) => step == null)) return null;
+    chords = steps as string[][];
   } else if (Array.isArray(binding) && binding.length > 0 && binding.every((part) => typeof part === 'string')) {
     chords = [binding as readonly string[]];
   } else if (Array.isArray(binding) && binding.length > 0 && binding.every((part) => Array.isArray(part))) {
@@ -135,6 +154,12 @@ const eventKeyName = (key: string) => {
   return key.length === 1 ? key.toUpperCase() : key;
 };
 
+/** The physical key of a punctuation mark on a US layout, for an Alt chord whose character Alt changes. */
+const PUNCTUATION_CODES: Record<string, string> = {
+  '/': 'Slash', '\\': 'Backslash', ',': 'Comma', '.': 'Period', ';': 'Semicolon', "'": 'Quote',
+  '[': 'BracketLeft', ']': 'BracketRight', '-': 'Minus', '=': 'Equal', '`': 'Backquote',
+};
+
 /** The fields of a keydown the matcher reads (a DOM `KeyboardEvent` has them all). */
 export interface ShortcutKeyEvent {
   key: string;
@@ -153,8 +178,10 @@ export interface ShortcutKeyEvent {
  *   Option+letter on a Mac), the physical key decides (`KeyG` for G), so G then I works on a
  *   Serbian Cyrillic keyboard too.
  * - A punctuation mark or symbol (`?`, `/`, `[`) is decided by the character, as the layout types
- *   it: Shift is never compared (`?` is Shift+/ on a US keyboard and Shift+ß on a German one), and
- *   Ctrl+Alt (Windows AltGr) or Option may have typed it. ⌘ or a Ctrl without Alt must match.
+ *   it: Shift is never compared (`?` is Shift+/ on a US keyboard and Shift+ß on a German one). On
+ *   its own (`?`, `[`), Ctrl+Alt (Windows AltGr) or Option may have typed it; ⌘ or a Ctrl without
+ *   Alt never. With modifiers (`Mod+/`), exactly those: Ctrl+Alt+/ and ⌘⌥/ are not `Mod+/`. An Alt
+ *   chord whose character Alt changes (Option+/ types ÷) falls back to the physical key.
  * - A named key (Enter, Escape, an arrow, F1) must have exactly the chord's modifiers.
  */
 export function matchesChord(event: ShortcutKeyEvent, chord: KeyShortcut, platform: KbdPlatform): boolean {
@@ -174,13 +201,17 @@ export function matchesChord(event: ShortcutKeyEvent, chord: KeyShortcut, platfo
     return event.code === (isLetter(key) ? `Key${key}` : `Digit${key}`);
   }
   if (isPrintable(key)) {
-    if (typed !== key) return false;
     if (event.metaKey !== wantMeta) return false;
-    // Ctrl+Alt is AltGr on Windows: it types the character, it is not a Ctrl shortcut.
-    const ctrl = event.ctrlKey && !(event.altKey && !wantCtrl);
-    if (ctrl !== wantCtrl) return false;
-    if (wantAlt && !event.altKey) return false;
-    return true;
+    if (!wantMeta && !wantCtrl && !wantAlt) {
+      // A character shortcut: whatever typed the character counts (Shift, AltGr as Ctrl+Alt on
+      // Windows, Option on a Mac), but not a Ctrl without Alt: that is a Ctrl shortcut.
+      return typed === key && !(event.ctrlKey && !event.altKey);
+    }
+    // A chord with modifiers has exactly them: Ctrl+Alt+/ is not Ctrl+/, ⌘⌥/ is not ⌘/.
+    if (event.ctrlKey !== wantCtrl || event.altKey !== wantAlt) return false;
+    if (typed === key) return true;
+    // Alt or Option types another character (Option+/ is ÷ on a Mac): the physical key decides.
+    return wantAlt && PUNCTUATION_CODES[key] != null && event.code === PUNCTUATION_CODES[key];
   }
   return typed === key && event.metaKey === wantMeta && event.ctrlKey === wantCtrl && event.altKey === wantAlt && event.shiftKey === wantShift;
 }

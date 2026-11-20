@@ -7,7 +7,7 @@
 import test, { before, after, afterEach, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
-import { createElement as h, act, useRef, useState } from 'react';
+import { createElement as h, act, memo, useState } from 'react';
 
 let dom;
 let createRoot;
@@ -69,13 +69,17 @@ test('parseShortcut reads strings, chords and sequences into canonical key names
   assert.deepEqual(p('shift+cmd+p'), [['Mod', 'Shift', 'P']], 'modifiers in the order Mod, Ctrl, Alt, Shift');
   assert.deepEqual(p('G I'), [['G'], ['I']]);
   assert.deepEqual(p('?'), [['?']]);
-  assert.deepEqual(p('Shift+?'), [['Shift', '?']]);
+  assert.deepEqual(p('Shift+?'), [['?']], 'on punctuation the character decides: Shift is dropped');
+  assert.deepEqual(p('Shift+/'), [['/']], 'Shift+/ is the / key (write ? for the shifted character)');
+  assert.deepEqual(p('Mod+Shift+K'), [['Mod', 'Shift', 'K']], 'Shift stays on a letter');
   assert.deepEqual(p('Mod++'), [['Mod', '+']], 'a + after a separator is the key');
   assert.deepEqual(p('Plus'), [['+']]);
   assert.deepEqual(p('esc'), [['Escape']]);
   assert.deepEqual(p(['Mod', 'Enter']), [['Mod', 'Enter']]);
   assert.deepEqual(p([['g'], ['i']]), [['G'], ['I']]);
-  for (const bad of ['', 'Mod', 'Mod+Shift', 'A+B', null, undefined, [], [[]]]) assert.equal(p(bad), null, `not a binding: ${JSON.stringify(bad)}`);
+  for (const bad of ['', 'Mod', 'Mod+Shift', 'A+B', 'A+', 'Mod+K+', 'G I+', 'Mod+Foo', 'F25', null, undefined, [], [[]], ['Mod', '']]) assert.equal(p(bad), null, `not a binding: ${JSON.stringify(bad)}`);
+  assert.deepEqual(p('F5'), [['F5']]);
+  assert.deepEqual(p('Mod+PageDown'), [['Mod', 'PageDown']]);
   assert.equal(ui.formatShortcut(p('shift+mod+k')), 'Mod+Shift+K');
   assert.equal(ui.formatShortcut(p('Mod++')), 'Mod+Plus');
   assert.equal(ui.formatShortcut(p('g i')), 'G I');
@@ -112,6 +116,14 @@ test('matchesChord: Mod per platform, exact modifiers on letters, the character 
   assert.equal(m(ev('[', { ctrlKey: true }), '['), false, 'Ctrl+[ is not [');
   assert.equal(m(ev('[', { metaKey: true }), '[', 'mac'), false);
   assert.equal(m(ev('/', { ctrlKey: true }), 'Mod+/'), true);
+  // A chord with modifiers has exactly them: AltGr (Ctrl+Alt) or ⌘⌥ typing / is not Mod+/.
+  assert.equal(m(ev('/', { ctrlKey: true, altKey: true }), 'Mod+/'), false);
+  assert.equal(m(ev('/', { metaKey: true, altKey: true }), 'Mod+/', 'mac'), false);
+  assert.equal(m(ev('/', { ctrlKey: true, shiftKey: true }), 'Mod+/'), true, 'Shift is never compared on punctuation');
+  // Option+/ types ÷ on a Mac: an Alt chord falls back to the physical key.
+  assert.equal(m(ev('÷', { altKey: true, code: 'Slash' }), 'Alt+/', 'mac'), true);
+  assert.equal(m(ev('/', { altKey: true, code: 'Slash' }), 'Alt+/'), true);
+  assert.equal(m(ev('/', { code: 'Slash' }), 'Alt+/'), false);
   assert.equal(m(ev('Enter', { ctrlKey: true }), 'Mod+Enter'), true);
   assert.equal(m(ev(' '), 'Space'), true);
 });
@@ -131,6 +143,7 @@ test('findShortcutConflicts: same keys or a prefix in one scope; one id twice, o
   const c = (entries, opts) => ui.findShortcutConflicts(entries, opts);
   assert.deepEqual(c([{ id: 'a', keys: 'A' }, { id: 'b', keys: 'a' }]).map((x) => [x.kind, x.ids]), [['same', ['a', 'b']]]);
   assert.deepEqual(c([{ id: 'g', keys: 'G' }, { id: 'gi', keys: 'G I' }]).map((x) => x.kind), ['prefix']);
+  assert.deepEqual(c([{ id: 'help', keys: '?' }, { id: 'search', keys: 'Shift+?' }], { platform: 'other' }).map((x) => x.kind), ['same'], 'one keydown matches both');
   assert.deepEqual(c([{ id: 'a', keys: 'A' }, { id: 'a', keys: 'A' }]), [], 'one command mounted twice');
   assert.deepEqual(c([{ id: 'a', keys: 'A', scope: 'list' }, { id: 'b', keys: 'A' }]), [], 'an inner scope shadows by design');
   const modCtrl = c([{ id: 'palette', keys: 'Mod+K' }, { id: 'link', keys: 'Ctrl+K' }]);
@@ -321,6 +334,37 @@ test('without a provider useShortcut works on the document default registry', ()
   assert.deepEqual(runs, ['standalone'], 'unregistered on unmount');
 });
 
+test('an inner scope's sequence wins over a global single key that starts it', () => {
+  const runs = [];
+  const app = mount(h(ui.ShortcutProvider, { storageKey: null },
+    h(Bind, { runs, id: 'global-g', keys: 'G' }),
+    h(ui.ShortcutScope, { label: 'List' }, h(Bind, { runs, id: 'list-gi', keys: 'G I' }), h('button', { id: 'in' }, 'in')),
+    h('button', { id: 'out' }, 'out')));
+  press('g', {}, app.host.querySelector('#in'));
+  press('i', {}, app.host.querySelector('#in'));
+  press('g', {}, app.host.querySelector('#out'));
+  assert.deepEqual(runs, ['list-gi', 'global-g']);
+});
+
+test('a provider's platform change re-renders every hint, literal keys too', () => {
+  let platform = 'other';
+  const App = () => h(ui.ShortcutProvider, { storageKey: null, platform },
+    h(Bind, { runs: [], id: 'palette', keys: 'Mod+K' }),
+    h('div', { id: 'memo' }, h(Memo)));
+  // memo: the hints re-render only because the registry tells them to, not because the parent did
+  const Memo = memo(function Hints() {
+    return h('span', null, h(ui.KbdCombo, { shortcutId: 'palette', id: 'bound' }), h(ui.KbdCombo, { keys: ['Mod', 'S'], id: 'literal' }));
+  });
+  const app = mount(h(App));
+  const said = (id) => app.host.querySelector(`#${id} .uix-visually-hidden`).textContent;
+  assert.equal(said('bound'), 'Control+K');
+  assert.equal(said('literal'), 'Control+S');
+  platform = 'mac';
+  act(() => app.root.render(h(App)));
+  assert.equal(said('bound'), 'Command+K');
+  assert.equal(said('literal'), 'Command+S');
+});
+
 test('a handler that returns false leaves the key to the next match and the browser', () => {
   const runs = [];
   mount(h(ui.ShortcutProvider, { storageKey: null },
@@ -415,6 +459,12 @@ test('CommandPalette: an item with shortcutId shows the registered keys and runs
 });
 
 // —— the sheet ————————————————————————————————————————————————————————————————————————————
+
+test('CommandPalette shortcut without onOpenChange binds nothing: the key stays free', () => {
+  mount(h(ui.ShortcutProvider, { storageKey: null },
+    h(ui.CommandPalette, { open: false, shortcut: 'Mod+K', items: [{ id: 'a', label: 'A' }] })));
+  assert.equal(press('k', { ctrlKey: true }, document.body), false);
+});
 
 test('ShortcutSheet: ? opens a dialog listing what works where focus was, by scope; the switch hides character keys', () => {
   function App() {

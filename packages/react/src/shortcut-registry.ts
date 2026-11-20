@@ -137,9 +137,11 @@ export class ShortcutRegistry {
   /** Change the configuration (the provider does on every render). Notifies when the preferences changed. */
   configure(config: Partial<ShortcutRegistryConfig>) {
     const before = this.config.preferences;
+    const platformBefore = this.config.platform;
     this.config = { ...this.config, ...config };
     if (config.preferences) this.requested = null;
-    if (config.preferences && config.preferences !== before) this.changed();
+    // A new platform changes what matches and every hint's glyphs and spoken keys: tell the hints.
+    if ((config.preferences && config.preferences !== before) || this.config.platform !== platformBefore) this.changed();
   }
 
   get platform(): KbdPlatform { return this.config.platform ?? detectPlatform(); }
@@ -367,15 +369,21 @@ export class ShortcutRegistry {
       // Not the sequence's next key: the press counts on its own.
     }
 
+    // In rank order (innermost scope first): the single chords ranked above the first sequence try
+    // first; once a sequence is the best match left, it waits for its next key. So an inner scope's
+    // G I is not swallowed by a global G.
     const first = all.filter(({ keys }) => matchesChord(event, keys[0], platform));
     if (!first.length) return false;
-    const single = first.filter(({ keys }) => keys.length === 1);
-    if (single.length && this.fire(single, event)) return true;
+    const firstSequence = first.findIndex(({ keys }) => keys.length > 1);
+    const before = firstSequence < 0 ? first : first.slice(0, firstSequence);
+    if (before.length && this.fire(before, event)) return true;
     const sequences = first.filter(({ keys }) => keys.length > 1);
-    if (!sequences.length) return false;
-    event.preventDefault();
-    this.startPending(sequences, 1);
-    return true;
+    if (sequences.length) {
+      event.preventDefault();
+      this.startPending(sequences, 1);
+      return true;
+    }
+    return false;
   }
 
   private startPending(found: { entry: Entry; keys: KeySequence }[], step: number) {
