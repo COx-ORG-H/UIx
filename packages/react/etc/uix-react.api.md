@@ -4728,6 +4728,7 @@ export interface ModalProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'tit
     onClose?: (event?: DialogCloseEvent) => void;
     // (undocumented)
     open: boolean;
+    origin?: 'center' | 'trigger';
     pending?: boolean;
     // (undocumented)
     role?: 'dialog' | 'alertdialog';

@@ -22,7 +22,19 @@ export function watchInputModality(): void {
     // A modifier on its own (Shift, a held ⌘) is not an action.
     if (!['Shift', 'Control', 'Alt', 'Meta'].includes(event.key)) keyboard = true;
   }, true);
-  document.addEventListener('pointerdown', () => { keyboard = false; }, true);
+  document.addEventListener('pointerdown', (event) => {
+    keyboard = false;
+    lastPointer = { target: event.target instanceof Element ? event.target : null, x: event.clientX, y: event.clientY, at: Date.now() };
+  }, true);
+}
+
+/** The last pointer press: what it landed on, where (viewport px) and when (`Date.now()`). */
+export interface PointerPress { target: Element | null; x: number; y: number; at: number }
+let lastPointer: PointerPress | null = null;
+
+/** The last pointer press, or `null` before any (and on the server). Set by `watchInputModality`. */
+export function lastPointerPress(): PointerPress | null {
+  return lastPointer;
 }
 
 /** Was the input that led here a key press? `false` before any input and on the server. */
