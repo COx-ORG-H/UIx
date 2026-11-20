@@ -355,3 +355,4 @@ missing or blank.
 <!-- lesson-skip: 357e86ff review follow-ups (clamped timing, re-entry, generated caption); the specimen test named the generator -->
 
 <!-- lesson-skip: e3de79c7 the contract gate named the values; allowlist + missed-default case, routine -->
+<!-- lesson-skip: 9f4490fb pseudo-element margin missed the border-box reset; the 1 px visual diff pointed at it -->

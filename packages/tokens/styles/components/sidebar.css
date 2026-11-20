@@ -285,4 +285,12 @@
      reads as a clipped label, a fade as "more below" (TENSOR HAR-2954). The fade is as tall as the
      bottom padding, so scrolled to the end the last row sits above it, untouched. */
   .uix-sidebar { --uix-sidebar-fade: var(--uix-space-3); padding-bottom: var(--uix-sidebar-fade); -webkit-mask-image: linear-gradient(to bottom, var(--uix-text) calc(100% - var(--uix-sidebar-fade)), transparent); mask-image: linear-gradient(to bottom, var(--uix-text) calc(100% - var(--uix-sidebar-fade)), transparent); }
+  /* Where scroll edges run (scroll-edge.css), they replace that fade: the foot fades only
+     while rows are below it and the top fades once rows pass above. Elsewhere (no scroll
+     timelines, reduced motion, more contrast) the static fade above stays. */
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) and (not (prefers-contrast: more)) and (not (forced-colors: active)) {
+      :root:not([data-motion="reduce"]):not([data-contrast="more"]) .uix-sidebar { -webkit-mask-image: revert-layer; mask-image: revert-layer; }
+    }
+  }
 }

@@ -553,3 +553,9 @@ body[data-docs-menu-open] { overflow: hidden; }
   opacity: 0; transform: translateY(calc(-1 * var(--uix-lift))) scale(.95); visibility: hidden;
   transition-duration: var(--uix-dur-exit);
 }
+
+/* Motion → Scroll edges specimen */
+.uix-docs__scroll-edges { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); gap: var(--uix-space-5); width: 100%; align-items: start; }
+.uix-docs__scroll-edge-list { max-height: 15rem; overflow-y: auto; padding: var(--uix-space-1) var(--uix-space-4); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-lg); background: var(--uix-surface); }
+.uix-docs__scroll-edge-list p { margin: 0; padding: var(--uix-space-2) 0; border-bottom: 1px solid var(--uix-border); }
+.uix-docs__scroll-edges .uix-table td { white-space: nowrap; }

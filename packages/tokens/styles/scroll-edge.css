@@ -1,0 +1,134 @@
+/* uix scroll edges — scroll-linked chrome with no blur (the phone-OS motion study, Tier 1 item 2).
+   iOS 26/27 dissolves content softly where it passes under a floating bar and draws a "hard" edge
+   under pinned column headers; One UI 8.5 gave its menus soft top and bottom edges. UIx does the
+   same with two things a GPU-less VDI desktop can afford, and nothing that animates filter or
+   box-shadow (check-motion):
+     1. Soft edges: a mask-image gradient on the scroll container. Each edge fades only while
+        content is under it: the top edge over the first --uix-scroll-edge-size of scroll, the bottom
+        edge until the last. The mask leaves everything outside the padding box alone (borders,
+        the scrollbar, a popover's shadow, a focus ring), so only the content dissolves.
+     2. A hard edge: a sticky header gains a firmer divider and a short shade beneath it over the
+        first pixels of scroll, an opacity-only reveal on a pseudo-element.
+   Both run on a scroll timeline (animation-timeline: scroll()). Where an engine has no scroll
+   timelines, or under reduced motion (the OS setting or <html data-motion="reduce">), every edge
+   stays as it was before scroll edges: a plain hard edge and the header's own hairline, never changing
+   with scroll. A list that does not overflow has no scroll range, so its timeline is inactive and
+   it shows no fade at all. Nothing hides: the bars and headers stay where they are.
+   Opt in with .uix-scroll-edge (soft edges), .uix-scroll-edge--hard (a scroller with its own sticky
+   header: no top fade) and .uix-scroll-edge-head (the sticky header whose divider is revealed). The
+   kit's own scrollers adopt it below. */
+
+/* the two edge sizes the mask reads; registered so a scroll timeline can interpolate them */
+@property --uix-edge-start { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@property --uix-edge-end { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@keyframes uix-edge-start { from { --uix-edge-start: 0px; } to { --uix-edge-start: var(--uix-scroll-edge-start); } }
+@keyframes uix-edge-end { from { --uix-edge-end: var(--uix-scroll-edge-end); } to { --uix-edge-end: 0px; } }
+/* a divider and shade that appear as content scrolls under it: opacity only */
+@keyframes uix-edge-reveal { from { opacity: 0; } to { opacity: 1; } }
+
+@layer uix.motion {
+  /* Who has soft edges: the kit's scroll containers whose content passes under a fixed bar or the
+     list's own rim (the drawer, modal and peek bodies, the select and command-palette lists, the
+     sidebar), any .uix-scroll-edge, and the table wrap, whose top edge is hard (its header is
+     pinned) and whose bottom edge is soft. Not the menu: it scrolls in the same box that draws its
+     popover shadow, and WebKit clips everything outside the border box of a masked element
+     (mask-clip: no-clip is parsed and ignored), so a masked menu loses its shadow in Safari. The
+     select list scrolls inside its popup, which keeps the shadow. Put .uix-scroll-edge on a scroller
+     that draws no shadow of its own for the same reason. */
+  :where(.uix-scroll-edge, .uix-drawer__body, .uix-peek__body, .uix-dialog__body, .uix-select__listbox, .uix-cmdk__list, .uix-sidebar, .uix-shell__sidebar, .uix-table-wrap) {
+    --uix-scroll-edge-size: var(--uix-space-4);
+    --uix-scroll-edge-start: var(--uix-scroll-edge-size);
+    --uix-scroll-edge-end: var(--uix-scroll-edge-size);
+    /* a row brought into view by the keyboard stops clear of the fade (Select and Combobox honour
+       it in script too) */
+    scroll-padding-block: var(--uix-scroll-edge-start) var(--uix-scroll-edge-end);
+  }
+  /* A scroller with its own sticky header has a hard top edge: the header is the edge. The table
+     wrap's rows also stop below its header when the keyboard brings one into view, not under it.
+     The header's height is --uix-table-head-h (44 px; table.css sizes the header cells with it):
+     set it on the wrap or above to change both. A table with no <thead> has nothing to clear. */
+  :where(.uix-scroll-edge--hard, .uix-table-wrap) { --uix-scroll-edge-start: 0px; }
+  :where(.uix-table-wrap) { --uix-scroll-edge-head: var(--uix-table-head-h, 44px); scroll-padding-block: var(--uix-scroll-edge-head) var(--uix-scroll-edge-end); }
+  :where(.uix-table-wrap:not(:has(> .uix-table > thead))) { --uix-scroll-edge-head: 0px; }
+  /* the divider a sticky header gains once content is under it: firmer than the hairline */
+  :where(.uix-scroll-edge-head, .uix-table-wrap) {
+    --uix-scroll-edge-line: var(--uix-border-strong);
+    --uix-scroll-edge-shade: color-mix(in srgb, var(--uix-scrim) 14%, transparent);
+    --uix-scroll-edge-shade-size: var(--uix-space-1);
+  }
+
+  @supports (animation-timeline: scroll()) {
+    /* 1. Soft edges. Three mask layers: the fade over the padding box, and a full layer minus the
+       padding box, so the border and the scrollbar stay whole (and, in Chromium and Firefox, a
+       shadow or ring outside the box).
+       More contrast (the OS setting or data-contrast="more") and forced colours keep the hard edge:
+       text at the rim reads at full contrast. A scroller with focus (Drawer, Modal and Peek bodies
+       are tab stops when they overflow) drops the fade while it has it. */
+    @media (prefers-reduced-motion: no-preference) and (not (prefers-contrast: more)) and (not (forced-colors: active)) {
+      :root:not([data-motion="reduce"]):not([data-contrast="more"]) :where(.uix-scroll-edge, .uix-drawer__body, .uix-peek__body, .uix-dialog__body, .uix-select__listbox, .uix-cmdk__list, .uix-sidebar, .uix-shell__sidebar, .uix-table-wrap):not(:focus-visible) {
+        mask-image:
+          linear-gradient(to bottom, transparent, #000 var(--uix-edge-start), #000 calc(100% - var(--uix-edge-end)), transparent),
+          linear-gradient(#000 0 0),
+          linear-gradient(#000 0 0);
+        mask-origin: padding-box, border-box, padding-box;
+        mask-clip: padding-box, no-clip, padding-box;
+        mask-size: 100% 100%;
+        mask-repeat: no-repeat, repeat, no-repeat;
+        mask-composite: add, exclude;
+        animation: uix-edge-start linear both, uix-edge-end linear both;
+        animation-timeline: scroll(self block), scroll(self block);
+        animation-range: 0 var(--uix-scroll-edge-start), calc(100% - var(--uix-scroll-edge-end)) 100%;
+      }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+
+      /* 2. The hard edge. On an author's sticky header (.uix-scroll-edge-head) it is the header's
+         ::after; the table's header cells keep both pseudo-elements for the sort arrow and order,
+         so the wrap draws it with a sticky ::before held at the header's height (--uix-scroll-edge-head)
+         and at the left edge while the rows scroll sideways. A wrap with no vertical scroll has
+         an inactive timeline and shows nothing. */
+      :root:not([data-motion="reduce"]) :where(.uix-scroll-edge-head)::after,
+      :root:not([data-motion="reduce"]) :where(.uix-table-wrap)::before {
+        content: ""; pointer-events: none; box-sizing: border-box;
+        border-top: 1px solid var(--uix-scroll-edge-line);
+        background: linear-gradient(var(--uix-scroll-edge-shade), transparent);
+        opacity: 0;
+        animation: uix-edge-reveal linear both;
+        animation-timeline: scroll(nearest block);
+        animation-range: 0 var(--uix-scroll-edge-size);
+      }
+      :root:not([data-motion="reduce"]) :where(.uix-scroll-edge-head)::after {
+        position: absolute; inset-inline: 0; top: calc(100% - 1px); height: var(--uix-scroll-edge-shade-size);
+      }
+      :root:not([data-motion="reduce"]) :where(.uix-table-wrap)::before {
+        display: block; position: sticky; top: calc(var(--uix-scroll-edge-head) - 1px); left: 0; z-index: calc(var(--uix-z-sticky) + var(--uix-z-raised));
+        /* border-box: the 1 px line is inside the height, so the margin takes back exactly what the
+           box adds and the wrap keeps its height */
+        height: var(--uix-scroll-edge-shade-size); margin-bottom: calc(-1 * var(--uix-scroll-edge-shade-size));
+      }
+      /* No edge where the header is not a row pinned at the top of the wrap: a card-mode table, a
+         table with no <thead>, and one with a <caption> above its header (the header only pins
+         once the caption has scrolled away, so a divider tied to the first pixels would cross it). */
+      :root:not([data-motion="reduce"]) :where(.uix-table-wrap:is(:has(> .uix-table--cards), :not(:has(> .uix-table > thead)), :has(> .uix-table > caption)))::before { content: none; }
+    }
+  }
+
+  /* forced colours: the system draws its own lines, so the divider keeps its line and loses the shade */
+  @media (forced-colors: active) {
+    :where(.uix-scroll-edge-head)::after, :where(.uix-table-wrap)::before { background: none; }
+  }
+
+  /* Reduced motion: every scroll edge is static. The rules above only run without the preference;
+     these say so outright, because the global policy shortens durations, which does not stop an
+     animation on a scroll timeline (it has no clock to shorten). With no animation the edge sizes
+     stay 0, so even a mask set elsewhere fades nothing. */
+  @media (prefers-reduced-motion: reduce) {
+    :where(.uix-scroll-edge, .uix-drawer__body, .uix-peek__body, .uix-dialog__body, .uix-select__listbox, .uix-cmdk__list, .uix-sidebar, .uix-shell__sidebar, .uix-table-wrap) { animation: none !important; }
+    :where(.uix-scroll-edge-head)::after, :where(.uix-table-wrap)::before { animation: none !important; content: none !important; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :root[data-motion="reduce"] :where(.uix-scroll-edge, .uix-drawer__body, .uix-peek__body, .uix-dialog__body, .uix-select__listbox, .uix-cmdk__list, .uix-sidebar, .uix-shell__sidebar, .uix-table-wrap) { animation: none !important; }
+    :root[data-motion="reduce"] :where(.uix-scroll-edge-head)::after, :root[data-motion="reduce"] :where(.uix-table-wrap)::before { animation: none !important; content: none !important; }
+  }
+}

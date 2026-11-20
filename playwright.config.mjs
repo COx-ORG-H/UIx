@@ -49,7 +49,8 @@ export default defineConfig({
     // Cross-engine keyboard/focus/placement for the Select listbox (HAR-1572), the stat tiles of
     // one stretched row (HAR-1753: a <button> as a flex container), and the four 2.42.0 kit
     // changes (HAR-2417: the description list's container query, the discard step's focus and
-    // Escape, the search bar, the shortcut hints). Opt-in, so the default runs stay Chromium-only:
+    // Escape, the search bar, the shortcut hints), and the scroll edges (scroll timelines in
+    // Chromium and WebKit, the static fallback in Firefox before 159). Opt-in, so the default runs stay Chromium-only:
     //   UIX_CROSS_BROWSER=1 npx playwright test <the CROSS_BROWSER_SPECS> --project=chromium --project=firefox --project=webkit
     //   (needs `npx playwright install firefox webkit`). These projects are light; a spec maps any
     //   project that is not `dark` to the light theme.
