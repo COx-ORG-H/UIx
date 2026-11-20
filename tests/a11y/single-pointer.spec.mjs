@@ -24,6 +24,10 @@ test.beforeEach(async ({ page }, testInfo) => {
 
 const last = (page, key) => page.evaluate((k) => (window.__orders[k] ?? []).at(-1), key);
 const axe = async (page) => {
+  // A menu or popover that is still fading in is part-transparent, and axe reads its text colour
+  // at that moment as low contrast: wait until every finite animation has settled first.
+  await expect.poll(() => page.evaluate(() => document.getAnimations()
+    .filter((a) => a.playState === 'running' && a.effect?.getComputedTiming?.().iterations !== Infinity).length)).toBe(0);
   const violations = (await new AxeBuilder({ page }).include('#root').analyze()).violations.filter((v) => GATED.has(v.impact));
   expect(violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
 };
