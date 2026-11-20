@@ -81,7 +81,7 @@ export function SourceList({ sources, title, renderLink, labels: own, className,
           {sources.map((source) => (
             <li key={source.id} className="uix-source-list__item">
               <span className="uix-source-list__body">
-                {source.href
+                {source.href && isSafeHref(source.href)
                   ? renderUixLink(renderLink, { href: source.href, className: 'uix-source-list__link', children: source.title })
                   : <span className="uix-source-list__name">{source.title}</span>}
                 {(source.kind || source.detail) && (
