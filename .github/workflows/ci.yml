@@ -204,3 +204,39 @@ jobs:
           name: a11y-report
           path: playwright-report/
           retention-days: 7
+
+  a11y-lanes:
+    # User settings the axe gate cannot see (roadmap #18), as Playwright projects in Chromium
+    # (A11Y_LANES in playwright.config.mjs): a Windows contrast theme (focus outlines, chosen states,
+    # TaskTray, scroll edges, over every explorer route), WCAG 1.4.12 text spacing, and a 20 / 24 px
+    # default font size (the key components). Its own job beside a11y, so the a11y job's time does
+    # not grow. Screenshots are compared within one run, never with goldens, so no pinned container.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install (workspace)
+        run: npm ci
+
+      # tokens build only (static styleguide CSS), as in the a11y job.
+      - name: Build styleguide CSS (tokens)
+        run: npm run build
+
+      - name: Install Playwright chromium
+        run: npx playwright install chromium
+
+      - name: Forced colours, text spacing and default font size lanes
+        run: npm run test:a11y:lanes
+
+      - name: Upload lanes report (screenshots attached)
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: a11y-lanes-report
+          path: playwright-report/
+          retention-days: 7

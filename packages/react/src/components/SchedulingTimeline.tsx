@@ -810,8 +810,14 @@ export function SchedulingTimeline({
   };
   // A bar with neither `state` nor `status` keeps the word it always had (`states.scheduled`).
   const stateText = (item: Item) => (item.state ? labels.states[item.state] : item.status ? labels.statuses[item.status] : labels.states.scheduled);
+  // The title in a bar's name is the bar's own words: the string `renderItem` returns ("08:00 Schema
+  // update") and its meta, so a voice command made of what is on screen finds it (WCAG 2.5.3).
+  const shownTitle = (item: Item) => {
+    const custom = renderItem?.(item);
+    return [typeof custom === 'string' ? custom : item.title, item.meta].filter(Boolean).join(' ');
+  };
   const itemName = (item: Item, conflict: boolean) => item.accessibleName
-    ?? [fillLabel(labels.item, { title: item.title, state: stateText(item), start: fmtInstant(item.start), end: fmtInstant(item.end), conflict: conflict ? labels.conflict : '' }), ...(item.markers ?? []).map((marker) => marker.label)].join(', ');
+    ?? [fillLabel(labels.item, { title: shownTitle(item), state: stateText(item), start: fmtInstant(item.start), end: fmtInstant(item.end), conflict: conflict ? labels.conflict : '' }), ...(item.markers ?? []).map((marker) => marker.label)].join(', ');
   /** An item that uses none of the generic props is an older item and keeps its `data-state`. */
   const dataState = (item: Item) => item.state ?? (item.band === undefined && item.status === undefined && item.markers === undefined && item.accessibleName === undefined ? 'scheduled' : undefined);
   const overlayWords = (overlay: SchedulingTimelineOverlay) => [overlay.kindLabel ?? (overlay.kind ? labels.overlays[overlay.kind] : undefined), overlay.label, overlay.scopeLabel].filter(Boolean).join(', ');
@@ -882,7 +888,8 @@ export function SchedulingTimeline({
       'data-scope': scope.scope,
       style: { left: `${pos.left}%`, width: `${pos.width}%`, ...vars({ '--uix-timeline-clip': scope.clip }) },
     };
-    const text = scope.labelTops.map((top) => <span key={top} className="uix-scheduling-timeline__overlay-label" style={vars({ '--uix-timeline-label-top': top })}>
+    // A tall window repeats its words down its height; the repeats are decoration (the name says them once).
+    const text = scope.labelTops.map((top, index) => <span key={top} className="uix-scheduling-timeline__overlay-label" aria-hidden={index > 0 || undefined} style={vars({ '--uix-timeline-label-top': top })}>
       {overlay.kindLabel && <span className="uix-scheduling-timeline__overlay-kind">{overlay.kindLabel}</span>}
       <span className="uix-scheduling-timeline__overlay-name">{overlay.label}</span>
       {overlay.scopeLabel && <span className="uix-scheduling-timeline__overlay-scope">{overlay.scopeLabel}</span>}
