@@ -13,6 +13,7 @@
  */
 import { compareFor, foldContext, foldVariants, foldKeys, textMatcher } from './locale-text.js';
 
+/** The direction of one sort key. */
 export type SortDir = 'ascending' | 'descending';
 export interface SortKey {
   /** row field to sort on */
