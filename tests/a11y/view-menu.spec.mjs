@@ -6,7 +6,7 @@
  * The markup contract is in packages/react/src/view-menu-dom.test.mjs.
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { settleAnimations } from './settle.mjs';
 
 const HARNESS = '/tests/view-menu/harness.html';

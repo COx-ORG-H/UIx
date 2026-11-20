@@ -7,7 +7,7 @@
  * so this needs only the tokens build. Scrolling, focus, the clipboard and axe only exist
  * when rendered — the markup contract is in packages/react/src/operator-primitives.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/operator-primitives/harness.html';
 const GATED = new Set(['serious', 'critical']);

@@ -14,7 +14,7 @@
  *     without the blur, and `system` follows prefers-reduced-transparency (CDP-emulated), live;
  *   - axe is clean with each setting on. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/display-preferences/harness.html';
 const KEY = 'uix-harness-display';

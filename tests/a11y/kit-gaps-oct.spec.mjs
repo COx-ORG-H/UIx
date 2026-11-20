@@ -5,7 +5,7 @@
  * show; each case reads them off the rendered page, plus an axe scan per section in light and
  * dark. Harness: tests/kit-gaps-oct/harness.tsx, bundled from source in globalSetup. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { settleAnimations, settleOverlay } from './settle.mjs';
 
 const HARNESS = '/tests/kit-gaps-oct/harness.html';

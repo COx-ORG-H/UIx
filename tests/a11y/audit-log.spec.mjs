@@ -3,7 +3,7 @@
  * chips, the rows kept during the reload (BusyRegion), keyset "Prikaži starije" with focus kept and
  * the count announced, Details, every state, 320 px and axe, light + dark. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/audit-log/harness.html';
 const GATED = new Set(['serious', 'critical']);

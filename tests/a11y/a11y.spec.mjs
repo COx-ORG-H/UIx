@@ -9,7 +9,7 @@
  * [data-theme], await fonts) so the scanned DOM is the same one a user sees.
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { SHOWCASE_PAGES } from '../../packages/tokens/docs/showcase-data.js';
 
 const PAGES = [

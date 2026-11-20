@@ -8,7 +8,7 @@
  * UIX_CROSS_BROWSER=1 (see playwright.config.mjs).
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { settleAnimations, settleOverlay } from './settle.mjs';
 
 const HARNESS = '/tests/select/harness.html';

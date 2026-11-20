@@ -5,7 +5,7 @@
  * needs only the tokens build. Rendered heights, focus and axe only exist in a browser — the
  * markup contract is in packages/react/src/phase-components.test.mjs. */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 const HARNESS = '/tests/diff-viewer/harness.html';
 const GATED = new Set(['serious', 'critical']);
