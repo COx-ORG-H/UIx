@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 /* A StatusPill that explains itself (HAR-3109): Tab reaches the pill and its description opens in
  * the kit tooltip, hover opens it too, Escape closes it; the pill has the kit focus ring and is no

@@ -10,7 +10,7 @@
  * stay as they were, and that focus a menu sends back after a mouse choice opens no hint.
  */
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 import { settleOverlay } from './settle.mjs';
 
 const HARNESS = '/tests/shortcut/harness.html';

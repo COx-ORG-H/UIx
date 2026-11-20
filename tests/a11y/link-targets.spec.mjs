@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from './axe.mjs';
 
 /* A link that stands on its own in a kit slot owns a 24 px target (WCAG 2.5.8): the sort button in a
  * column header and a data cell's link (HAR-3084), a link in the Peek footer (HAR-3091), a linked
