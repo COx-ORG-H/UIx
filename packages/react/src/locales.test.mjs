@@ -65,9 +65,10 @@ test('countLabel: a legacy …One / …Many string pair keeps its rule exactly (
 /* ── through components and the provider ──────────────────────────────────────────────────── */
 
 const groupCounts = (labels) => {
-  const groups = NUMBERS.map((n) => ({ id: `g${n}`, label: `G${n}`, rows: [], count: n }));
+  // one row each, so the workspace is not empty; `count` is the number the header says
+  const groups = NUMBERS.map((n) => ({ id: `g${n}`, label: `G${n}`, rows: [{ id: `r${n}`, name: `R${n}` }], count: n }));
   const html = renderToStaticMarkup(h(ui.UixLabelsProvider, { labels }, h(ui.DataWorkspace, {
-    label: 'Rows', rows: [], getRowId: (r) => r.id, columns: [{ id: 'name', header: 'Name', cell: (r) => r.name }], groups,
+    label: 'Rows', rows: groups.flatMap((g) => g.rows), getRowId: (r) => r.id, columns: [{ id: 'name', header: 'Name', cell: (r) => r.name }], groups,
   })));
   return [...html.matchAll(/class="uix-data-workspace__group-count"[^>]*>([^<]*)</g)].map((m) => m[1]);
 };
@@ -112,6 +113,7 @@ function packProblems(pack) {
   const categories = new Intl.PluralRules(pack.locale).resolvedOptions().pluralCategories;
   const walk = (ref, value, path) => {
     if (typeof ref === 'function') { if (typeof value !== 'function') problems.push(`${path}: not a function`); return; }
+    if (value === undefined) { problems.push(`${path}: missing`); return; }
     if (typeof ref === 'string' || isForms(ref)) {
       const want = typeof ref === 'string' ? placeholders(ref) : formsPlaceholders(ref);
       if (typeof value === 'string') {
@@ -210,7 +212,7 @@ test('the en pack is the kit\'s English: equal to every exported default it cove
 });
 
 test('the en pack\'s inline defaults are the words the components fall back to', () => {
-  const sources = ['CommandPalette', 'Modal', 'Drawer', 'Peek', 'AppShell', 'Sidebar', 'SearchSuggest', 'ConfirmDialog', 'Toast', 'ToolbarMore', 'ChipRemove', 'AlertDismiss', 'SearchBar', 'Select', 'DiscardPrompt', 'TaskTray']
+  const sources = ['CommandPalette', 'Modal', 'Drawer', 'Peek', 'AppShell', 'Sidebar', 'SearchSuggest', 'Dialogs', 'Toast', 'ToolbarMore', 'ChipRemove', 'AlertDismiss', 'SearchBar', 'Select', 'DiscardPrompt', 'TaskTray']
     .map((name) => { try { return read(`./components/${name}.tsx`); } catch { return ''; } }).join('\n');
   const inline = { ...en.modal, ...en.drawer, ...en.peek, ...en.appShell, ...en.sidebar, ...en.searchSuggest, ...en.confirmDialog, ...en.commandPalette, ...en.searchBar, ...en.select, ...en.discardPrompt };
   for (const [key, value] of Object.entries(inline)) assert.ok(sources.includes(`'${value}'`), `${key}: '${value}' is not a default in the component sources`);
