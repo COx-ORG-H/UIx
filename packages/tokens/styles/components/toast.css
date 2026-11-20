@@ -70,3 +70,31 @@
    move on transitions (HAR-2578), which the motion.css policy narrows to fades for both the OS setting
    and data-motion="reduce". */
 
+
+/* Undo deltas (enterprise UX study, roadmap #23): the countdown on a timed toast (an undo window by
+   default), the count on a merged repeat, and the seconds left under reduced motion. The bar shrinks
+   on transform over the toast's own duration (`--uix-toast-countdown`, which the Toaster sets from
+   the record, default --uix-hold-undo) and stops with the toast's timer: the Toaster sets
+   [data-paused] on a toast while the pointer or focus is on the toasts or the tab is hidden. */
+@layer uix.components {
+  .uix-toast { position: relative; }
+  .uix-toast__count { font-weight: 400; color: var(--uix-text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .uix-toast__countdown {
+    position: absolute; inset-inline: var(--uix-space-4); inset-block-end: var(--uix-space-1); height: 2px;
+    border-radius: var(--uix-radius-pill); background: var(--uix-text-muted); pointer-events: none;
+    transform-origin: 0 50%;
+    animation: uix-toast-countdown var(--uix-toast-countdown, var(--uix-hold-undo)) linear forwards;
+  }
+  .uix-toast__countdown:dir(rtl) { transform-origin: 100% 50%; }
+  .uix-toast[data-paused] .uix-toast__countdown, .uix-toast[data-leaving] .uix-toast__countdown { animation-play-state: paused; }
+  .uix-toast__action-slot:has(.uix-toast__remaining) { display: flex; align-items: center; gap: var(--uix-space-2); }
+  .uix-toast__remaining { flex: none; align-self: center; font-size: var(--uix-text-meta); color: var(--uix-text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  @keyframes uix-toast-countdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+  /* Reduced motion: no shrinking bar (the Toaster writes the seconds left instead). */
+  @media (prefers-reduced-motion: reduce) {
+    .uix-toast__countdown { display: none; animation: none; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :root[data-motion="reduce"] .uix-toast__countdown { display: none; animation: none; }
+  }
+}
