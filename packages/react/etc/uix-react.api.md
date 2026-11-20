@@ -90,6 +90,206 @@ export function addCalendarMonths(value: string, amount: number): string;
 export function addZonedDays(instant: string | Date, days: number, timeZone: string): ZonedDayShift;
 
 // @public
+export const AI_HEARTBEAT_MS = 5000;
+
+// @public
+export function AiActor(input: AiActorProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface AiActorProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
+    approvedBy?: ReactNode;
+    // (undocumented)
+    labels?: Partial<AiLabels>;
+    name: string;
+}
+
+// @public
+export interface AiExplanation {
+    sharedHref?: string;
+    sources?: readonly AiSource[];
+    what?: ReactNode;
+    why?: ReactNode;
+}
+
+// @public
+export interface AiGeneration {
+    end: (message?: string) => void;
+    status: (text: string) => void;
+}
+
+// @public (undocumented)
+export interface AiGenerationOptions {
+    announce?: 'all' | 'final';
+    from?: Element | null;
+    loading?: string;
+    status?: string;
+}
+
+// @public
+export function AiLabel(input: AiLabelProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface AiLabelProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
+    explanation?: AiExplanation;
+    // (undocumented)
+    labels?: Partial<AiLabels>;
+    placement?: Placement;
+    // (undocumented)
+    renderLink?: UixRenderLink;
+    subject?: string;
+}
+
+// @public
+export interface AiLabels {
+    accept: string;
+    actorTag: string;
+    // (undocumented)
+    affected: string;
+    // (undocumented)
+    after: string;
+    // (undocumented)
+    applied: string;
+    applying: string;
+    // (undocumented)
+    approve: string;
+    // (undocumented)
+    approvedBy: string;
+    // (undocumented)
+    bandHigh: string;
+    bandLow: string;
+    // (undocumented)
+    bandMedium: string;
+    // (undocumented)
+    before: string;
+    // (undocumented)
+    changes: string;
+    // (undocumented)
+    copied: string;
+    // (undocumented)
+    copy: string;
+    // (undocumented)
+    copyFailed: string;
+    dismiss: string;
+    done: string;
+    // (undocumented)
+    edit: string;
+    // (undocumented)
+    error: string;
+    explain: string;
+    // (undocumented)
+    failed: string;
+    feedback: string;
+    fieldFilled: string;
+    generating: string;
+    // (undocumented)
+    helpful: string;
+    limitation: string;
+    loading: string;
+    mark: string;
+    needsApproval: string;
+    noSources: string;
+    // (undocumented)
+    notHelpful: string;
+    // (undocumented)
+    notUndoable: string;
+    panelTitle: string;
+    // (undocumented)
+    proposedBy: string;
+    // (undocumented)
+    reject: string;
+    // (undocumented)
+    rejected: string;
+    // (undocumented)
+    retry: string;
+    revert: string;
+    reverted: string;
+    revertFor: string;
+    shared: string;
+    sourceList: string;
+    // (undocumented)
+    sources: string;
+    // (undocumented)
+    stop: string;
+    // (undocumented)
+    stopped: string;
+    subjectDefault: string;
+    suggestion: string;
+    thanks: string;
+    // (undocumented)
+    undo: string;
+    // (undocumented)
+    undoable: string;
+    undoFor: string;
+    // (undocumented)
+    undone: string;
+    // (undocumented)
+    what: string;
+    // (undocumented)
+    why: string;
+}
+
+// @public
+export function AiOutputCard(input: AiOutputCardProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface AiOutputCardProps extends Omit<HTMLAttributes<HTMLElement>, 'title' | 'children'> {
+    actions?: ReactNode;
+    announce?: 'all' | 'final' | 'none';
+    children?: ReactNode;
+    copyable?: boolean;
+    error?: ReactNode;
+    explanation?: AiExplanation;
+    headingLevel?: 2 | 3 | 4;
+    // (undocumented)
+    labels?: Partial<AiLabels>;
+    onFeedback?: (rating: 'up' | 'down') => void;
+    onRetry?: () => void;
+    onStop?: () => void;
+    proposalId: string;
+    rating?: 'up' | 'down' | null;
+    // (undocumented)
+    renderLink?: UixRenderLink;
+    sources?: readonly AiSource[];
+    // (undocumented)
+    status: AiOutputStatus;
+    statusText?: string;
+    text?: string;
+    title: ReactNode;
+    type?: string;
+}
+
+// @public
+export type AiOutputStatus = 'generating' | 'done' | 'stopped' | 'error';
+
+// @public
+export interface AiSource {
+    detail?: ReactNode;
+    href?: string;
+    id: string;
+    kind?: string;
+    title: string;
+}
+
+// @public
+export function AiSuggestion(input: AiSuggestionProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface AiSuggestionProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
+    consequence?: 'low' | 'medium';
+    explanation?: AiExplanation;
+    // (undocumented)
+    labels?: Partial<AiLabels>;
+    onAccept: () => void;
+    onDismiss: () => void;
+    proposalId: string;
+    // (undocumented)
+    renderLink?: UixRenderLink;
+    type?: string;
+    value: ReactNode;
+    valueText?: string;
+}
+
+// @public
 export const Alert: react.ForwardRefExoticComponent<AlertProps & react.RefAttributes<HTMLDivElement>>;
 
 // @public (undocumented)
@@ -1371,6 +1571,22 @@ export interface ConfirmDialogProps {
 }
 
 // @public
+export type ConsequenceBand = 'low' | 'medium' | 'high';
+
+// @public
+export interface ConsequencePolicy {
+    autoApply: boolean;
+    // (undocumented)
+    band: ConsequenceBand;
+    requiresApproval: boolean;
+    surface: 'suggestion' | 'proposal';
+    undo: boolean;
+}
+
+// @public
+export function consequencePolicy(band: ConsequenceBand | null | undefined): ConsequencePolicy;
+
+// @public
 export function ContactCard(input: ContactCardProps): react.JSX.Element;
 
 // @public
@@ -2102,6 +2318,9 @@ export interface DaySpanLayout {
 export const DEFAULT_ACCOUNT_MENU_LABELS: AccountMenuLabels;
 
 // @public (undocumented)
+export const DEFAULT_AI_LABELS: AiLabels;
+
+// @public (undocumented)
 export const DEFAULT_ATTACHMENT_LABELS: AttachmentLabels;
 
 // @public (undocumented)
@@ -2699,6 +2918,9 @@ export function edgeLabelSize(lines: readonly string[]): {
 export function effectiveShortcut(id: string, defaultKeys: ShortcutBinding | null | undefined, preferences: ShortcutPreferenceValues): KeySequence | null;
 
 // @public
+export function emitProposalEvent(input: ProposalEventInput, target?: EventTarget | null): boolean;
+
+// @public
 export function emptyFilterValue(kind: FilterValueKind): FilterValue;
 
 // @public
@@ -2913,8 +3135,19 @@ export type FeedbackKind = 'success' | 'warning' | 'error' | 'selection' | 'limi
 // @public (undocumented)
 export function Field(input: FieldProps): react.JSX.Element;
 
+// @public
+export interface FieldAi {
+    explanation?: AiExplanation;
+    // (undocumented)
+    labels?: Partial<AiLabels>;
+    onRevert?: () => void;
+    // (undocumented)
+    state: 'filled' | 'edited';
+}
+
 // @public (undocumented)
 export interface FieldProps {
+    ai?: FieldAi;
     // (undocumented)
     children: ReactNode;
     // (undocumented)
@@ -3561,6 +3794,9 @@ export function hsvToHex(value: HsvColor): string;
 export function hsvToRgb(input: HsvColor): RgbColor;
 
 // @public
+export const ID_PATTERN: RegExp;
+
+// @public
 export function Inbox(input: InboxProps): react.JSX.Element;
 
 // @public
@@ -3845,6 +4081,12 @@ export function isFilterEmpty(value: FilterValue | undefined): boolean;
 
 // @public
 export const isOvernightRange: (min?: string, max?: string) => boolean;
+
+// @public
+export function isProposalId(value: unknown): value is string;
+
+// @public
+export function isProposalType(value: unknown): value is string;
 
 // @public (undocumented)
 export function isRuleGroup(node: RuleCondition | RuleGroup): node is RuleGroup;
@@ -4924,8 +5166,14 @@ export function MotionList<T>(input: MotionListProps<T>): react.DetailedReactHTM
     ref: react.RefObject<HTMLElement>;
     className: string;
     onTransitionEnd: (event: TransitionEvent_2<HTMLElement>) => void;
-    color?: string | undefined | undefined;
+    slot?: string | undefined | undefined;
+    style?: react.CSSProperties | undefined;
     title?: string | undefined | undefined;
+    rel?: string | undefined | undefined;
+    rev?: string | undefined | undefined;
+    dir?: string | undefined | undefined;
+    role?: react.AriaRole | undefined;
+    color?: string | undefined | undefined;
     id?: string | undefined | undefined;
     defaultChecked?: boolean | undefined | undefined;
     defaultValue?: string | number | readonly string[] | undefined;
@@ -4936,28 +5184,22 @@ export function MotionList<T>(input: MotionListProps<T>): react.DetailedReactHTM
     autoFocus?: boolean | undefined | undefined;
     contentEditable?: (boolean | "true" | "false") | "inherit" | "plaintext-only" | undefined;
     contextMenu?: string | undefined | undefined;
-    dir?: string | undefined | undefined;
     draggable?: (boolean | "true" | "false") | undefined;
     enterKeyHint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send" | undefined | undefined;
     hidden?: boolean | undefined | undefined;
     lang?: string | undefined | undefined;
     nonce?: string | undefined | undefined;
-    slot?: string | undefined | undefined;
     spellCheck?: (boolean | "true" | "false") | undefined;
-    style?: react.CSSProperties | undefined;
     tabIndex?: number | undefined | undefined;
     translate?: "yes" | "no" | undefined | undefined;
     radioGroup?: string | undefined | undefined;
-    role?: react.AriaRole | undefined;
     about?: string | undefined | undefined;
     content?: string | undefined | undefined;
     datatype?: string | undefined | undefined;
     inlist?: any;
     prefix?: string | undefined | undefined;
     property?: string | undefined | undefined;
-    rel?: string | undefined | undefined;
     resource?: string | undefined | undefined;
-    rev?: string | undefined | undefined;
     typeof?: string | undefined | undefined;
     vocab?: string | undefined | undefined;
     autoCorrect?: string | undefined | undefined;
@@ -5280,7 +5522,7 @@ export interface NavGroupProps {
 }
 
 // @public
-export const NavItem: react.ForwardRefExoticComponent<NavItemProps & react.RefAttributes<HTMLButtonElement | HTMLAnchorElement>>;
+export const NavItem: react.ForwardRefExoticComponent<NavItemProps & react.RefAttributes<HTMLAnchorElement | HTMLButtonElement>>;
 
 // @public (undocumented)
 export interface NavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -5369,6 +5611,9 @@ export interface NumberInputProps extends Omit<InputProps, 'type' | 'value' | 'd
     onValueChange?: (value: number) => void;
     value?: number | null;
 }
+
+// @public
+export function onProposalEvent(listener: (detail: ProposalEventDetail) => void, target?: EventTarget | null): () => void;
 
 // @public (undocumented)
 export interface OptimisticRollback<T> {
@@ -6001,6 +6246,77 @@ export interface PromptDialogProps {
     // (undocumented)
     validate?: (value: string) => ReactNode | undefined;
 }
+
+// @public
+export const PROPOSAL_EVENT = "uix-proposal";
+
+// @public
+export type ProposalAction = 'shown' | 'accepted' | 'dismissed' | 'edited' | 'reverted' | 'undone' | 'feedback' | 'stopped' | 'retried';
+
+// @public
+export interface ProposalChange {
+    after: ReactNode;
+    before?: ReactNode;
+    // (undocumented)
+    id: string;
+    label: ReactNode;
+}
+
+// @public
+export interface ProposalEventDetail {
+    // (undocumented)
+    action: ProposalAction;
+    at: number;
+    // (undocumented)
+    consequence?: ConsequenceBand;
+    elapsedMs?: number;
+    // (undocumented)
+    kind: ProposalKind;
+    proposalId: string;
+    rating?: 'up' | 'down';
+    sinceAcceptMs?: number;
+    type?: string;
+}
+
+// @public
+export type ProposalEventInput = Omit<ProposalEventDetail, 'at' | 'elapsedMs' | 'sinceAcceptMs'>;
+
+// @public
+export type ProposalKind = 'suggestion' | 'field' | 'proposal' | 'output';
+
+// @public
+export function ProposalReview(input: ProposalReviewProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ProposalReviewProps extends Omit<HTMLAttributes<HTMLElement>, 'title' | 'children'> {
+    affected?: ReactNode;
+    changes?: readonly ProposalChange[];
+    children?: ReactNode;
+    consequence: ConsequenceBand;
+    description?: ReactNode;
+    error?: ReactNode;
+    explanation?: AiExplanation;
+    headingLevel?: 2 | 3 | 4;
+    // (undocumented)
+    labels?: Partial<AiLabels>;
+    // (undocumented)
+    onApprove: () => void;
+    onEdit?: () => void;
+    // (undocumented)
+    onReject: () => void;
+    onUndo?: () => void;
+    proposalId: string;
+    // (undocumented)
+    renderLink?: UixRenderLink;
+    reversible: boolean;
+    status?: ProposalStatus;
+    title: ReactNode;
+    type?: string;
+    undoSeconds?: number;
+}
+
+// @public (undocumented)
+export type ProposalStatus = 'proposed' | 'applying' | 'applied' | 'rejected' | 'undone' | 'failed';
 
 // @public
 export function proposeMove(span: {
@@ -8155,6 +8471,19 @@ export interface SortKey {
 }
 
 // @public
+export function SourceList(input: SourceListProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface SourceListProps extends Omit<HTMLAttributes<HTMLElement>, 'children' | 'title'> {
+    // (undocumented)
+    labels?: Partial<AiLabels>;
+    renderLink?: UixRenderLink;
+    // (undocumented)
+    sources: readonly AiSource[];
+    title?: ReactNode | null;
+}
+
+// @public
 export function Sparkline(input: SparklineProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -8208,6 +8537,9 @@ export interface StarButtonProps {
     onToggle: (next: boolean) => void;
     pinned: boolean;
 }
+
+// @public
+export function startAiGeneration(options?: AiGenerationOptions): AiGeneration;
 
 // @public (undocumented)
 export function startOfMonth(value: string): string;
@@ -8430,7 +8762,7 @@ export function stepTime(value: string | null, delta: number, min?: string, max?
 export function studentTQuantile(p: number, df: number): number;
 
 // @public
-export const SubNavItem: react.ForwardRefExoticComponent<SubNavItemProps & react.RefAttributes<HTMLButtonElement | HTMLAnchorElement>>;
+export const SubNavItem: react.ForwardRefExoticComponent<SubNavItemProps & react.RefAttributes<HTMLAnchorElement | HTMLButtonElement>>;
 
 // @public (undocumented)
 export interface SubNavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -9537,6 +9869,9 @@ export interface TrProps extends HTMLAttributes<HTMLTableRowElement> {
 }
 
 // @public
+export const TYPE_PATTERN: RegExp;
+
+// @public
 export type UixCountLabel = string | UixPluralForms | ((count: number) => string);
 
 // @public
@@ -9557,6 +9892,7 @@ export type UixLabelPack = {
 // @public
 export interface UixLabels {
     accountMenu?: Partial<AccountMenuLabels>;
+    ai?: Partial<AiLabels>;
     alert?: {
         dismiss?: string;
     };
@@ -9730,6 +10066,32 @@ export interface UndoableToastOptions extends Omit<ToastOptions, 'action' | 'onD
     undoGroup?: 'all' | 'each';
     undoLabel?: string;
 }
+
+// @public
+export function useAiFieldValue<T>(input: UseAiFieldValueOptions<T>): UseAiFieldValueResult<T>;
+
+// @public (undocumented)
+export interface UseAiFieldValueOptions<T> {
+    aiValue: T | undefined;
+    equals?: (a: T, b: T) => boolean;
+    explanation?: AiExplanation;
+    initialValue: T;
+    proposalId: string;
+    type?: string;
+}
+
+// @public (undocumented)
+export interface UseAiFieldValueResult<T> {
+    ai: FieldAi | undefined;
+    commit: () => void;
+    revert: () => void;
+    setValue: (value: T) => void;
+    state: 'filled' | 'edited' | 'none';
+    value: T;
+}
+
+// @public
+export function useAiLabels(own?: Partial<AiLabels>): AiLabels;
 
 // @public
 export function useAnchoredPosition(anchor: RefObject<HTMLElement | null> | HTMLElement | null | undefined, floatingRef: RefObject<HTMLElement | null>, input: UseAnchoredPositionOptions): () => void;
@@ -9906,6 +10268,9 @@ export function useShortcuts(): ShortcutsApi;
 
 // @public
 export function useSlidingIndicator(containerRef: RefObject<HTMLElement | null>, indicatorRef: RefObject<HTMLElement | null>, selectedSelector: string): void;
+
+// @public
+export function useStreamingText(text: string, streaming: boolean): string;
 
 // @public
 export function useTable<T extends Row>(data: readonly T[], options?: UseTableOptions): UseTableResult<T>;
