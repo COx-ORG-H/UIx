@@ -1,0 +1,73 @@
+# Manual SR Result — `date-picker`
+
+Component under test: DatePicker, `packages/react/src/components/DatePicker.tsx` with `DateFieldParts.tsx` (`MonthCalendar`, `useFieldPopover`). Script: [`../scripts/date-picker.md`](../scripts/date-picker.md). Harness:
+`tests/at-evidence/harness.html`. See `../manual-sr-protocol.md` (protocol 2).
+
+**No person has run a screen reader against this component yet.** Every pairing below is `not-run`
+and needs a human tester. What is recorded is automated: the accessibility tree and live regions in
+Chromium (`tests/a11y/at-evidence.spec.mjs`), and NVDA's own speech when a script pressed the keys
+on a CI runner (`.github/workflows/at-nvda.yml`), which is real NVDA output that nobody listened to.
+
+## Header (machine-parsable)
+
+```yaml
+component: date-picker
+protocol: 2
+uix-version: 2.70.0
+tester: none
+date: 2026-11-20
+nvda-chrome: not-run
+jaws-chrome: not-run
+jaws-edge: not-run
+voiceover-safari: not-run
+voiceover-ios: not-run
+talkback-chrome: not-run
+nvda-firefox: not-run
+narrator-edge: not-run
+automated-tree: pass
+nvda-guidepup: fail
+```
+
+- `automated-tree: pass`: `tests/a11y/at-evidence.spec.mjs` passed in Chromium, light and dark, at
+  2.70.0 plus this change, on 2026-11-20 (local run and PR #302's CI).
+- `nvda-guidepup: fail`: [run 44734650775](https://github.com/COx-ORG-H/UIx/actions/runs/44734650775), 2026-11-20, NVDA portable (Guidepup 0.40.0) + Playwright chromium 149.0.7827.55 (headed) on a GitHub `windows-latest` runner; earlier runs 44725485902, 44733256135 and 44734133463 heard the same. Scored against the script's "Must convey" for the steps it covers: the field with its hint and value, "Calendar, dialog" on opening, and focus back in the field after Escape; but in browse mode ArrowLeft is NVDA's own key and the focused day does not move (script steps 3–4). In focus mode (NVDA+Space) the arrows work and the full date and "current date" are spoken. Nobody listened; a person must confirm before any of this counts as `nvda-chrome`.
+
+## Transcript
+
+Nobody has run a pairing yet. The rows below are NVDA's own speech from run 44734650775, one row per key or group of keys, verbatim and in order ("arrival" is what NVDA said on landing), with the phrases separated by " / ". The keys were sent through NVDA; nobody listened.
+
+| Step | Pairing | Heard | Verdict |
+|------|---------|-------|---------|
+| DatePicker: ArrowDown | NVDA (Guidepup, automated) + Playwright chromium 149.0.7827.55 | (arrival) "Due date, edit, focused, Weekdays only, 20 slash 11 slash 2026" / "Calendar, dialog" | expected |
+| DatePicker: ArrowLeft | NVDA (Guidepup, automated) + Playwright chromium 149.0.7827.55 | "out of toggle button, toggle button, not pressed" | known issue |
+| DatePicker: NVDA+Space, ArrowLeft | NVDA (Guidepup, automated) + Playwright chromium 149.0.7827.55 | "Thursday, 19 November 2026, toggle button, not pressed" / "Wednesday, 18 November 2026, toggle button, not pressed, current date" | expected |
+| DatePicker: Escape | NVDA (Guidepup, automated) + Playwright chromium 149.0.7827.55 | "Due date, edit, Weekdays only, 20 slash 11 slash 2026" | expected |
+
+## Checklist results
+
+| # | Item | NVDA+Chrome | JAWS+Chrome | JAWS+Edge | VO macOS | VO iOS | TalkBack | NVDA+FF | Narrator | Automated | Notes |
+|---|------|---|---|---|---|---|---|---|---|---|---|
+| 1 | Accessible name | not run | not run | not run | not run | not run | not run | not run | not run | Textbox "Due date" described by "Weekdays only"; button "Change date, Friday, 20 November 2026"; dialog "Calendar"; day buttons named with the full date; "Show previous month" / "Show next month". | |
+| 2 | Role | not run | not run | not run | not run | not run | not run | not run | not run | `textbox`, `button`, `dialog`, `group` (the month), day `button`s. | |
+| 3 | Value / state announced | not run | not run | not run | not run | not run | not run | not run | not run | Chosen day `aria-pressed`; today `aria-current="date"`; weekends and days before `min` disabled; `aria-invalid="true"` and an `alert` for "31/02/2026", the alert also in the field's description. | |
+| 4 | Focus order = visual order | not run | not run | not run | not run | not run | not run | not run | not run | Opening puts focus on the chosen day; Escape returns it to the button the calendar was opened from; Enter from the field's calendar returns it to the field. | |
+| 5 | Full keyboard operability | not run | not run | not run | not run | not run | not run | not run | not run | Arrows by day and week, PageDown by month, Enter picks, Escape closes. | |
+| 6 | Focus-visible ring | not run | not run | not run | not run | not run | not run | not run | not run | not asserted here. | |
+| 7 | aria-live on async | not run | not run | not run | not run | not run | not run | not run | not run | The month name is a polite live region ("December 2026" after PageDown); the invalid-date message is `role="alert"`. | |
+| 8 | Reduced-motion honored | not run | not run | not run | not run | not run | not run | not run | not run | not asserted here. | |
+
+## Known issues
+
+- **NVDA cannot arrow through the calendar in browse mode** (automated runs 44725485902 and 44733256135). The days are a `group` of buttons, not an APG `grid`, so opening the calendar leaves NVDA in browse mode: ArrowLeft moves NVDA's own cursor ("out of toggle button, toggle button, not pressed") and the focused day stays on 20 November. In focus mode (NVDA+Space, run 44734133463) it works: focus moved to the day NVDA's cursor was on ("Thursday, 19 November 2026, toggle button, not pressed") and ArrowLeft reached "Wednesday, 18 November 2026, toggle button, not pressed, current date", so the full date and today are spoken there. The lane checks both modes on every run. Likely fix: the APG date-picker grid (`role="grid"`, rows, `gridcell`s), which NVDA and JAWS put in focus mode on their own. Design change: needs a ticket and a human NVDA + JAWS pass first. Fails item 5 for NVDA as things stand.
+- Whether readers say that 18 November is today (`aria-current="date"`) is unverified (script step 5).
+- Unavailable days take focus by design and must be announced as unavailable (script step 6).
+
+## Summary
+
+Not Stable-ready: both T1 pairings (NVDA + Chrome, JAWS + Chrome) are `not-run`, and so are
+VoiceOver iOS and TalkBack, which this component needs for Stable because it renders in touch layouts
+(protocol §1). The semantics the
+readers depend on are in place and asserted on every PR. Still needed from a person, in this order:
+NVDA + Chrome, JAWS + Chrome, JAWS + Edge, VoiceOver + Safari (macOS), then VoiceOver iOS and
+TalkBack, NVDA + Firefox and a Narrator smoke check, each through the script, with the transcript
+table filled from what was actually heard.

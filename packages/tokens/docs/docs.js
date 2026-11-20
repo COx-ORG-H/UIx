@@ -7,6 +7,7 @@ import { COMPONENT_SPECIMENS } from './component-specimens.js';
 import { initFormSpecimens, selectMarkup } from './form-specimens.js';
 import { initFeedbackDemos } from './feedback-demos.js';
 import { COMPONENT_GUIDANCE as COMPONENT_INTENT } from './component-guidance.js';
+import { AT_AUTOMATED, AT_PAIRINGS, AT_STATUS } from './at-status.js';
 
 export const slugify = (name) =>
   String(name)
@@ -221,6 +222,24 @@ const pageHeader = (eyebrow, title, lead, meta = []) => `<header>
 const section = (id, title, content) => `<section class="uix-docs__page-section" id="${id}"><h2>${esc(title)}</h2>${content}</section>`;
 
 const callout = (title, body, tone = 'info') => `<div class="uix-docs__callout${tone === 'warning' ? ' uix-docs__callout--warning' : ''}"><strong>${esc(title)}</strong><p>${body}</p></div>`;
+
+const A11Y_DOCS = 'https://github.com/COx-ORG-H/UIx/blob/master/Docs/a11y';
+const atVerdict = (value) => value === 'pass' ? '<span class="uix-pill uix-pill--success">pass</span>'
+  : value === 'fail' ? '<span class="uix-pill uix-pill--danger">fail</span>'
+    : value === 'na' ? '<span class="uix-text-muted">n/a</span>' : '<span class="uix-text-muted">not run</span>';
+/** The Accessibility page's status table: one row per Docs/a11y/results file (at-status.js). */
+function renderAtStatus() {
+  const rows = AT_STATUS.map((row) => {
+    const run = AT_PAIRINGS.filter(({ key }) => ['pass', 'fail'].includes(row.results[key]));
+    const missingT1 = AT_PAIRINGS.filter(({ key, tier, touch }) => (tier === 'T1' || (touch && row.touch)) && !['pass', 'fail', 'na'].includes(row.results[key] ?? 'not-run'));
+    const item = (label, value) => `<li><span class="uix-docs__at-label">${esc(label)}</span> ${atVerdict(value)}</li>`;
+    const tested = run.length ? `<ul class="uix-docs__at-list">${run.map(({ key, label }) => item(label, row.results[key])).join('')}</ul>` : '<p>No human run yet.</p>';
+    const needs = missingT1.length ? `<p class="uix-text-muted">Not run yet: ${missingT1.map(({ label }) => esc(label)).join(', ')}${row.touch ? ' (touch-relevant)' : ''}.</p>` : '';
+    const automated = AT_AUTOMATED.filter(({ key }) => row.results[key] != null).map(({ key, short }) => item(short, row.results[key])).join('');
+    return `<tr><td><a href="${A11Y_DOCS}/results/${row.id}.md"><strong>${esc(row.name)}</strong></a><br><code>${esc(row.id)}</code><br><span class="uix-text-muted">${esc(row.version)} · ${esc(row.date)}</span></td><td>${tested}${needs}</td><td>${automated ? `<ul class="uix-docs__at-list">${automated}</ul>` : '—'}</td><td><ul class="uix-docs__at-issues">${row.knownIssues.map((issue) => `<li>${esc(issue)}</li>`).join('')}</ul></td></tr>`;
+  }).join('');
+  return `<p>What each component has been tested with, after Carbon's status tags and GOV.UK's known issues. A <strong>pass</strong> is a person running the pairing's script (<a href="${A11Y_DOCS}/scripts/README.md">scripts</a>, <a href="${A11Y_DOCS}/manual-sr-protocol.md">protocol</a>). The automated columns prove the semantics are in place and what NVDA spoke when a script pressed the keys; neither is a person listening. Stable needs NVDA + Chrome and JAWS + Chrome, and VoiceOver iOS and TalkBack for a component that renders in a touch layout. This is the kit's evidence, not a product's conformance verdict; what an Accessibility Conformance Report can cite alongside a product's own test: <a href="${A11Y_DOCS}/acr-readiness.md">ACR readiness</a>.</p><div class="uix-table-wrap"><table class="uix-docs__token-table uix-docs__at-status"><thead><tr><th scope="col">Component</th><th scope="col">Tested with (people)</th><th scope="col">Automated</th><th scope="col">Known issues</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
 
 const compare = (doText, dontText) => `<div class="uix-docs__compare">
   <div class="uix-docs__compare-card uix-docs__compare-card--do"><strong>Do</strong><p>${esc(doText)}</p></div>
@@ -863,6 +882,7 @@ graph.fitView({ animate: !reduce });`, 'tsx')}${compare('Fade the change in plac
     ${section('product-responsibility', 'What the product must add', `<div class="uix-docs__principles"><div class="uix-docs__principle"><span class="uix-docs__principle-number">NAME</span><strong>Clear purpose</strong><p>Every icon-only control needs an accessible name; every field needs a visible label.</p></div><div class="uix-docs__principle"><span class="uix-docs__principle-number">STATE</span><strong>Announced change</strong><p>Expose selected, expanded, invalid, busy, and live-update state through semantics.</p></div><div class="uix-docs__principle"><span class="uix-docs__principle-number">PATH</span><strong>A way forward</strong><p>Empty, error, forbidden, and not-found states need a focusable next action.</p></div></div>`)}
     ${section('reduced-transparency', 'Reduced transparency', `<p>Blur behind a layer costs legibility: text seen through a blurred, dimmed layer has less contrast, and a moving blur is hard to read for people with low vision or vestibular and attention differences. The phone platforms each offer a way out (iOS "Reduce Transparency", One UI "Reduce transparency and blur"). UIx draws only a little blur (4 px behind a dialog or drawer, 2 px behind a progress overlay, a short blur on rows that arrive), and it all goes under <code>&lt;html data-transparency="reduce"&gt;</code>: the <code>--uix-*-blur</code> tokens are <code>0px</code>, the progress overlay turns firmer instead, and the scrim goes from .5 to .6 black so the dialog still stands apart from a page that is now sharp behind it. Nothing else changes: rows still fade and move in, and reduced motion is a separate choice.</p><ul><li><code>data-contrast="more"</code> implies reduced transparency: a see-through layer is lower contrast by construction.</li><li>The <code>system</code> choice follows <code>prefers-reduced-transparency: reduce</code>. Only Chromium reports it (Firefox ships it off, WebKit declines), so offer the setting in the product: <code>&lt;DisplayPreferences&gt;</code> has it, and <code>displayPreferencesScript()</code> applies it before the first paint.</li><li>It is a switch, not a slider. Blur or glass of your own reads <code>useReducedTransparency()</code> or the <code>--uix-*-blur</code> tokens, which already resolve to <code>0px</code>.</li></ul><p><a href="#display-preferences">Display preferences</a> · <a href="#theming">Theming</a></p>`)}
     ${section('keyboard', 'Keyboard behavior', `<table class="uix-docs__token-table"><thead><tr><th>Pattern</th><th>Expected behavior</th></tr></thead><tbody><tr><td>Global</td><td>Tab and Shift+Tab follow visual order; focus is never trapped accidentally.</td></tr><tr><td>Dialog / drawer</td><td>Focus enters the overlay, remains contained, closes on Escape, then returns to the trigger.</td></tr><tr><td>Tabs</td><td>Arrow keys move between tabs; the selected tab owns the active panel.</td></tr><tr><td>Menu / listbox</td><td>Arrow keys move active choice; Enter or Space commits; Escape dismisses.</td></tr><tr><td>Dense table</td><td>High-frequency actions remain keyboard-reachable without turning every cell into a tab stop.</td></tr></tbody></table>`)}
+    ${section('at-status', 'Screen-reader status', renderAtStatus())}
     ${section('review', 'Before shipping', `${compare('Test the real journey with a keyboard, zoom, both themes, and at least the required screen-reader matrix.', 'Assume that using a UIx class automatically makes the surrounding workflow accessible.')}`)}`,
 
   'writing-translation': () => `${pageHeader('Foundations', 'Writing and translation', 'Every word the kit draws itself (close buttons, counts, announcements, empty states) is translated once, for a whole subtree, with UixLabelsProvider. Words about your domain stay props.', ['UixLabelsProvider', 'CLDR plural forms', '6 language packs'])}
