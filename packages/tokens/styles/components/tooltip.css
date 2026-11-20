@@ -30,7 +30,7 @@
     overflow: visible;
   }
   /* rich content (HAR-1349): a short list or a few lines, never interactive */
-  .uix-tooltip__bubble :is(ul, ol) { margin: 0; padding-left: 1.1em; }
+  .uix-tooltip__bubble :is(ul, ol) { margin: 0; padding-inline-start: 1.1em; }
   .uix-tooltip__bubble :is(p, ul, ol) + :is(p, ul, ol) { margin-top: var(--uix-space-1); }
   .uix-tooltip__bubble:popover-open { opacity: 1; transform: none; }
   /* a closing bubble shrinks away under the pointer without catching it */

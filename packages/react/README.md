@@ -367,6 +367,15 @@ and the landing.
   motion it is today's behaviour. It may change or go away.
 - **Kanban**: `KanbanCard dragging`, `KanbanColumn dropTarget`, `<KanbanDropLine />` at the gap;
   call `settleDrop(cardElement)` once the card is in its new place.
+- **A drag is never the only way (WCAG 2.5.7)**, and a keyboard path alone does not count: every
+  drag also works with single clicks. SortableList has Move up / Move down on every row, ViewMenu
+  the row's ⋯ menu. A `KanbanCard` with `onMove` (or `moveColumns` + `column` + `onMoveTo`) gets a
+  ⋯ Move menu: Move up / Move down and a column list (or Move left / Move right); pass
+  `disabledMoves` for the ends, `itemId` so focus follows a card into its new column, and set the
+  board's `announcement` as for a keyboard move (`moveMenu={false}` if your own card menu already
+  has the moves). A press on a DashboardCanvas handle shows step buttons that move or resize one
+  cell per press (`change.source === 'buttons'`). Words: `UixLabelsProvider` `kanban`,
+  `dashboardCanvas`, `viewMenu`. The Accessibility docs page lists every drag and its click path.
 - **`useKeyboardGrab({ id, label, onMove, onDrop, onCancel, labels })`** for a draggable thing you
   build: Space or Enter picks the focused item up, the arrows call `onMove(direction)` (return
   what to say, e.g. "Position 3 of 8"), Space or Enter drops, Escape or leaving puts it back;
@@ -378,7 +387,8 @@ and the landing.
 <KanbanColumn title={t('doing')} dropTarget={drag?.column === 'doing'}>
   {cards.map((card, i) => <Fragment key={card.id}>
     {drag?.column === 'doing' && drag.index === i && <KanbanDropLine />}
-    <KanbanCard title={card.title} dragging={drag?.id === card.id} onMove={…} />
+    <KanbanCard title={card.title} itemId={card.id} dragging={drag?.id === card.id} onMove={…}
+      moveColumns={columns} column="doing" onMoveTo={(to) => moveTo(card.id, to)} />
   </Fragment>)}
   {drag?.column === 'doing' && drag.index >= cards.length && <KanbanDropLine />}
 </KanbanColumn>
