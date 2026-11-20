@@ -124,17 +124,19 @@ test('a click opens the width popover: − / +, a typed width, Default width (on
   expect(await widthOf(status)).toBe(250);
   await expect(handle).toBeFocused();
   await expect(page.locator('#queue-url')).toHaveText('widths=status%3A250');
-  // a width past the cap is held to it
-  await handle.press('Enter');
-  await expect(dialog).toBeVisible();
-  await field.fill('5000');
-  await field.press('Enter');
-  expect(await widthOf(status)).toBe(960);
   await handle.press('Enter');
   await dialog.getByRole('button', { name: 'Default width' }).click();
   await expect(dialog).toBeHidden();
   expect(await widthOf(status)).toBe(132);
   await expect(page.locator('#queue-url')).toHaveText('');
+  // a width past the cap is held to it
+  await handle.press('Enter');
+  await expect(dialog).toBeVisible();
+  await field.fill('5000');
+  await field.press('Enter');
+  await expect(dialog).toBeHidden();
+  expect(await widthOf(status)).toBe(960);
+  await expect(page.locator('#queue-url')).toHaveText('widths=status%3A960');
 });
 
 test('Escape in the popover leaves the width as it was', async ({ page }) => {
