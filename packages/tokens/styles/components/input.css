@@ -66,10 +66,13 @@
   .uix-input-group--has-trailing > .uix-input--sm { padding-right: calc(var(--uix-space-2) + var(--uix-icon-sm) + var(--uix-space-2)); }
 
   /* trailing action (HAR-1376): a real button inside the field's end (a reveal toggle, a clear),
-     square, as tall as the field less a 4 px inset: 28 px at md, 36 px at lg, 24 px at sm */
+     square, as tall as the field less a 4 px inset: 28 px at md, 36 px at lg, 24 px at sm.
+     Concentric with the field: the wrapper is not the rounded box, so the button names the
+     field's corner and its inset itself (8 px corner at md and lg, 10 px at sm). */
   .uix-input-group__action {
-    position: absolute; top: 4px; bottom: 4px; right: 4px; aspect-ratio: 1; display: inline-grid; place-items: center;
-    padding: 0; border: 0; border-radius: var(--uix-radius-sm); background: transparent; color: var(--uix-text-muted);
+    --uix-radius-outer: var(--uix-radius-md); --uix-radius-inset: var(--uix-space-1);
+    position: absolute; top: var(--uix-radius-inset); bottom: var(--uix-radius-inset); right: var(--uix-radius-inset); aspect-ratio: 1; display: inline-grid; place-items: center;
+    padding: 0; border: 0; border-radius: var(--uix-radius-inner); background: transparent; color: var(--uix-text-muted);
     font: inherit; line-height: 0; cursor: pointer;
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
   }
@@ -78,7 +81,7 @@
   .uix-input-group__action:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 0; }
   .uix-input-group__action[aria-pressed="true"] { color: var(--uix-text); }
   .uix-input-group__action:disabled { cursor: not-allowed; opacity: .55; }
-  .uix-input-group:has(> .uix-input--sm) > .uix-input-group__action { top: 2px; bottom: 2px; right: 2px; }
+  .uix-input-group:has(> .uix-input--sm) > .uix-input-group__action { --uix-radius-inset: calc(var(--uix-space-1) / 2); }
   .uix-input-group--has-action > .uix-input { padding-right: 40px; }
   .uix-input-group--has-action > .uix-input--sm { padding-right: 32px; }
   .uix-input-group--has-action > .uix-input--lg { padding-right: 48px; }

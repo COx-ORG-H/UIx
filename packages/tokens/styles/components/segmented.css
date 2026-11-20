@@ -7,10 +7,12 @@
      wider than the whole container (break-word, not anywhere). Before, an option broke inside a word
      as soon as its row was tight (TENSOR HAR-1519: "Monat" read "Mona / t" in the calendar view switcher at 375 px, the
      class HAR-1601 fixed for the ViewMenu alone). */
-  .uix-segmented { display: inline-flex; flex-wrap: wrap; min-inline-size: 0; max-inline-size: 100%; padding: var(--uix-space-1); gap: var(--uix-space-1); background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); }
+  .uix-segmented { display: inline-flex; flex-wrap: wrap; min-inline-size: 0; max-inline-size: 100%; padding: var(--uix-space-1); gap: var(--uix-space-1); background: var(--uix-bg-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-outer);
+    /* concentric corners: an option sits the 1px border + space-1 padding inside the track */
+    --uix-radius-outer: var(--uix-radius-md); --uix-radius-inset: calc(1px + var(--uix-space-1)); }
   .uix-segmented__option {
     border: 0; background: transparent; color: var(--uix-text-hushed); font: inherit; font-size: var(--uix-text-meta); font-weight: 500;
-    padding: var(--uix-space-2) var(--uix-space-3); border-radius: calc(var(--uix-radius-md) - 3px); cursor: pointer;
+    padding: var(--uix-space-2) var(--uix-space-3); border-radius: var(--uix-radius-inner); cursor: pointer;
     min-inline-size: 0; white-space: normal; overflow-wrap: break-word; hyphens: manual;
     transition: background-color var(--uix-dur-fast) var(--uix-ease-out), color var(--uix-dur-fast) var(--uix-ease-out);
   }
@@ -42,7 +44,7 @@
   .uix-segmented { overflow: clip; overflow-clip-margin: var(--uix-space-1); }
   .uix-segmented__option { position: relative; }
   /* the same look as a selected option: surface, lift and the 3:1 inset ring */
-  .uix-segmented__indicator { position: absolute; z-index: calc(-1 * var(--uix-z-raised)); pointer-events: none; transform-origin: 0 0; background: var(--uix-surface); box-shadow: var(--uix-shadow-sm), inset 0 0 0 1px var(--uix-text-muted); border-radius: calc(var(--uix-radius-md) - 3px); }
+  .uix-segmented__indicator { position: absolute; z-index: calc(-1 * var(--uix-z-raised)); pointer-events: none; transform-origin: 0 0; background: var(--uix-surface); box-shadow: var(--uix-shadow-sm), inset 0 0 0 1px var(--uix-text-muted); border-radius: var(--uix-radius-inner); }
   .uix-segmented__indicator[data-moving] { transition: transform var(--uix-dur) var(--uix-ease-in-out); }
   @media (forced-colors: none) {
     .uix-segmented[data-uix-indicator] .uix-segmented__option:is([aria-pressed="true"], [aria-checked="true"]) { background: transparent; box-shadow: none; }

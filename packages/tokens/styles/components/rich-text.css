@@ -158,12 +158,13 @@
   /* :shortcode suggestions */
   .uix-rich-text__suggest {
     position: fixed; z-index: var(--uix-z-dropdown); min-width: 220px; max-height: 280px; overflow-y: auto;
-    padding: var(--uix-space-1); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md);
+    padding: var(--uix-space-1); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-outer);
     background: var(--uix-surface-2); box-shadow: var(--uix-shadow-popover); color: var(--uix-text);
+    --uix-radius-outer: var(--uix-radius-md); --uix-radius-inset: calc(1px + var(--uix-space-1));
   }
   .uix-rich-text__suggest-item {
     display: flex; align-items: center; gap: var(--uix-space-2); padding: var(--uix-space-1) var(--uix-space-2);
-    border-radius: var(--uix-radius-sm); cursor: pointer; font-size: var(--uix-text-body);
+    border-radius: var(--uix-radius-inner); cursor: pointer; font-size: var(--uix-text-body);
   }
   .uix-rich-text__suggest-item:hover { background: var(--uix-bg-hover); }
   .uix-rich-text__suggest-item[aria-selected="true"] { background: var(--uix-brand-muted); color: var(--uix-accent-text); }

@@ -52,7 +52,7 @@ const iconName: IconName = 'shield-check';
 const entityIcon: UixIcon = AlertTriangleIcon;
 const iconElements = [<Icon key="n" name={iconName} size="sm" label="Verified" />, <ShieldCheckIcon key="c" tone="success" />, entityIcon];
 
-// cssVar/light are Record<UixTokenName,string>; dark/num are Partial<Record<…>>.
+// cssVar is Record<UixTokenName,string>; light is that minus the per-element tokens (radius-inner); dark/num are Partial<Record<…>>.
 const accent: string = cssVar.accent;
 const body: string = light['text-body'];
 const space4: number | undefined = num['space-4'];
