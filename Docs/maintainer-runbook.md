@@ -35,6 +35,7 @@ the visual one — see its section):
 npm run test:parity      # token values unchanged vs the frozen baseline
 npm run test:contract    # contract is structurally whole; no raw values in component CSS
 npm run test:size:css    # no stylesheet grew past its budget; the bundles are still minified
+npm run test:size        # chart entries under their limits; the main @tensor_1/react entry within its baseline (after build:react)
 npm run test:api         # @tensor_1/react public API matches the committed .api.md
 npm run test:smoke       # packed tarballs install + import + type-check in a throwaway consumer
 npm run test:a11y        # axe over the static styleguide, light + dark
@@ -62,6 +63,8 @@ regression can't land silently. The CI definition is
 | **parity** | `npm run test:parity` | Byte-for-byte (whitespace-normalized) equivalence of every `--uix-*` declaration in the generated CSS vs the frozen contract snapshot. | `packages/tokens/tests/tokens.baseline.css` |
 | **contract** | `npm run test:contract` | The contract is structurally complete (every token family present, every theme covers its tier) and no component CSS hardcodes a contract-class value. | enforced in-script; justified exceptions in `packages/tokens/tests/raw-value-allowlist.json` |
 | **css-size** | `npm run test:size:css` | No authored stylesheet grew past max(2%, 64 B) of its recorded raw/gzip/brotli size, none was added or removed unacknowledged, and each bundle is still the minified sum of its inputs. | `packages/tokens/tests/css-size.baseline.json` (one entry per stylesheet; none for the bundles) |
+| **entry-size** | `npm run test:size` | The main `@tensor_1/react` entry (whole surface, and a Button-only tree-shaking probe) did not grow past max(2%, 512 B) of its minified/gzip/brotli baseline; the chart entries stay under their hard limits. | `packages/react/etc/entry-size.baseline.json` — see `Docs/performance-lanes.md` |
+| **perf** | `npm run test:perf:workspace` (CI `perf` job); `npm run test:perf:no-gpu` (nightly) | A 10,000-row DataWorkspace's mount, scroll, sort, select-all and search keystrokes at 4× CPU stay within their CI-measured budgets; the nightly no-GPU lane catches gross regressions in scrim blur, scroll edges and the task tray. | `tests/perf/budgets.json` — see `Docs/performance-lanes.md` |
 | **api** | `npm run test:api` | The public API surface of `@tensor_1/react` (main + `./chart`) is unchanged. | `packages/react/etc/uix-react.api.md` and `packages/react/etc/uix-react-chart.api.md` |
 | **smoke** | `npm run test:smoke` | The *published* tarballs actually install, import (ESM + CJS), resolve their subpath exports, and type-check for a real consumer. | `tests/smoke-consumer/` (fixtures: `app.tsx`, `tsconfig.json`) |
 | **visual** | `npm run test:visual` | Representative docs/example routes and the table specimen are pixel-stable in light + dark. | `tests/visual/__screenshots__/*-linux.png` |

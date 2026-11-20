@@ -7,6 +7,7 @@ import { useUixLabels } from '../labels-context.js';
 import { MenuIcon } from '../icons/components.js';
 import { Drawer } from './Drawer.js';
 import { ShellDrawerContext } from '../shell-context.js';
+import { useShortcut } from './Shortcuts.js';
 
 export type ShellNav = 'full' | 'rail' | 'hidden';
 
@@ -21,24 +22,6 @@ const readTier = (key: string): ShellNav | undefined => {
     const stored = window.localStorage.getItem(key);
     return NAV_TIERS.includes(stored as ShellNav) ? (stored as ShellNav) : undefined;
   } catch { return undefined; }
-};
-
-/**
- * Whether a keydown that produced the hotkey's character should switch the tier. The character
- * decides, not the modifiers that typed it: on a German or Bosnian keyboard "[" is AltGr+8 /
- * AltGr+F, which Windows reports as Ctrl+Alt, and on a Mac it is Option+5 (altKey, no AltGraph).
- * So only ⌘ and a Ctrl without Alt (a real shortcut) are refused. Not while typing (in a field, a
- * contenteditable, also inside a shadow root), not on key repeat, not under a modal dialog.
- */
-const isNavHotkey = (event: KeyboardEvent, key: string) => {
-  if (event.key !== key || event.defaultPrevented || event.repeat || event.isComposing) return false;
-  if (event.metaKey || (event.ctrlKey && !event.altKey)) return false;
-  const target = ((typeof event.composedPath === 'function' ? event.composedPath()[0] : null) ?? event.target) as HTMLElement | null;
-  if (target?.isContentEditable || target?.closest?.('input, textarea, select, [contenteditable=""], [contenteditable="true"], [role="textbox"], [role="combobox"]')) return false;
-  const modalOpen = Array.from(document.querySelectorAll('dialog[open]')).some((dialog) => {
-    try { return dialog.matches(':modal'); } catch { return true; }
-  });
-  return !modalOpen;
 };
 
 export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
@@ -66,8 +49,10 @@ export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
   onNavChange?: (nav: ShellNav) => void;
   /**
    * A key that switches the sidebar between `full` and `rail` (HAR-1371; MOTUS StaffShell), e.g.
-   * `"["`. It is ignored while typing in a field or with Ctrl/⌘/Alt held, and from `hidden` it
-   * goes to `full`. The switch is instant.
+   * `"["`. It is ignored while typing in a field, under a modal dialog, on key repeat or with
+   * Ctrl/⌘ held (Option or AltGr may type it), and from `hidden` it goes to `full`. The switch is
+   * instant. It is registered with the shortcut registry as `uix.app-shell.nav`: the shortcut
+   * sheet lists it, a remap applies, and the character-key switch turns it off.
    */
   navHotkey?: string;
   /**
@@ -162,16 +147,14 @@ export function AppShell({
     onNavChange?.(next);
   }, [controlled, navTierStorageKey, onNavChange]);
 
-  useEffect(() => {
-    if (!navHotkey) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (!isNavHotkey(event, navHotkey)) return;
-      event.preventDefault();
-      changeNav(navState === 'full' ? 'rail' : 'full');
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [navHotkey, navState, changeNav]);
+  // The character decides, not the modifiers that typed it: on a German or Bosnian keyboard "[" is
+  // AltGr+8 / AltGr+F (Windows reports Ctrl+Alt) and on a Mac Option+5; the registry's matcher
+  // refuses only ⌘ and a Ctrl without Alt. Not while typing, not on repeat, not under a modal.
+  useShortcut({
+    id: 'uix.app-shell.nav', keys: navHotkey ?? '', enabled: !!navHotkey, scope: 'global',
+    label: uixLabels.shortcuts?.toggleNav ?? 'Collapse or expand the navigation',
+    handler: () => changeNav(navState === 'full' ? 'rail' : 'full'),
+  });
 
   useEffect(() => {
     if (!focus || !onExitFocus) return;

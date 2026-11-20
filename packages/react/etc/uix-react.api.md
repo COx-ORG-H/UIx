@@ -739,6 +739,7 @@ export interface ButtonLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement>
     icon?: boolean;
     renderLink?: UixRenderLink;
     shortcut?: KeyShortcut;
+    shortcutId?: string;
     // (undocumented)
     size?: ButtonSize;
     // (undocumented)
@@ -759,6 +760,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     result?: ButtonResult | null;
     resultLabels?: Partial<ButtonResultLabels>;
     shortcut?: KeyShortcut;
+    shortcutId?: string;
     // (undocumented)
     size?: ButtonSize;
     // (undocumented)
@@ -800,6 +802,9 @@ export interface CalendarDay {
 
 // @public
 export type CalendarWeekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+// @public
+export function canonicalKey(name: string): string;
 
 // @public
 export function canvasItemLimits(item: DashboardCanvasItem): {
@@ -897,6 +902,9 @@ export interface ChangeHighlightProps extends HTMLAttributes<HTMLElement> {
     value: unknown;
     variant?: 'tint' | 'ring';
 }
+
+// @public
+export type CharacterKeyPreference = 'on' | 'off';
 
 // @public
 export function ChartCard(input: ChartCardProps): react.JSX.Element;
@@ -1188,6 +1196,9 @@ export interface ComboboxProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onC
 }
 
 // @public
+export const COMMAND_PALETTE_SHORTCUT_ID = "uix.command-palette";
+
+// @public
 export function CommandGroup(input: CommandGroupProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -1235,6 +1246,7 @@ export interface CommandPaletteItem {
     label: string;
     onSelect?: () => void;
     shortcut?: readonly string[];
+    shortcutId?: string;
 }
 
 // @public (undocumented)
@@ -1258,6 +1270,8 @@ export interface CommandPaletteProps extends HTMLAttributes<HTMLDivElement> {
     recent?: readonly CommandPaletteItem[];
     recentLabel?: string;
     resultsLabel?: (count: number) => string;
+    shortcut?: ShortcutBinding;
+    shortcutLabel?: string;
 }
 
 // @public
@@ -1441,6 +1455,9 @@ export interface CountProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'child
     format?: (value: number) => string;
     value: number;
 }
+
+// @public
+export function createShortcutRegistry(config?: Partial<ShortcutRegistryConfig>): ShortcutRegistry;
 
 // @public
 export function createTaskApi(store: TaskStore): TaskApi;
@@ -2194,6 +2211,15 @@ export const DEFAULT_SCHEDULING_CALENDAR_LABELS: SchedulingCalendarLabels;
 export const DEFAULT_SCHEDULING_TIMELINE_LABELS: SchedulingTimelineLabels;
 
 // @public
+export const DEFAULT_SEQUENCE_TIMEOUT_MS = 1500;
+
+// @public (undocumented)
+export const DEFAULT_SHORTCUT_LABELS: ShortcutLabels;
+
+// @public (undocumented)
+export const DEFAULT_SHORTCUT_PREFERENCES: ShortcutPreferenceValues;
+
+// @public
 export const DEFAULT_SLA_REMAINING_THRESHOLDS: readonly SlaThreshold[];
 
 // @public
@@ -2642,6 +2668,9 @@ export function edgeLabelSize(lines: readonly string[]): {
     width: number;
     height: number;
 };
+
+// @public
+export function effectiveShortcut(id: string, defaultKeys: ShortcutBinding | null | undefined, preferences: ShortcutPreferenceValues): KeySequence | null;
 
 // @public
 export function emptyFilterValue(kind: FilterValueKind): FilterValue;
@@ -3349,6 +3378,11 @@ export type FilterValueKind = FilterValue['kind'];
 export function findRuleNodeDepth(group: RuleGroup, id: string, depth?: number): number | undefined;
 
 // @public
+export function findShortcutConflicts(entries: readonly ShortcutConflictEntry[], options?: {
+    platform?: KbdPlatform;
+}): ShortcutConflict[];
+
+// @public
 export function flashChanged(el: HTMLElement): void;
 
 // @public (undocumented)
@@ -3430,6 +3464,9 @@ export function formatDateKey(value: string, locale?: string | readonly string[]
 
 // @public
 export function formatFileSize(bytes: number, locale?: string, options?: FileSizeOptions): string;
+
+// @public
+export function formatShortcut(sequence: KeySequence): string;
 
 // @public
 export function formatTimeKey(value: string, locale?: string | readonly string[], hour12?: boolean): string;
@@ -3764,6 +3801,9 @@ export interface InsightTarget {
     target: number;
 }
 
+// @public
+export function isCharacterKeyShortcut(binding: ShortcutBinding | null | undefined): boolean;
+
 // @public (undocumented)
 export function isDateInRange(date: string, value: DateRangeValue): boolean;
 
@@ -3785,6 +3825,9 @@ export function isRuleGroup(node: RuleCondition | RuleGroup): node is RuleGroup;
 
 // @public
 export function isTimeOutOfRange(value: string, min?: string, max?: string): boolean;
+
+// @public
+export function isTypingTarget(target: EventTarget | null | undefined): boolean;
 
 // @public
 export const isUnresolvedChoice: (choice: FilterChoice) => boolean;
@@ -3861,13 +3904,15 @@ export interface KanbanProps extends HTMLAttributes<HTMLDivElement> {
 export function Kbd(input: KbdProps): react.JSX.Element;
 
 // @public
-export function KbdCombo(input: KbdComboProps): react.JSX.Element;
+export function KbdCombo(input: KbdComboProps): react.JSX.Element | null;
 
 // @public (undocumented)
 export interface KbdComboProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
     keyLabels?: Partial<Record<string, string>>;
-    keys: string[];
+    keys?: string[] | KeySequence;
     platform?: KbdPlatform;
+    shortcutId?: string;
+    thenLabel?: string;
 }
 
 // @public (undocumented)
@@ -3891,6 +3936,12 @@ export interface KeyboardGrabLabels {
     // (undocumented)
     grabbed: string;
 }
+
+// @public
+export type KeyboardLayoutMap = ReadonlyMap<string, string>;
+
+// @public
+export type KeySequence = readonly KeyShortcut[];
 
 // @public
 export type KeyShortcut = readonly string[];
@@ -4295,6 +4346,9 @@ export interface MatchBulkResult {
     succeeded: number;
 }
 
+// @public
+export function matchesChord(event: ShortcutKeyEvent, chord: KeyShortcut, platform: KbdPlatform, layout?: KeyboardLayoutMap | null): boolean;
+
 // @public (undocumented)
 export function matchFilter(row: Row, f: ColumnFilter): boolean;
 
@@ -4630,6 +4684,7 @@ export interface MenuItemCheckboxProps extends MenuItemAttributes {
     // (undocumented)
     onCheckedChange?: (checked: boolean) => void;
     shortcut?: KeyShortcut | ReactNode;
+    shortcutId?: string;
 }
 
 // @public (undocumented)
@@ -4647,6 +4702,7 @@ export interface MenuItemProps extends MenuItemAttributes {
     // (undocumented)
     renderLink?: UixRenderLink;
     shortcut?: KeyShortcut | ReactNode;
+    shortcutId?: string;
     // (undocumented)
     tone?: 'default' | 'danger';
 }
@@ -4668,6 +4724,7 @@ export interface MenuItemRadioProps extends MenuItemAttributes {
     icon?: ReactNode;
     onSelect?: () => void;
     shortcut?: KeyShortcut | ReactNode;
+    shortcutId?: string;
     value: string;
 }
 
@@ -5468,6 +5525,12 @@ export function parseDisplayPreferences(raw: string | null | undefined, defaults
 
 // @public (undocumented)
 export function parseMetricValue(value: string): number | null;
+
+// @public
+export function parseShortcut(binding: ShortcutBinding | null | undefined): KeySequence | null;
+
+// @public
+export function parseShortcutPreferences(raw: string | null | undefined, defaults?: ShortcutPreferenceValues): ShortcutPreferenceValues;
 
 // @public
 export function parseTimeInput(text: string, locale?: string | readonly string[]): string | null;
@@ -7600,6 +7663,221 @@ export function shiftSpan(span: {
 };
 
 // @public
+export const SHORTCUT_PREFERENCES_STORAGE_KEY = "uix-shortcut-preferences";
+
+// @public
+export const SHORTCUT_SHEET_ID = "uix.shortcut-sheet";
+
+// @public
+export type ShortcutBinding = string | KeyShortcut | KeySequence;
+
+// @public
+export interface ShortcutConflict {
+    // (undocumented)
+    ids: [string, string];
+    // (undocumented)
+    keys: [string, string];
+    kind: 'same' | 'prefix';
+    platform: KbdPlatform;
+    // (undocumented)
+    scope: unknown;
+}
+
+// @public
+export interface ShortcutConflictEntry {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    keys: ShortcutBinding;
+    // (undocumented)
+    scope?: unknown;
+}
+
+// @public
+export interface ShortcutDefinition {
+    allowInInputs?: boolean;
+    allowInModal?: boolean;
+    enabled?: boolean;
+    group?: string;
+    handler?: (event: KeyboardEvent | null) => void | boolean;
+    hidden?: boolean;
+    id: string;
+    keys: ShortcutBinding;
+    label: string;
+    repeat?: boolean;
+    when?: (event: KeyboardEvent) => boolean;
+}
+
+// @public
+export interface ShortcutKeyEvent {
+    // (undocumented)
+    altKey: boolean;
+    // (undocumented)
+    code?: string;
+    // (undocumented)
+    ctrlKey: boolean;
+    // (undocumented)
+    key: string;
+    // (undocumented)
+    metaKey: boolean;
+    // (undocumented)
+    shiftKey: boolean;
+}
+
+// @public
+export interface ShortcutLabels {
+    characterKeys: string;
+    characterKeysHint: string;
+    characterKeysOff: string;
+    empty: string;
+    focusSearch: string;
+    global: string;
+    open: string;
+    openPalette: string;
+    then: string;
+    title: string;
+    toggleNav: string;
+}
+
+// @public
+export interface ShortcutPreferenceValues {
+    characterKeys: CharacterKeyPreference;
+    overrides: Readonly<Record<string, string | null>>;
+}
+
+// @public
+export function ShortcutProvider(props: ShortcutProviderProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface ShortcutProviderProps {
+    // (undocumented)
+    children?: ReactNode;
+    defaultPreferences?: Partial<ShortcutPreferenceValues>;
+    onConflict?: (conflict: ShortcutConflict) => void;
+    onPreferencesChange?: (next: ShortcutPreferenceValues) => void;
+    platform?: KbdPlatform;
+    preferences?: ShortcutPreferenceValues;
+    sequenceTimeout?: number;
+    storageKey?: string | null;
+}
+
+// @public
+export class ShortcutRegistry {
+    constructor(config?: Partial<ShortcutRegistryConfig>);
+    active(target?: Element | null): ShortcutSheetGroup[];
+    attach(doc: Document): () => void;
+    // (undocumented)
+    get attached(): boolean;
+    configure(config: Partial<ShortcutRegistryConfig>): void;
+    conflicts(): ShortcutConflict[];
+    dispatch(event: KeyboardEvent): boolean;
+    get fixedPlatform(): KbdPlatform | undefined;
+    // (undocumented)
+    getSnapshot: () => ShortcutRegistrySnapshot;
+    has(id: string): boolean;
+    keysFor(id: string, near?: Element | null): KeySequence | null;
+    // (undocumented)
+    get platform(): KbdPlatform;
+    // (undocumented)
+    get preferences(): ShortcutPreferenceValues;
+    register(get: () => ShortcutDefinition, scope?: ShortcutScopeRef | null): () => void;
+    // (undocumented)
+    resetOverrides(): void;
+    run(id: string): boolean;
+    // (undocumented)
+    setCharacterKeys(value: 'on' | 'off'): void;
+    setOverride(id: string, keys: string | null | undefined): void;
+    // (undocumented)
+    setPreferences(next: ShortcutPreferenceValues): void;
+    // (undocumented)
+    get size(): number;
+    // (undocumented)
+    subscribe: (listener: () => void) => () => void;
+}
+
+// @public (undocumented)
+export interface ShortcutRegistryConfig {
+    onConflict?: (conflict: ShortcutConflict) => void;
+    onPreferencesChange: (next: ShortcutPreferenceValues) => void;
+    // (undocumented)
+    platform?: KbdPlatform;
+    // (undocumented)
+    preferences: ShortcutPreferenceValues;
+    // (undocumented)
+    sequenceTimeout: number;
+}
+
+// @public (undocumented)
+export interface ShortcutRegistrySnapshot {
+    pending: KeySequence | null;
+    // (undocumented)
+    preferences: ShortcutPreferenceValues;
+    // (undocumented)
+    version: number;
+}
+
+// @public (undocumented)
+export interface ShortcutsApi {
+    active: (target?: Element | null) => ShortcutSheetGroup[];
+    conflicts: () => ShortcutConflict[];
+    has: (id: string) => boolean;
+    keysFor: (id: string, near?: Element | null) => KeySequence | null;
+    pending: KeySequence | null;
+    // (undocumented)
+    preferences: ShortcutPreferenceValues;
+    // (undocumented)
+    resetOverrides: () => void;
+    run: (id: string) => boolean;
+    // (undocumented)
+    setCharacterKeys: (value: CharacterKeyPreference) => void;
+    setOverride: (id: string, keys: ShortcutBinding | null | undefined) => boolean;
+}
+
+// @public
+export const ShortcutScope: react.ForwardRefExoticComponent<ShortcutScopeProps & react.RefAttributes<HTMLDivElement>>;
+
+// @public (undocumented)
+export interface ShortcutScopeProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    children?: ReactNode;
+    label: string;
+}
+
+// @public
+export interface ShortcutScopeRef {
+    // (undocumented)
+    element: () => Element | null;
+    label?: string;
+}
+
+// @public
+export function ShortcutSheet(input: ShortcutSheetProps): react.JSX.Element;
+
+// @public
+export interface ShortcutSheetGroup {
+    scope: string | null;
+    // (undocumented)
+    shortcuts: {
+        id: string;
+        label: string;
+        group?: string;
+        keys: KeySequence;
+    }[];
+}
+
+// @public (undocumented)
+export interface ShortcutSheetProps {
+    characterKeySwitch?: boolean;
+    // (undocumented)
+    className?: string;
+    keys?: ShortcutBinding | null;
+    labels?: Partial<ShortcutLabels>;
+    // (undocumented)
+    onOpenChange?: (open: boolean) => void;
+    open?: boolean;
+}
+
+// @public
 export function shouldVirtualize(count: number, threshold?: number): boolean;
 
 // @public
@@ -9000,7 +9278,7 @@ export interface ToolbarMoreProps {
     open?: boolean;
 }
 
-// @public
+// @public (undocumented)
 export function Tooltip(input: TooltipProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -9011,6 +9289,7 @@ export interface TooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'con
     label?: string;
     placement?: Placement;
     shortcut?: KeyShortcut;
+    shortcutId?: string;
 }
 
 // @public
@@ -9232,6 +9511,7 @@ export interface UixLabels {
     };
     // (undocumented)
     select?: Partial<SelectLabels>;
+    shortcuts?: Partial<ShortcutLabels>;
     // (undocumented)
     sidebar?: {
         expand?: string;
@@ -9419,6 +9699,48 @@ export function useReducedTransparency(): boolean;
 
 // @public
 export function uses12Hour(locale?: string | readonly string[]): boolean;
+
+// @public
+export function useShortcut(options: UseShortcutOptions): UseShortcutResult;
+
+// @public
+export function useShortcutKeys(id: string | null | undefined, near?: () => Element | null): KeySequence | null;
+
+// @public (undocumented)
+export interface UseShortcutOptions extends ShortcutDefinition {
+    scope?: RefObject<Element | null> | 'global';
+    scopeLabel?: string;
+}
+
+// @public
+export function useShortcutPreferences(input?: UseShortcutPreferencesOptions): UseShortcutPreferencesResult;
+
+// @public (undocumented)
+export interface UseShortcutPreferencesOptions {
+    defaults?: Partial<ShortcutPreferenceValues>;
+    storageKey?: string | null;
+}
+
+// @public (undocumented)
+export interface UseShortcutPreferencesResult {
+    // (undocumented)
+    preferences: ShortcutPreferenceValues;
+    // (undocumented)
+    resetOverrides: () => void;
+    setCharacterKeys: (value: CharacterKeyPreference) => void;
+    setOverride: (id: string, keys: ShortcutBinding | null | undefined) => boolean;
+    // (undocumented)
+    setPreferences: (next: ShortcutPreferenceValues) => void;
+}
+
+// @public (undocumented)
+export interface UseShortcutResult {
+    ariaKeyShortcuts: string | undefined;
+    keys: KeySequence | null;
+}
+
+// @public
+export function useShortcuts(): ShortcutsApi;
 
 // @public
 export function useSlidingIndicator(containerRef: RefObject<HTMLElement | null>, indicatorRef: RefObject<HTMLElement | null>, selectedSelector: string): void;

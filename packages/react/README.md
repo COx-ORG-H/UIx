@@ -580,6 +580,42 @@ await tasks.run('CMDB discovery: Sarajevo DC', async (task) => { /* task.update(
 - **Placement:** `position` `bottom-center` (default, away from the Toaster's corner), `bottom-start` or `bottom-end`. It sits above overlays and below toasts; a modal dialog covers it. `open`/`defaultOpen`/`onOpenChange` control the panel.
 - **Stores:** `createTaskApi(createTaskStore())` gives a separate set (tests, embedded apps); pass its `store` to `<TaskTray store>`.
 
+### Keyboard shortcuts (`ShortcutProvider`, `useShortcut`, `ShortcutSheet`)
+
+One registry owns every shortcut on the page, so the hints, the `?` sheet and the behaviour can
+never disagree. It handles scopes, sequences (G then I), `Mod` per platform, the "not while typing"
+rule, conflicts, a switch that turns single-key shortcuts off (WCAG 2.1.4) and remaps. Spec:
+`Docs/specs/2026-11-20-shortcut-registry.md`.
+
+```tsx
+<ShortcutProvider>                       {/* once near the root; preferences in localStorage like the display preferences */}
+  <App />
+  <ShortcutSheet />                      {/* ? opens it; lists what works where focus is, ends with the single-key switch */}
+  <CommandPalette items={items} open={open} onOpenChange={setOpen} shortcut="Mod+K" />
+</ShortcutProvider>
+
+useShortcut({ id: 'nav.inbox', keys: 'G I', label: 'Go to the inbox', group: 'Navigation', handler: goInbox });
+
+<ShortcutScope label="Ticket list">      {/* these keys work only with focus inside (2.1.4 "active only on focus") */}
+  <TicketList />                         {/* useShortcut({ id: 'ticket.assign', keys: 'A', label: 'Assign to me', handler }) */}
+  <Button shortcutId="ticket.assign" onClick={assign}>Assign</Button> {/* the hint shows the registered keys */}
+  <MenuItem shortcutId="ticket.assign" onSelect={assign}>Assign to me</MenuItem>
+</ShortcutScope>
+{ id: 'assign', label: 'Assign to me', shortcutId: 'ticket.assign' }  // a palette item: shows the keys and runs the command
+```
+
+- **Keys:** a string (`'Mod+K'`, `'Shift+?'`, `'G I'` for G then I, `'Plus'` for +) or `KbdCombo` key names (`['Mod', 'K']`, `[['G'], ['I']]`). `Mod` is ⌘ on Apple and Ctrl elsewhere. Letters need exactly their modifiers and fall back to the physical key on a Cyrillic or Greek layout; a punctuation mark is decided by the character the layout typed (`?` is Shift+/ in the US and Shift+ß in Germany; AltGr and Option may type a bare character, a chord with Mod/Ctrl/Alt needs exactly those). Shift is dropped from a punctuation binding, so write the character (`?`, not `Shift+/`). Prefer letters for Alt chords: where Option changes the character (Option+/ is ÷), only Chromium's keyboard layout map lets the physical key stand in.
+- **Not while typing:** nothing fires in a text field, a select, a contenteditable or a combobox (`allowInInputs` for a Mod chord that should), while an IME composes, on key repeat (`repeat`), under a modal dialog outside the shortcut's scope (`allowInModal`), or as a character key while a menu or listbox has focus. A handler that returns `false` leaves the key to the next match.
+- **Scopes:** global by default; inside a `ShortcutScope` (or with `scope: ref`) only while focus is in that element. The innermost scope wins over outer ones and the global ones with the same keys. A dialog's body in a `ShortcutScope` keeps its keys while the dialog is modal.
+- **Sequences:** the next key must come within `sequenceTimeout` (1500 ms). `useShortcuts().pending` is what was typed so far, for a visible "G …" hint.
+- **One source:** `KbdCombo`, `Button`/`ButtonLink`, `Tooltip`, `MenuItem` (and the checkbox and radio rows) and `CommandPalette` items take a `shortcutId`: they show that command's current keys, after remaps, and nothing while it is off or where it does not work: a scoped command's hint shows its keys only inside its scope (a Button or Tooltip by its own place, a KbdCombo or Menu row by focus, a palette row by where the palette was opened from). Menu and palette rows get `aria-keyshortcuts` from it (a sequence sets none). `useShortcut` returns `keys` and `ariaKeyShortcuts` for your own control; `useShortcutKeys(id)` reads them anywhere.
+- **The switch and remaps (G217):** `useShortcuts().setCharacterKeys('off')` (also the sheet's switch) turns off every shortcut made only of characters; Mod/Ctrl/Alt chords stay. `setOverride(id, 'Alt+A')` remaps, `null` turns one off, `undefined` restores it. Every single-key verb should also be reachable through the palette (`run(id)`, or an item with `shortcutId` and no `onSelect`) or a menu.
+- **Preferences:** `{ characterKeys, overrides }` under `localStorage['uix-shortcut-preferences']`, in step across tabs (`useShortcutPreferences`). Pass `storageKey`, `defaultPreferences`, or controlled `preferences` + `onPreferencesChange` to keep them per user on the server.
+- **Conflicts:** two ids with the same keys in one scope, or one starting the other (G and G I), warn once in development. `onConflict` collects them (throw in a test); `findShortcutConflicts(map)` checks a static map. The same id mounted twice is one command.
+- **The kit's own keys** go through the registry: `AppShell` `navHotkey` (`uix.app-shell.nav`), `DataWorkspace` Ctrl/⌘+/ (`uix.data-workspace.search`), `CommandPalette` `shortcut` (`uix.command-palette`) and the sheet's `?` (`uix.shortcut-sheet`). They are listed in the sheet, remappable, and the character-key switch turns off `navHotkey` and `?`.
+- **Without a provider** `useShortcut` uses the document's default registry with the default storage key.
+- **Words:** `UixLabelsProvider` `shortcuts`: `title`, `open`, `global`, `characterKeys`, `characterKeysHint`, `characterKeysOff`, `empty`, `then`, `openPalette`, `toggleNav`, `focusSearch`.
+
 ### SlaTimer: how long an SLA has left
 
 An SLA's clock in a queue cell or a record header (enterprise-UX study #17; spec `Docs/specs/2026-11-20-sla-timer.md`). The server owns the clock: pass the instants it computed through its business calendar, and the timer says where it stands.

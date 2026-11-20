@@ -48,7 +48,7 @@ test('the queue sorts by slaSortValue and every cell says its time and state', a
   expect(states).toEqual(['breached', 'urgent', 'warning', 'notice', 'paused', 'on-track', 'met', 'none']);
   const first = page.locator('#queue tbody .uix-sla').first();
   expect(await spokenOf(first)).toBe('Breached 35 minutes ago. Deadline 20 Nov 2026, 12:25');
-  expect(plain(await page.locator('#queue tbody .uix-sla').nth(1).locator('.uix-sla__time').textContent())).toBe('12 min');
+  expect(plain(await page.locator('#queue tbody .uix-sla').nth(1).locator('.uix-sla__time').textContent())).toBe('12 mins'); // en-GB pluralises its short units
   expect(await spokenOf(page.locator('#queue tbody .uix-sla').nth(1))).toBe('Due in 12 minutes, urgent. Deadline 20 Nov 2026, 13:12');
   expect(await spokenOf(page.locator('#queue tbody .uix-sla').nth(4))).toBe('Paused, 8 hours left. Waiting for the requester');
   // the cell's text is what a screen reader reads in the cell: no live region, the visible copy hidden
@@ -112,7 +112,7 @@ test('forced colours keep every mark (CanvasText), and the words stay', async ({
   }));
   for (const m of marks.filter((x) => ['warning', 'urgent', 'breached'].includes(x.state))) expect(m.bg, m.state).not.toBe('rgba(0, 0, 0, 0)');
   for (const m of marks.filter((x) => ['notice', 'paused'].includes(x.state))) expect(parseFloat(m.borderWidth), m.state).toBeGreaterThan(0);
-  await expect(page.locator('#queue tbody .uix-sla').first()).toContainText('35 min over');
+  await expect(page.locator('#queue tbody .uix-sla').first()).toContainText('35 mins over');
 });
 
 test('on the page clock: the minute changes, a threshold is crossed and announced once', async ({ page }, testInfo) => {
@@ -120,7 +120,7 @@ test('on the page clock: the minute changes, a threshold is crossed and announce
   await open(page, themeOf(testInfo));
   const quiet = page.getByTestId('live-quiet');
   const loud = page.getByTestId('live-announce');
-  await expect(quiet.locator('.uix-sla__time')).toHaveText('2 hr');
+  await expect(quiet.locator('.uix-sla__time')).toHaveText('2 hrs');
   await expect(quiet).toHaveAttribute('data-state', 'on-track');
   await expect(loud).toHaveAttribute('data-state', 'warning');
   const announcer = page.locator('body > [data-uix-announcer]');
@@ -129,7 +129,7 @@ test('on the page clock: the minute changes, a threshold is crossed and announce
   await page.clock.runFor(30_000);
   await expect(quiet).toHaveAttribute('data-state', 'warning');
   await page.clock.runFor(MIN);
-  await expect(quiet.locator('.uix-sla__time')).toHaveText('1 hr 59 min');
+  await expect(quiet.locator('.uix-sla__time')).toHaveText('1 hr 59 mins');
 
   // the announcing timer crosses 30 min left
   await page.clock.runFor(MIN);
@@ -138,6 +138,6 @@ test('on the page clock: the minute changes, a threshold is crossed and announce
   await expect.poll(async () => plain(await announcer.textContent())).toMatch(/^Resolution: Due in (29|30) minutes, urgent\./);
   await announcer.evaluate((el) => { el.textContent = ''; });
   await page.clock.runFor(2 * MIN);
-  await expect(loud.locator('.uix-sla__time')).toHaveText(/^Due in 2[67] min$/);
+  await expect(loud.locator('.uix-sla__time')).toHaveText(/^Due in 2[67] mins$/);
   expect(plain(await announcer.textContent())).toBe('');
 });
