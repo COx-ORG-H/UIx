@@ -14,7 +14,8 @@
  *   - clipped: text cut by a box with overflow hidden or clip, with no ellipsis or line clamp to
  *     say so (a chosen truncation shows "…" and keeps the full value elsewhere);
  *   - escaped: text drawn outside the bordered or filled box it sits in (a fixed-height button);
- *   - overlapping: two pieces of text drawn over each other.
+ *   - overlapping: two pieces of text drawn over each other (text that scrolls under a pinned,
+ *     opaque column of its own scroller is covered, not overlapped, and stays reachable).
  * Text that was already cut at the defaults (a deliberate one-line truncation with its full
  * value elsewhere) is not the setting's doing and is not counted.
  */
@@ -93,8 +94,18 @@ function measureText() {
           && (seen.top < r.top - TOL || seen.bottom > r.bottom + TOL || seen.left < r.left - TOL || seen.right > r.right + TOL)) escaped = a.className || a.tagName;
         if (a === stage) break;
       }
+      // A pinned (sticky, opaque) cell covers what scrolls under it, and its scroller reaches that
+      // text by scrolling: a pinned actions column over the Assignee column is not text over text.
+      let pinned = null;
+      let scroller = null;
+      for (let a = el; a && a !== stage.parentElement; a = a.parentElement) {
+        const c = getComputedStyle(a);
+        if (!pinned && c.position === 'sticky' && c.backgroundColor !== 'rgba(0, 0, 0, 0)' && c.backgroundColor !== 'transparent') pinned = a;
+        if (!scroller && /auto|scroll/.test(c.overflowX) && a.scrollWidth > a.clientWidth + 1) scroller = a;
+        if (a === stage) break;
+      }
       const id = `${si}:${pieces.length}`;
-      pieces.push({ id, el, rects });
+      pieces.push({ id, el, rects, pinned, scroller });
       out.texts.push({ id, text: node.textContent.trim().slice(0, 40), clipped, escaped, fontSize: parseFloat(getComputedStyle(el).fontSize) });
     }
     // two pieces of text drawn over each other (not one inside the other's element)
@@ -102,6 +113,7 @@ function measureText() {
       for (let j = i + 1; j < pieces.length; j++) {
         const a = pieces[i]; const b = pieces[j];
         if (a.el === b.el || a.el.contains(b.el) || b.el.contains(a.el)) continue;
+        if (a.pinned !== b.pinned && a.scroller && a.scroller === b.scroller) continue; // scrolled under a pinned cell
         const hit = a.rects.some((p) => b.rects.some((q) => Math.min(p.right, q.right) - Math.max(p.left, q.left) > 2 && Math.min(p.bottom, q.bottom) - Math.max(p.top, q.top) > 2));
         if (hit) out.overlaps.push(`${a.id}|${b.id}`);
       }
