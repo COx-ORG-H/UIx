@@ -350,7 +350,7 @@ export interface SessionTimeoutProps extends UseSessionTimeoutOptions {
   onSignIn?: () => void;
   /** The words. Default: `UixLabelsProvider` `sessionTimeout`, then English. */
   labels?: Partial<SessionTimeoutLabels>;
-  /** The language of the spoken time ("1 minute, 5 seconds"). Default: `UixLabelsProvider` `dateFormat.locale`, then the browser's. */
+  /** The language of the spoken time ("1 minute, 5 seconds"). Default: `UixLabelsProvider` `locale` (a language pack sets it), then `dateFormat.locale`, then the browser's. */
   locale?: string;
 }
 
@@ -368,7 +368,7 @@ export interface SessionTimeoutProps extends UseSessionTimeoutOptions {
 export function SessionTimeout({ onSignOut, onSignIn, labels: labelsProp, locale: localeProp, ...options }: SessionTimeoutProps) {
   const uix = useUixLabels();
   const labels: SessionTimeoutLabels = { ...DEFAULT_SESSION_TIMEOUT_LABELS, ...uix.sessionTimeout, ...labelsProp };
-  const locale = localeProp ?? uix.dateFormat?.locale;
+  const locale = localeProp ?? uix.locale ?? uix.dateFormat?.locale;
   const session = useSessionTimeout(options);
   const { phase, remaining, extend, extending, extendFailed, drafts } = session;
   const [dismissed, setDismissed] = useState(false);

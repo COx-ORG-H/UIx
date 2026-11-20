@@ -7,7 +7,9 @@ import { cx } from '../cx.js';
 import { StatusPill } from './StatusPill.js';
 import { Button } from './Button.js';
 import { fillLabel } from '../fill-label.js';
-import { useUixLabels } from '../labels-context.js';
+import { useUixLabels, useUixLocale } from '../labels-context.js';
+import { countLabel } from '../plural.js';
+import type { UixCountLabel } from '../plural.js';
 import { ChevronDownIcon } from '../icons/components.js';
 
 export interface MatchReviewField {
@@ -33,7 +35,9 @@ export interface MatchBulkResult {
 
 /**
  * Every word the match review renders or announces (TENSOR RX-125, UIX-12). Plural
- * pairs are `…One` / `…Many`; `{count}`, `{pending}`, `{total}`, `{id}` are placeholders.
+ * pairs are `…One` / `…Many`: the `…Many` key also takes the plural forms (`{ one, few, other }`)
+ * or a function of the count, and then its `…One` key is not read. `{count}`, `{pending}`,
+ * `{total}`, `{id}` are placeholders.
  */
 export interface MatchReviewLabels {
   region: string;
@@ -43,7 +47,8 @@ export interface MatchReviewLabels {
   emptyDetail: string;
   pendingOf: string;
   bulk: string;
-  selectedCount: string;
+  /** `{count}`. Plural-aware. */
+  selectedCount: UixCountLabel;
   applying: string;
   acceptSelected: string;
   dismissSelected: string;
@@ -65,14 +70,15 @@ export interface MatchReviewLabels {
   split: string;
   pickOther: string;
   acceptingOne: string;
-  acceptingMany: string;
+  acceptingMany: UixCountLabel;
   dismissingOne: string;
-  dismissingMany: string;
+  dismissingMany: UixCountLabel;
   acceptedOne: string;
-  acceptedMany: string;
+  acceptedMany: UixCountLabel;
   dismissedOne: string;
-  dismissedMany: string;
-  failedSuffix: string;
+  dismissedMany: UixCountLabel;
+  /** `{count}`. Plural-aware. */
+  failedSuffix: UixCountLabel;
   bulkAcceptFailed: string;
   bulkDismissFailed: string;
   /** Adopt mode (HAR-1369): a candidate's heading when `candidateLabel` gives none. `{id}`. */
@@ -93,13 +99,13 @@ export interface MatchReviewLabels {
   /** Adopt mode: the button with one field chosen. `{count}`. */
   adoptSelectedOne: string;
   /** Adopt mode: the button with any other number of fields chosen (0 too). `{count}`. */
-  adoptSelectedMany: string;
+  adoptSelectedMany: UixCountLabel;
   /** Adopt mode: the provenance disclosure. */
   provenance: string;
   /** Adopt mode: announced after `onAdopt` resolves, one field. `{count}`, `{candidate}`. */
   adoptedOne: string;
   /** Adopt mode: announced after `onAdopt` resolves, more fields. `{count}`, `{candidate}`. */
-  adoptedMany: string;
+  adoptedMany: UixCountLabel;
   /** Adopt mode: shown when `onAdopt` rejects. */
   adoptFailed: string;
 }
@@ -197,7 +203,8 @@ export function MatchReview({
   fieldMode = 'decide', onAdopt, candidateLabel, provenance,
 }: MatchReviewProps) {
   const labels: MatchReviewLabels = { ...DEFAULT_MATCH_REVIEW_LABELS, ...useUixLabels().matchReview, ...labelOverrides };
-  const plural = (n: number, one: string, many: string) => fillLabel(n === 1 ? one : many, { count: n });
+  const locale = useUixLocale();
+  const plural = (n: number, one: string, many: UixCountLabel) => fillLabel(countLabel(many, n, locale, one), { count: n });
   const decisionLabel = { accepted: labels.decisionAccepted, dismissed: labels.decisionDismissed, split: labels.decisionSplit, other: labels.decisionOther } as const;
   const actionLabel = { accept: labels.accept, dismiss: labels.dismiss, split: labels.split, 'pick-other': labels.pickOther } as const;
   const [internalSelection, setInternalSelection] = useState<Set<string>>(new Set());
@@ -229,7 +236,7 @@ export function MatchReview({
       const done = action === 'accept'
         ? plural(succeeded, labels.acceptedOne, labels.acceptedMany)
         : plural(succeeded, labels.dismissedOne, labels.dismissedMany);
-      setAnnouncement(`${done}${failed ? fillLabel(labels.failedSuffix, { count: failed }) : ''}.`);
+      setAnnouncement(`${done}${failed ? fillLabel(countLabel(labels.failedSuffix, failed, locale), { count: failed }) : ''}.`);
       if (!failed) setSelection(new Set());
     } catch {
       setAnnouncement(action === 'accept' ? labels.bulkAcceptFailed : labels.bulkDismissFailed);
@@ -269,7 +276,7 @@ export function MatchReview({
       </div>
       {onBulkDecision && (
         <div className="uix-match-review__bulk" aria-label={labels.bulk}>
-          <span>{fillLabel(labels.selectedCount, { count: selection.size })}</span>
+          <span>{fillLabel(countLabel(labels.selectedCount, selection.size, locale), { count: selection.size })}</span>
           <button type="button" className="uix-btn uix-btn--secondary uix-btn--sm" disabled={selection.size === 0 || bulkPending} onClick={() => void runBulk('accept')}>{bulkPending ? labels.applying : labels.acceptSelected}</button>
           <button type="button" className="uix-btn uix-btn--ghost uix-btn--sm" disabled={selection.size === 0 || bulkPending} onClick={() => void runBulk('dismiss')}>{bulkPending ? labels.applying : labels.dismissSelected}</button>
         </div>
@@ -314,6 +321,7 @@ function AdoptCandidate({ candidate, incoming, fields, labels, heading, provenan
   decisionLabel: Record<'accepted' | 'dismissed' | 'split' | 'other', string>;
 }) {
   const id = useId();
+  const locale = useUixLocale();
   const [chosen, setChosen] = useState<ReadonlySet<string>>(new Set());
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<{ text: string; failed: boolean } | null>(null);
@@ -334,7 +342,7 @@ function AdoptCandidate({ candidate, incoming, fields, labels, heading, provenan
     try {
       await onAdopt(candidate.id, fieldIds);
       setChosen(new Set());
-      setMessage({ text: fillLabel(fieldIds.length === 1 ? labels.adoptedOne : labels.adoptedMany, { count: fieldIds.length, candidate: headingText }), failed: false });
+      setMessage({ text: fillLabel(countLabel(labels.adoptedMany, fieldIds.length, locale, labels.adoptedOne), { count: fieldIds.length, candidate: headingText }), failed: false });
     } catch {
       setMessage({ text: labels.adoptFailed, failed: true });
     } finally {
@@ -388,7 +396,7 @@ function AdoptCandidate({ candidate, incoming, fields, labels, heading, provenan
       {/* The live region stays mounted whether or not the candidate is resolved: a consumer that
           resolves the candidate in onAdopt would otherwise unmount it before "adopted" is read. */}
       <div className="uix-match-review__candidate-actions">
-        {!resolved && onAdopt && <Button size="sm" variant="primary" disabled={chosen.size === 0} loading={pending} onClick={() => void adopt()}>{fillLabel(chosen.size === 1 ? labels.adoptSelectedOne : labels.adoptSelectedMany, { count: chosen.size })}</Button>}
+        {!resolved && onAdopt && <Button size="sm" variant="primary" disabled={chosen.size === 0} loading={pending} onClick={() => void adopt()}>{fillLabel(countLabel(labels.adoptSelectedMany, chosen.size, locale, labels.adoptSelectedOne), { count: chosen.size })}</Button>}
         {!resolved && <Button size="sm" variant="ghost" onClick={() => { if (!pending) onDecision(candidate.id, 'dismiss'); }}>{labels.dismiss}</Button>}
         <span className={cx('uix-match-review__result', message?.failed && 'uix-match-review__result--failed')} role="status">{message?.text}</span>
       </div>
