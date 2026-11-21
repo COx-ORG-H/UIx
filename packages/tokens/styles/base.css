@@ -16,6 +16,16 @@
   button, input, optgroup, select, textarea { margin: 0; }
 
   html { -webkit-text-size-adjust: 100%; }
+  /* Sticky-layer focus offsets (WCAG 2.2 SC 2.4.11, technique C43): fixed layers that content
+     scrolls under (the Toaster, the TaskTray, a product's fixed header) keep their heights in these
+     two properties (React: useStickyLayer), so a focused element and a #fragment stop
+     clear of them. Unset, both are 0 and nothing changes. */
+  :root { scroll-padding-block: var(--uix-sticky-top, 0) var(--uix-sticky-bottom, 0); }
+  /* scroll-padding adds no scroll range: at the end of the page the last controls could not scroll
+     clear of a bottom layer. While one is up (the registry sets data-uix-sticky-bottom), room as
+     tall as its reach follows the page's content. No box without a layer. A viewport AppShell
+     scrolls its main instead, which gets the same room (app-shell.css). */
+  :root[data-uix-sticky-bottom] body:not(:has(.uix-shell--viewport))::after { content: ''; display: block; block-size: var(--uix-sticky-bottom, 0); }
   /* default theme follows the OS until JS sets data-theme */
   @media (prefers-color-scheme: dark) { :root:not([data-theme]):not(.dark) { color-scheme: dark; } }
   :root[data-theme="dark"], :root.dark { color-scheme: dark; }

@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { ReactNode, HTMLAttributes, KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from 'react';
 import { cx } from '../cx.js';
+import { useStickyLayer } from '../hooks/useStickyLayer.js';
 import { useUixLabels } from '../labels-context.js';
 import { prefersReducedMotion, useReducedMotion } from '../hooks/useReducedMotion.js';
 import { tokenMs } from '../motion.js';
@@ -437,6 +438,9 @@ export function Toaster({
   // typing (the registry's default), where the browser's own undo applies. With nothing to undo the
   // handler declines, so the key goes on to the page.
   const regionRef = useRef<HTMLDivElement>(null);
+  // The stack stays over the page while it scrolls: its height is a sticky offset, so a focused
+  // row stops clear of it (WCAG 2.2 SC 2.4.11; sticky-layers.ts). An empty stack is 0 px tall.
+  useStickyLayer(regionRef, { edge: position.startsWith('top') ? 'top' : 'bottom' });
   const undoLatest = useShortcut({
     id: TOAST_UNDO_SHORTCUT_ID,
     keys: 'Mod+Z',

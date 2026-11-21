@@ -7,9 +7,9 @@
       "brotli": 3539
     },
     "styles/base.css": {
-      "raw": 4387,
-      "gzip": 1921,
-      "brotli": 1567
+      "raw": 5339,
+      "gzip": 2320,
+      "brotli": 1879
     },
     "styles/components/ai-assistance.css": {
       "raw": 11917,
@@ -22,9 +22,9 @@
       "brotli": 771
     },
     "styles/components/app-shell.css": {
-      "raw": 7250,
-      "gzip": 2266,
-      "brotli": 1896
+      "raw": 7854,
+      "gzip": 2490,
+      "brotli": 2088
     },
     "styles/components/arrival.css": {
       "raw": 3466,
@@ -157,9 +157,9 @@
       "brotli": 1186
     },
     "styles/components/data-workspace.css": {
-      "raw": 15996,
-      "gzip": 4153,
-      "brotli": 3563
+      "raw": 16373,
+      "gzip": 4281,
+      "brotli": 3674
     },
     "styles/components/date-picker.css": {
       "raw": 7484,
@@ -602,9 +602,9 @@
       "brotli": 3614
     },
     "styles/scroll-edge.css": {
-      "raw": 9745,
-      "gzip": 3146,
-      "brotli": 2695
+      "raw": 9927,
+      "gzip": 3225,
+      "brotli": 2766
     },
     "styles/utilities.css": {
       "raw": 1310,

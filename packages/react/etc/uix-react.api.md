@@ -4140,6 +4140,12 @@ export type FormFieldErrors<V> = {
 export const FRECENCY_WEIGHT = 0.5;
 
 // @public
+export function getStickyInsets(): {
+    readonly top: number;
+    readonly bottom: number;
+};
+
+// @public
 export function groupActionPanelActions(actions: readonly ActionPanelAction[], query?: string): ActionPanelGroup[];
 
 // @public
@@ -6988,6 +6994,9 @@ export interface Rect {
     y: number;
 }
 
+// @public
+export function registerStickyLayer(el: HTMLElement, edge: StickyEdge): () => void;
+
 // @public (undocumented)
 export interface RelatedLinkItem {
     // (undocumented)
@@ -8255,6 +8264,11 @@ export interface SchedulingTimelineProps {
     weekStartsOn?: number;
 }
 
+// @public (undocumented)
+export interface ScrollToIndexOptions {
+    align?: 'nearest' | 'start' | 'center' | 'end';
+}
+
 // @public
 export function SearchBar(input: SearchBarProps): react.JSX.Element;
 
@@ -9347,6 +9361,21 @@ export interface StepStateLabels {
 export function stepTime(value: string | null, delta: number, min?: string, max?: string): string;
 
 // @public
+export const STICKY_BOTTOM_PROPERTY = "--uix-sticky-bottom";
+
+// @public
+export const STICKY_TOP_PROPERTY = "--uix-sticky-top";
+
+// @public
+export type StickyEdge = 'top' | 'bottom';
+
+// @public
+export function stickyInsets(doc?: Document | undefined): {
+    top: number;
+    bottom: number;
+};
+
+// @public
 export function studentTQuantile(p: number, df: number): number;
 
 // @public
@@ -9364,6 +9393,9 @@ export interface SubNavItemProps extends AnchorHTMLAttributes<HTMLAnchorElement>
     renderLink?: UixRenderLink;
     trailing?: ReactNode;
 }
+
+// @public
+export function subscribeStickyInsets(listener: () => void): () => void;
 
 // @public
 export function SuccessState(input: SuccessStateProps): react.JSX.Element;
@@ -10925,6 +10957,21 @@ export function useShortcuts(): ShortcutsApi;
 export function useSlidingIndicator(containerRef: RefObject<HTMLElement | null>, indicatorRef: RefObject<HTMLElement | null>, selectedSelector: string): void;
 
 // @public
+export function useStickyInsets(): {
+    readonly top: number;
+    readonly bottom: number;
+};
+
+// @public
+export function useStickyLayer(ref: RefObject<HTMLElement | null>, input: UseStickyLayerOptions): void;
+
+// @public (undocumented)
+export interface UseStickyLayerOptions {
+    edge: StickyEdge;
+    enabled?: boolean;
+}
+
+// @public
 export function useStreamingText(text: string, streaming: boolean): string;
 
 // @public
@@ -11027,6 +11074,7 @@ export interface UseVirtualRowsResult<T> {
     rowHeight: number;
     // (undocumented)
     rows: readonly T[];
+    scrollToIndex: (index: number, options?: ScrollToIndexOptions) => void;
     // (undocumented)
     startIndex: number;
     // (undocumented)

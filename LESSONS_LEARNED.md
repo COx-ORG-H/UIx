@@ -1,5 +1,7 @@
 # UIx engineering lessons
 
+<!-- lesson-skip: 37c6e9e2 same trap as the b6d558eb entry (scroll-padding adds no scroll range; the end of a scroller needs room), now for the page and the shell main; pinned by the sticky-focus spec -->
+<!-- lesson-skip: ea12d0c2 routine: the contract gate named two 0px fallbacks; a hit-test grid sampled a rounded button's corners (calibration of this PR's own new spec) -->
 <!-- lesson-skip: 8a8a97d6 routine review fixes on unreleased selection scope (a note state not reset by later picks, new keys leaking into the legacy selection path, a click on an inert cell landing on its row, a total offered mid-refetch), found by a fresh-context review; the first three pinned by jsdom tests -->
 <!-- lesson-skip: 81265f2c routine: a nowrap bulk count grew a restated filter and ran past the bar in Linux fonts only; the 8f4970d reflow lesson (write in the longest real label before measuring) again, pinned by the 320 px selection-scope spec -->
 <!-- lesson-skip: 7a6f1333 routine: axe target-size (wcag22aa) counts an element's own box, not a ::before hit area; the a11y job named the crumb -->
@@ -126,6 +128,9 @@
 <!-- lesson-skip: abbc94c1 routine: the spec named the missing namespace and the file to add it to -->
 <!-- lesson-skip: c532f344 routine: tsc named the namespaces #310 added that the complete-by-type packs lacked; Escape key name added to the transliterator keep-Latin list -->
 <!-- lesson-skip: 38dc8ac3 routine: compare() escapes its text, so <code> showed literally; found by looking at the 390 px shot -->
+
+### 2026-11-20 · focus not obscured at the end of a scroller · `b6d558eb`
+- **Rule:** `scroll-padding` (WCAG technique C43) only moves where a scroll stops inside the existing range; it never adds room. The last item of a scroller already at its end stays under a fixed layer (toasts, a tray) unless the scroller gets trailing space as tall as the layer's reach. Check it with a hit-test that wants every point of a full-width row, not "partly visible": a row is wider than any toast and always passes that.  **Why:** the windowed DataWorkspace's End row sat under the tray in all three engines while every other row was clear.  **Gate:** `tests/a11y/sticky-focus.spec.mjs` virtual case (End, C43 check; select-cross-browser).  **Tag:** a11y, wcag-2.4.11, scroll-padding, virtualization
 
 ### 2026-11-20 · focusing content of a popover opened from a timer · `c5ded32c`
 - **Rule:** focus a popover's field in that content's own mount effect, not in the popover's `toggle` listener. Opened from a `setTimeout` (a click that waits out a double-click), `setOpen(true)` + `showPopover()` fires `toggle` before React has rendered the content, so the listener finds nothing; from a React key or click handler it works, which hides the bug in keyboard tests.  **Why:** updates outside a React event are not flushed synchronously, while `toggle` is the next task.  **Gate:** tests/a11y/column-resize.spec.mjs (the field is focused after a pointer click on the grip).  **Tag:** react, popover, focus
