@@ -16,6 +16,7 @@ import {
   RULE_BREAK_ANYWHERE,
   RULE_HEADING_TWICE,
   RULE_LIST_JOINED,
+  RULE_LABEL_IN_NAME,
   RULE_RAW_BUTTON,
   RULE_RAW_FORM_CONTROL,
   RULE_RAW_TABLE,
@@ -84,6 +85,29 @@ test('an inline ignore needs the rule and a reason, and the kit-control rules ta
   assert.deepEqual(only('a.tsx', tensorTag, RULE_BREAK_ANYWHERE), []);
   const button = '// uix-page-rules-ignore no-raw-button: custom\n<button onClick={go}>Go</button>';
   assert.deepEqual(only('a.tsx', button, RULE_RAW_BUTTON), [2]);
+});
+
+test('label-in-name: compare only certain literal control names and visible text', () => {
+  const check = (src) => only('a.tsx', src, RULE_LABEL_IN_NAME);
+  assert.deepEqual(check('<Button aria-label="Submit">Save</Button>'), [1]);
+  assert.deepEqual(check('<Button aria-label={"Submit"}>Save</Button>'), [1]);
+  assert.deepEqual(check('<button aria-label="save changes">Save</button>'), []);
+  assert.deepEqual(check('<Button aria-label="Save changes">  Save\n changes </Button>'), []);
+  assert.deepEqual(check('<Button aria-label="Saving">Save</Button>'), [1]);
+  for (const src of [
+    '<Button aria-label={t("save")}>Save</Button>',
+    '<Button aria-label="Submit">{text}</Button>',
+    '<Button aria-label="Submit"><span>Save</span></Button>',
+    '<Button aria-label="Submit">Save &amp; close</Button>',
+    '<Button aria-label="Submit" {...props}>Save</Button>',
+    '<Button aria-label="Submit" aria-labelledby="name">Save</Button>',
+    '<Button aria-label="Submit" aria-hidden="true">Save</Button>',
+    '<div aria-label="Submit">Save</div>',
+    '// <Button aria-label="Submit">Save</Button>',
+    `const example = '<Button aria-label="Submit">Save</Button>';`,
+  ]) assert.deepEqual(check(src), [], src);
+  assert.deepEqual(check('// uix-page-rules-ignore label-in-name: tested at runtime\n<Button aria-label="Submit">Save</Button>'), []);
+  assert.deepEqual(only('a.ts', '<Button aria-label="Submit">Save</Button>', RULE_LABEL_IN_NAME), []);
 });
 
 test('heading-said-twice: the PageHeader title said again as a heading, title or caption', () => {
@@ -276,6 +300,29 @@ test('seed, then a new finding fails, paid debt must shrink the baseline, and gr
 
     const json = run(['--json'], { cwd: root, stdout: () => {}, stderr: () => {} });
     assert.equal(json, 0);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('label-in-name findings participate in the product baseline ratchet', () => {
+  const root = product({
+    'uix-page-rules.config.json': CONFIG,
+    'src/a.tsx': '<Button aria-label="Submit">Save</Button>\n',
+  });
+  try {
+    assert.equal(cli(root).code, 1);
+    assert.equal(cli(root, 'baseline', '--seed').code, 0);
+    assert.deepEqual(JSON.parse(readFileSync(join(root, 'uix-page-rules-baseline.json'), 'utf8')).rules,
+      { [RULE_LABEL_IN_NAME]: { 'src/a.tsx': 1 } });
+    assert.equal(cli(root).code, 0);
+    writeFileSync(join(root, 'src/a.tsx'), '<Button aria-label="Submit">Save</Button>\n<Button aria-label="Cancel">Close</Button>\n');
+    assert.equal(cli(root).code, 1);
+    assert.equal(cli(root, 'baseline').code, 1);
+    writeFileSync(join(root, 'src/a.tsx'), '<Button aria-label="Save changes">Save</Button>\n');
+    assert.equal(cli(root).code, 1); // stale baseline
+    assert.equal(cli(root, 'baseline').code, 0);
+    assert.equal(cli(root).code, 0);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
