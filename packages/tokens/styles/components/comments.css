@@ -29,4 +29,56 @@
   /* Block so the thumbnail drops onto its own line below the comment text (not inline with it). */
   .uix-comment__image { display: block; margin-top: var(--uix-space-2); padding: 0; border-radius: var(--uix-radius-sm); overflow: hidden; border: 1px solid var(--uix-border); background: none; cursor: zoom-in; max-width: 200px; }
   .uix-comment__image img { display: block; width: 100%; height: auto; }
+
+  /* Threads are a single logical level. Min-size resets keep long labels and drafts in the rail. */
+  .uix-comment-thread { min-inline-size: 0; }
+  .uix-comment-thread__rail {
+    display: grid; justify-items: start; gap: var(--uix-space-2);
+    margin-block-start: var(--uix-space-2); margin-inline-start: var(--uix-space-4);
+    padding-inline-start: var(--uix-space-3); border-inline-start: 1px solid var(--uix-border);
+    min-inline-size: 0;
+  }
+  .uix-comment-thread__summary { color: var(--uix-text-muted); font-size: var(--uix-text-meta); }
+  .uix-comment-thread__replies { list-style: none; display: grid; gap: var(--uix-space-2); padding: 0; margin: 0; }
+  .uix-comment-thread__replies, .uix-comment-thread__rail > .uix-composer { inline-size: 100%; min-inline-size: 0; }
+  .uix-comment-thread__replies > li { scroll-margin-block: var(--uix-space-4); min-inline-size: 0; }
+  .uix-comment-thread__replies > li:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-comment-thread__replies .uix-comment:not(.uix-comment--bare) {
+    grid-template-columns: 24px minmax(0, 1fr); gap: var(--uix-space-2);
+  }
+  .uix-comment--audience { grid-template-columns: 32px minmax(0, 1fr); }
+  .uix-comment--audience.uix-comment--bare { grid-template-columns: minmax(0, 1fr); }
+  .uix-comment--audience .uix-comment__body { overflow-wrap: anywhere; }
+  .uix-comment--audience .uix-comment__meta,
+  .uix-comment__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-1) var(--uix-space-2); }
+  .uix-comment__actions { margin-block-start: var(--uix-space-2); }
+  .uix-comment[data-audience="internal"] .uix-comment__body,
+  .uix-composer[data-audience="internal"] { background: transparent; border-color: var(--uix-border-strong); }
+  .uix-comment[data-audience="external"] .uix-comment__body,
+  .uix-composer[data-audience="external"] { background: var(--uix-bg-subtle); }
+  .uix-composer--audience:focus-within { border-color: var(--uix-ring); }
+  .uix-comment__audience, .uix-comment__unread {
+    display: inline-flex; align-items: center; gap: var(--uix-space-1);
+    border-radius: var(--uix-radius-sm); padding-inline: var(--uix-space-1);
+    font-size: var(--uix-text-meta); font-weight: 600;
+    color: var(--uix-text);
+  }
+  .uix-comment__audience { border: 1px solid var(--uix-border-strong); }
+  .uix-comment__unread { background: var(--uix-brand-muted); }
+  .uix-composer--audience { min-inline-size: 0; }
+  .uix-composer--audience textarea { box-sizing: border-box; }
+  .uix-composer__audience {
+    display: flex; align-items: center; flex-wrap: wrap; gap: var(--uix-space-2);
+    padding: var(--uix-space-2); min-inline-size: 0;
+  }
+  .uix-composer__audience .uix-segmented { max-inline-size: 100%; }
+  .uix-composer__audience .uix-segmented__option { min-inline-size: 0; white-space: normal; overflow-wrap: anywhere; }
+  .uix-composer__hint { color: var(--uix-text-muted); font-size: var(--uix-text-meta); margin: 0; }
+  .uix-comment-unread {
+    display: flex; align-items: center; flex-wrap: wrap; gap: var(--uix-space-2);
+    color: var(--uix-text); font-size: var(--uix-text-meta);
+  }
+  .uix-comment-unread__line { flex: 1 1 var(--uix-space-4); border-block-start: 1px solid var(--uix-border-strong); }
+  .uix-comment-reaction { border-radius: var(--uix-radius-pill); font-variant-numeric: tabular-nums; }
+  .uix-comment-reaction[aria-pressed="true"] { background: var(--uix-brand-muted); border-color: var(--uix-border-strong); }
 }

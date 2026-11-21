@@ -11,6 +11,7 @@ import { CSSProperties } from 'react';
 import { DetailsHTMLAttributes } from 'react';
 import { FocusEvent as FocusEvent_2 } from 'react';
 import { FormEvent } from 'react';
+import { FormHTMLAttributes } from 'react';
 import { ForwardRefExoticComponent } from 'react';
 import { HTMLAttributes } from 'react';
 import { InputHTMLAttributes } from 'react';
@@ -1670,7 +1671,49 @@ function Comment_2(input: CommentProps): react.JSX.Element;
 export { Comment_2 as Comment }
 
 // @public (undocumented)
+export interface CommentAudience {
+    // (undocumented)
+    kind: 'internal' | 'external';
+    label: string;
+}
+
+// @public
+export function CommentComposer(input: CommentComposerProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface CommentComposerAudience {
+    hint: string;
+    label: string;
+    submitLabel: string;
+}
+
+// @public (undocumented)
+export interface CommentComposerProps extends FormHTMLAttributes<HTMLFormElement> {
+    // (undocumented)
+    audience?: 'internal' | 'external';
+    // (undocumented)
+    audienceLabel: string;
+    // (undocumented)
+    external?: CommentComposerAudience;
+    // (undocumented)
+    feedback?: ReactNode;
+    // (undocumented)
+    footerActions?: ReactNode;
+    // (undocumented)
+    internal: CommentComposerAudience;
+    // (undocumented)
+    onAudienceChange?: (audience: 'internal' | 'external') => void;
+    // (undocumented)
+    pending?: boolean;
+    // (undocumented)
+    submitDisabled?: boolean;
+}
+
+// @public (undocumented)
 export interface CommentProps extends HTMLAttributes<HTMLDivElement> {
+    actions?: ReactNode;
+    // (undocumented)
+    audience?: CommentAudience;
     // (undocumented)
     author?: ReactNode;
     avatar?: ReactNode;
@@ -1681,7 +1724,23 @@ export interface CommentProps extends HTMLAttributes<HTMLDivElement> {
     replyTo?: ReactNode;
     replyToLabel?: string;
     systemLabel?: string;
+    unreadLabel?: string;
     variant?: 'person' | 'system';
+}
+
+// @public (undocumented)
+export function CommentReaction(input: CommentReactionProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface CommentReactionProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
+    // (undocumented)
+    count: number;
+    // (undocumented)
+    glyph: ReactNode;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    pressed: boolean;
 }
 
 // @public
@@ -1691,6 +1750,56 @@ export function Comments(input: CommentsProps): react.JSX.Element;
 export interface CommentsProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     children?: ReactNode;
+}
+
+// @public
+export function CommentThread(input: CommentThreadProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface CommentThreadProps extends HTMLAttributes<HTMLElement> {
+    composer?: ReactNode;
+    // (undocumented)
+    hideEarlierLabel: string;
+    // (undocumented)
+    label: string;
+    replies: readonly CommentThreadReply[];
+    revealReplyId?: string;
+    // (undocumented)
+    root: ReactNode;
+    // (undocumented)
+    showEarlierLabel: (count: number) => string;
+    // (undocumented)
+    summary: ReactNode;
+}
+
+// @public (undocumented)
+export interface CommentThreadReply {
+    // (undocumented)
+    content: ReactNode;
+    id: string;
+    // (undocumented)
+    unread?: boolean;
+}
+
+// @public
+export function CommentUnreadDivider(input: CommentUnreadDividerProps): react.JSX.Element;
+
+// @public (undocumented)
+export interface CommentUnreadDividerProps extends HTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    next?: {
+        label: string;
+        onClick: () => void;
+    };
+    // (undocumented)
+    previous?: {
+        label: string;
+        onClick: () => void;
+    };
+    // (undocumented)
+    progress?: string;
 }
 
 // @public

@@ -433,7 +433,12 @@ export { Avatar, AvatarGroup, PresenceDot, UserChip, DEFAULT_PRESENCE_LABELS } f
 export type { AvatarProps, AvatarGroupProps, UserChipProps, AvatarPresence, PresenceDotProps } from './components/Avatar.js';
 
 export { Comments, Comment } from './components/Comments.js';
-export type { CommentsProps, CommentProps } from './components/Comments.js';
+export type { CommentsProps, CommentProps, CommentAudience } from './components/Comments.js';
+export { CommentThread, CommentComposer, CommentUnreadDivider, CommentReaction } from './components/CommentThread.js';
+export type {
+  CommentThreadProps, CommentThreadReply, CommentComposerProps, CommentComposerAudience,
+  CommentUnreadDividerProps, CommentReactionProps,
+} from './components/CommentThread.js';
 export { SaveStatus, DEFAULT_SAVE_STATUS_LABELS } from './components/SaveStatus.js';
 export { BusyRegion } from './components/BusyRegion.js';
 export { ChangeHighlight } from './components/ChangeHighlight.js';
