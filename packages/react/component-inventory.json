@@ -190,7 +190,23 @@
       "subpath": "."
     },
     {
+      "name": "CommentComposer",
+      "subpath": "."
+    },
+    {
+      "name": "CommentReaction",
+      "subpath": "."
+    },
+    {
+      "name": "CommentThread",
+      "subpath": "."
+    },
+    {
       "name": "Comments",
+      "subpath": "."
+    },
+    {
+      "name": "CommentUnreadDivider",
       "subpath": "."
     },
     {
