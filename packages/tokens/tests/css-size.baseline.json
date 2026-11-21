@@ -127,9 +127,9 @@
       "brotli": 2157
     },
     "styles/components/comments.css": {
-      "raw": 3304,
-      "gzip": 1120,
-      "brotli": 910
+      "raw": 6893,
+      "gzip": 1763,
+      "brotli": 1459
     },
     "styles/components/contact-card.css": {
       "raw": 2040,
