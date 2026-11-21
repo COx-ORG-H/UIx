@@ -147,6 +147,30 @@ test('reopening and closing again replays the cue on the same row', () => {
   ws.unmount();
 });
 
+test('a record the Peek moved to that leaves in the same update hands focus to the row in its place', () => {
+  const ws = mount({ rowNavigation: true, peekRowId: 'INC-101' });
+  // ↓ to INC-103 and its removal land in one commit
+  ws.set({ peekRowId: 'INC-103', rows: ROWS.filter((r) => r.id !== 'INC-103') });
+  focus(document.body);
+  ws.set({ peekRowId: null });
+  assert.equal(document.activeElement, row(ws.host, 'INC-104'), 'the row now at its place, not the first row');
+  assert.deepEqual(cued(ws.host), []);
+  ws.unmount();
+});
+
+test('a refresh that remounts the cued row gives the new row the cue', () => {
+  const ws = mount({ rowNavigation: true, rowMotion: true, peekRowId: 'INC-102' });
+  ws.set({ peekRowId: null });
+  const before = row(ws.host, 'INC-102');
+  assert.deepEqual(cued(ws.host), ['INC-102']);
+  // most rows replaced: the body is a new list and its rows are new nodes
+  ws.set({ rows: [ROWS[2], ...Array.from({ length: 6 }, (_, i) => ({ id: `INC-${300 + i}`, title: `Neu ${i}` }))] });
+  const after = row(ws.host, 'INC-102');
+  assert.notEqual(after, before, 'the row was remounted');
+  assert.deepEqual(cued(ws.host), ['INC-102']);
+  ws.unmount();
+});
+
 test('without peekRowId nothing moves and nothing is cued', () => {
   const ws = mount({ rowNavigation: true });
   focus(document.body);

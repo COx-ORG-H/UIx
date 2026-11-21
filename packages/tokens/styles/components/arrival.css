@@ -25,6 +25,13 @@
     animation: uix-arrival-row var(--uix-dur-highlight) var(--uix-ease-out);
   }
   @keyframes uix-arrival-row { 0%, 40% { --uix-row-bg: var(--uix-brand-muted); } }
+  /* A row drawn as a card (the table's narrow step) paints its own surface, not the row colour:
+     the cue tints that surface, opaque, and ends on the card's own background. */
+  .uix-table--cards tbody tr:is(.uix-arrival, [data-uix-arrival]) {
+    border-radius: var(--uix-radius-md);
+    animation-name: uix-arrival-card;
+  }
+  @keyframes uix-arrival-card { 0%, 40% { background-color: color-mix(in srgb, var(--uix-accent) 12%, var(--uix-surface)); } }
   /* the row's steady outline sits just inside its edge, where the wrap does not clip it */
   @keyframes uix-arrival-row-static {
     0% { outline: 2px solid var(--uix-ring); outline-offset: -2px; }

@@ -5,14 +5,25 @@
 
 const handlers = new WeakMap<HTMLElement, (event: AnimationEvent) => void>();
 
+export interface PlayArrivalOptions {
+  /** Start this far into the cue (ms): a node that replaced the one playing it picks it up there. */
+  elapsed?: number;
+  /** The cue ended on its own. */
+  onEnd?: () => void;
+}
+
 /** Play the arrival cue on `el` once; playing it again restarts it. It removes itself when done. */
-export function playArrival(el: HTMLElement): void {
+export function playArrival(el: HTMLElement, { elapsed = 0, onEnd }: PlayArrivalOptions = {}): void {
   if (el.hasAttribute('data-uix-arrival')) {
     el.removeAttribute('data-uix-arrival');
     // read layout so the browser sees the attribute go, then come back: the animation restarts
     void el.offsetWidth;
   }
   el.setAttribute('data-uix-arrival', '');
+  if (elapsed > 0) {
+    const cue = el.getAnimations?.().find((animation) => 'animationName' in animation && String((animation as CSSAnimation).animationName).startsWith('uix-arrival'));
+    if (cue) cue.currentTime = elapsed;
+  }
   const previous = handlers.get(el);
   if (previous) el.removeEventListener('animationend', previous);
   // Only the cue's own animation ends it, not one of a control inside the element.
@@ -21,6 +32,7 @@ export function playArrival(el: HTMLElement): void {
     el.removeAttribute('data-uix-arrival');
     el.removeEventListener('animationend', done);
     handlers.delete(el);
+    onEnd?.();
   };
   handlers.set(el, done);
   el.addEventListener('animationend', done);

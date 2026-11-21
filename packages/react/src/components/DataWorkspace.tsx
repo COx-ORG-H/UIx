@@ -1057,16 +1057,28 @@ function WorkspaceTable<T>({
   // While the Peek is open: the row it shows and its last place among the rows on screen, kept
   // after the row leaves so the row now in that place can take focus. On close (the Peek's dialog
   // has already given focus back to whatever opened it, in the same commit): focus that row and
-  // play the arrival cue on it once. A row the window has not rendered yet gets the cue when it does.
+  // play the arrival cue on it once. The cue is held by row id, not by node: a row the window has
+  // not rendered yet gets it when it does, and a row a refresh remounts mid-cue picks it up where
+  // it was.
   const peekOpen = useRef<{ id: string; at: number } | null>(null);
-  const pendingCue = useRef<string | null>(null);
+  /** The rows on screen at the last commit: where a record that left in this commit used to be. */
+  const lastNavIds = useRef<readonly string[]>(navIds);
+  /** The row whose cue is playing or waiting to: when it first played and the node it plays on (null until then). */
+  const returnCue = useRef<{ id: string; start: number | null; node: HTMLElement | null } | null>(null);
+  /** The id control to focus once the window renders its row (without the keyboard row model). */
+  const pendingControl = useRef<string | null>(null);
+  const idControl = (el: HTMLElement | null) => el?.querySelector<HTMLElement>('.uix-id-cell__btn') ?? el?.querySelector<HTMLElement>('a[href]') ?? null;
   useIsomorphicLayoutEffect(() => {
-    if (peekRowId == null) return;
-    const at = navIds.indexOf(peekRowId);
-    peekOpen.current = { id: peekRowId, at: at >= 0 ? at : peekOpen.current?.id === peekRowId ? peekOpen.current.at : -1 };
+    if (peekRowId != null) {
+      const at = navIds.indexOf(peekRowId);
+      // Gone in this same commit (moved to and resolved at once): its place in the rows before it left.
+      const was = peekOpen.current?.id === peekRowId ? peekOpen.current.at : lastNavIds.current.indexOf(peekRowId);
+      peekOpen.current = { id: peekRowId, at: at >= 0 ? at : was };
+    }
+    lastNavIds.current = navIds;
   }, [peekRowId, navIds]);
   useIsomorphicLayoutEffect(() => {
-    if (peekRowId != null) { pendingCue.current = null; return; }
+    if (peekRowId != null) { returnCue.current = null; pendingControl.current = null; return; }
     const was = peekOpen.current;
     if (!was) return;
     peekOpen.current = null;
@@ -1078,22 +1090,38 @@ function WorkspaceTable<T>({
       if (nav) focusRow(target);
       else {
         const el = rowElement(target);
-        const control = el?.querySelector<HTMLElement>('.uix-id-cell__btn') ?? el?.querySelector<HTMLElement>('a[href]');
+        const control = idControl(el);
         if (el && control) { control.focus({ preventScroll: true }); reveal(el); }
+        else if (!el && virtual && windowed && wrapRef.current) {
+          // Outside the window: scroll it in, focus its id control after the render.
+          pendingControl.current = target;
+          wrapRef.current.scrollTop = Math.max(0, ids.indexOf(target)) * virtual.rowHeight;
+        }
       }
     }
     // The cue says "you came from here": a stand-in row only takes focus.
-    if (target !== was.id) return;
-    const el = rowElement(target);
-    if (el) playArrival(el);
-    else pendingCue.current = target;
+    if (target === was.id) returnCue.current = { id: target, start: null, node: null };
   }, [peekRowId]); // eslint-disable-line react-hooks/exhaustive-deps
   useIsomorphicLayoutEffect(() => {
-    const id = pendingCue.current;
-    if (id == null) return;
-    if (!ids.includes(id)) { pendingCue.current = null; return; }
-    const el = rowElement(id);
-    if (el) { pendingCue.current = null; playArrival(el); }
+    const control = pendingControl.current;
+    if (control != null) {
+      if (!ids.includes(control)) pendingControl.current = null;
+      else {
+        const el = rowElement(control);
+        const button = idControl(el);
+        if (el && button) { pendingControl.current = null; button.focus({ preventScroll: true }); reveal(el); }
+      }
+    }
+    const cue = returnCue.current;
+    if (cue == null) return;
+    if (!ids.includes(cue.id)) { returnCue.current = null; return; }
+    const el = rowElement(cue.id);
+    // Not rendered yet, or already playing on this node.
+    if (!el || el === cue.node) return;
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (cue.start == null) cue.start = now;
+    cue.node = el;
+    playArrival(el, { elapsed: now - cue.start, onEnd: () => { if (returnCue.current === cue) returnCue.current = null; } });
   });
 
   const latest = {

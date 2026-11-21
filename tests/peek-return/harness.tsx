@@ -2,6 +2,7 @@
  * id cell opens a side Peek, as an ITSM agent works it. Enter on a row (or a click on its id) opens
  * the Peek; ↑ / ↓ in the Peek move to the next record; "Lösen" resolves the ticket, so its row
  * leaves the queue, and closes the Peek. `?cue=0` leaves `peekRowId` out: the queue as before.
+ * `?n=300&nav=0`: a long windowed queue without the keyboard row model (the id control takes focus).
  * window.__peek records the closes, for the spec. */
 import { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -20,10 +21,12 @@ const TITLES = [
   'Mobiltelefon synchronisiert keine Termine', 'Softwarepaket Visio anfordern', 'Kennwort nach Urlaub gesperrt',
 ];
 const CALLERS = ['A. Jovanović', 'M. Öztürk', 'L. Schäfer', 'K. Nowak'];
-const START: Ticket[] = TITLES.map((title, i) => ({ id: `INC-${20410 + i}`, title, caller: CALLERS[i % CALLERS.length], state: i % 3 === 0 ? 'In Arbeit' : 'Neu' }));
+const params = new URLSearchParams(location.search);
+const COUNT = Number(params.get('n') ?? TITLES.length);
+const START: Ticket[] = Array.from({ length: COUNT }, (_, i) => ({ id: `INC-${20410 + i}`, title: TITLES[i % TITLES.length], caller: CALLERS[i % CALLERS.length], state: i % 3 === 0 ? 'In Arbeit' : 'Neu' }));
 
 function Harness() {
-  const cue = new URLSearchParams(location.search).get('cue') !== '0';
+  const cue = params.get('cue') !== '0';
   const [rows, setRows] = useState(START);
   const [peekId, setPeekId] = useState<string | null>(null);
   const at = peekId == null ? -1 : rows.findIndex((row) => row.id === peekId);
@@ -39,7 +42,8 @@ function Harness() {
     <h1>Warteschlange 1st Level</h1>
     <DataWorkspace<Ticket>
       label="Warteschlange" rows={rows} getRowId={(row) => row.id} columns={columns} idColumn={idColumn}
-      rowNavigation peekRowId={cue ? peekId : undefined}
+      rowNavigation={params.get('nav') !== '0'} virtualize={COUNT > 100 ? { maxHeight: 480 } : undefined}
+      peekRowId={cue ? peekId : undefined}
     />
     <Peek
       open={record != null} onClose={close} recordId={record?.id} title={record?.title}

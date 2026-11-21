@@ -132,3 +132,21 @@ test('without peekRowId (the queue before): focus goes back to the opener and no
   await landsOn(page, 'INC-20412');
   expect(await cue(page)).toEqual([]);
 });
+
+test('a long windowed queue without row navigation: a record off the window scrolls in, its id control takes focus, then the cue', async ({ page }) => {
+  await page.goto(`${HARNESS}?n=300&nav=0`, { waitUntil: 'networkidle' });
+  const wrap = page.locator('.uix-data-workspace__table, .uix-table-wrap').filter({ has: page.locator('tbody') }).first();
+  // open a record far down the list, then scroll the queue back to the top while the Peek is open
+  await wrap.evaluate((el) => { el.scrollTop = el.scrollHeight; });
+  await expect(row(page, 'INC-20709')).toHaveCount(1);
+  await row(page, 'INC-20709').locator('.uix-id-cell__btn').click();
+  const peek = page.getByRole('dialog');
+  await expect(peek).toBeVisible();
+  await page.evaluate(() => { const el = [...document.querySelectorAll('tbody')].map((b) => b.closest('.uix-table-wrap, .uix-data-workspace__table')).find(Boolean); if (el) el.scrollTop = 0; });
+  await expect(row(page, 'INC-20709')).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await expect(peek).toBeHidden();
+  await expect.poll(() => page.evaluate(() => document.activeElement?.closest('tr')?.getAttribute('data-uix-row-id') ?? null)).toBe('INC-20709');
+  expect(await page.evaluate(() => document.activeElement?.classList.contains('uix-id-cell__btn'))).toBe(true);
+  await cuedIds(page).toEqual(['INC-20709']);
+});
