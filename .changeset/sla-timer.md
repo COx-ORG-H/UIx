@@ -1,6 +1,0 @@
----
-"@tensor_1/react": minor
-"@tensor_1/tokens": minor
----
-
-SlaTimer (enterprise-UX study, roadmap #17): an SLA's clock in a queue cell (`variant="cell"`) or a record header (`variant="header"`). It reads the instants the server computed (`dueAt`, `startedAt`, `breachedAt`, `paused` with `pausedAt` and `pausedReason`, `completedAt`) and shows the time left or over in `Intl` units ("2 hr 14 min"), relative or absolute, with the absolute deadline on hover and in the spoken text ("Due in 2 hours 14 minutes, warning. Deadline …"). Up to three thresholds (`elapsed`, `remaining` or `at`; warning at 75 % and urgent at 90 % by default). Calm kit: ink on track, amber, then the attention orange, red only at the breach as a dot with words; each level has its own mark shape (ring, dot, diamond, bars), kept in forced colours. No fixed tick: one shared scheduler wakes each timer when its minute or state changes, and nothing while the tab is hidden; nothing animates. `announce` (opt-in) says a crossing once, politely. `slaStatus` and `slaSortValue` (most urgent first, finite "last") are exported for a product's own sort. Labels through `UixLabelsProvider` (`slaTimer`). `sla.css` gains the timer's states and header layout; the CSS-only `ok` / `at-risk` / `breach` states are unchanged. Spec: `Docs/specs/2026-11-20-sla-timer.md`.
