@@ -10,6 +10,7 @@ The tool ships inside `@tensor_1/react`, so a product already has it and the rul
 |---|---|---|
 | `severity-through-status-tone` | A severity coloured through a generic tone helper (`statusTone('severity', …)`), or a hand map that sends "high" to a red tone. Use `severityTone()`. | yes |
 | `label-break-anywhere` | `break-all`, `overflow-wrap: anywhere`, `wrap-anywhere`, `wordBreak: 'break-all'`, `overflowWrap: 'anywhere'`. Code in `font-mono`, `<code>` or `<pre>` is exempt. | yes |
+| `label-in-name` | A literal `aria-label` on a supported control omits its direct, plain visible text (WCAG 2.5.3). | yes |
 | `heading-said-twice` | The `PageHeader` title said again as a heading, `title` or table `caption`. | yes |
 | `row-menu-unnamed` | A row's ⋯ menu (`Menu`, `ActionMenu`) whose `label` and trigger `aria-label` do not name the row. | yes |
 | `list-joined-in-cell` | A row's list joined with `", "` in a table cell. Use `ListSummary` or `OverflowRow`. | yes |
@@ -21,6 +22,8 @@ The tool ships inside `@tensor_1/react`, so a product already has it and the rul
 `.css` files are checked against `label-break-anywhere` only. `.ts`, `.js` and `.mjs` files are checked against that rule and the severity rule. `.tsx` and `.jsx` files are checked against every rule. These are not read: tests and stories (`*.test.*`, `*.spec.*`, `*.stories.*`), `.d.ts` files, and anything under `__tests__`, `__mocks__` or `__fixtures__`.
 
 Comments are never findings. That covers a trailing `// …`, a `{/* … */}` in JSX and a CSS block comment. The severity rules also match code that a formatter wrapped over several lines. Regex literals and URLs in JSX text are skipped whole, so neither can hide a tag.
+
+`label-in-name` checks direct plain text on `button`, `a`, `Button`, `ButtonLink`, `Chip`, `MenuItem`, `RowAction`, `Tab` and `SegmentedItem` when `aria-label` is a literal. It compares the complete text case-insensitively after collapsing whitespace. It skips markup, expressions, entities, spreads, hidden controls and `aria-labelledby`, whose rendered text or accessible name cannot be established reliably from this scan. Use rendered accessibility tests for those cases and translations. An existing product baseline does not automatically grandfather a newly added rule: fix findings on upgrade, or deliberately run `baseline --seed` and review and commit the baseline diff. The ratchet then blocks new findings.
 
 One known limit: two apostrophes on one line of raw JSX text read as a string, and a tag between them is not seen. Products that translate every string have no raw JSX text.
 

@@ -15,6 +15,7 @@
 
 export const RULE_SEVERITY_TONE = 'severity-through-status-tone';
 export const RULE_BREAK_ANYWHERE = 'label-break-anywhere';
+export const RULE_LABEL_IN_NAME = 'label-in-name';
 export const RULE_HEADING_TWICE = 'heading-said-twice';
 export const RULE_ROW_MENU_UNNAMED = 'row-menu-unnamed';
 export const RULE_LIST_JOINED = 'list-joined-in-cell';
@@ -43,6 +44,11 @@ export const RULES = Object.freeze({
     ignorable: true,
     lesson: 'lessons/12 — text fits by rule: a label never breaks mid-word',
     fix: 'Drop the mid-word break (break-all, overflow-wrap: anywhere, wrap-anywhere, wordBreak/overflowWrap in a style). Let the label wrap at spaces, shorten it, or truncate it whole with the full text in a title or tooltip. Long unbroken text in a narrow column (an e-mail address, a URL, an error message) takes `break-words` (overflow-wrap: break-word) plus `min-w-0` on its flex or grid item. Code in `font-mono`, `<code>` or `<pre>` is exempt.',
+  },
+  [RULE_LABEL_IN_NAME]: {
+    ignorable: true,
+    lesson: 'lessons/13 — visible control labels belong in accessible names',
+    fix: 'Include the complete visible label in the accessible name, preferably at the start. For example, use aria-label="Save changes" on a button displaying Save, or remove aria-label when the visible text already names the control. Check translated and dynamic labels in the rendered page.',
   },
   [RULE_HEADING_TWICE]: {
     ignorable: true,
@@ -606,6 +612,28 @@ export function scanSource(rel, src, options = {}) {
   if (kind !== 'jsx') return out.sort((a, b) => a.line - b.line || COUNTED_RULES.indexOf(a.rule) - COUNTED_RULES.indexOf(b.rule));
 
   const { code, strings } = lexSource(src);
+
+  // Only compare unambiguous literals on controls with direct, plain JSX text.
+  // Spreads and aria-labelledby can change the computed name; expressions, markup
+  // and entities can change the visible text. Leave those to runtime a11y tests.
+  const controls = /<(button|a|Button|ButtonLink|Chip|MenuItem|RowAction|Tab|SegmentedItem)(?=[\s/>])/g;
+  for (const m of code.matchAll(controls)) {
+    const end = openingTagEnd(src, m.index);
+    const tag = clean.slice(m.index, end);
+    if (/\{\s*\.\.\./.test(tag) || /\baria-labelledby\s*=/.test(tag) || /\baria-hidden(?:\s|=|>)/.test(tag) || /\bhidden(?:\s|=|>)/.test(tag) || /\/\s*>$/.test(tag)) continue;
+    const attrs = attributeText(clean, m.index + m[0].length);
+    const label = /(?:^|\s)aria-label\s*=\s*(?:"([^"\\]*)"|'([^'\\]*)'|\{\s*(?:"([^"\\]*)"|'([^'\\]*)')\s*\})/.exec(attrs);
+    if (!label) continue;
+    const close = new RegExp(`^([^<>{}&]*)</${m[1]}\\s*>`).exec(clean.slice(end));
+    if (!close) continue;
+    const visible = close[1].replace(/\s+/gu, ' ').trim();
+    const name = (label[1] ?? label[2] ?? label[3] ?? label[4]).replace(/\s+/gu, ' ').trim();
+    if (!visible || name.toLowerCase().includes(visible.toLowerCase())) continue;
+    const line = lineOf(m.index);
+    if (!hasIgnore(lines, line - 1, RULE_LABEL_IN_NAME)) {
+      push(RULE_LABEL_IN_NAME, line, 'The literal aria-label does not contain the visible control text; include that text in its accessible name.');
+    }
+  }
 
   // heading said twice — judged against the first page-title component's title.
   const titleRe = new RegExp(`<(?:${opts.pageTitleComponents.map(escapeRe).join('|')})(?=[\\s/>])`, 'g');
