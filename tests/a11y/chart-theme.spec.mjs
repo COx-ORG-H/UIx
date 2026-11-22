@@ -107,6 +107,13 @@ test('docs analytic chart examples: gridlines and the budget line are solid; not
   // the theme styles a legend but never adds one: the residence chart asks for none
   const residenceText = await page.locator('[data-uix-chart="residence"] svg text').allTextContents();
   expect(residenceText).not.toContain('Residence');
+  // Check the SVG paint references, rather than just the ECharts options.
+  await expect(page.locator('[data-uix-chart="residence"] svg path[fill^="url("]')).toHaveCount(1);
+  await expect(page.locator('[data-uix-chart="residence"] svg path[stroke^="url("]')).toHaveCount(1);
+  await expect(page.locator('[data-uix-chart="throughput"] svg path[fill^="url("]').first()).toBeAttached();
+  // The ring and its legend share the same four gradient fills.
+  const ring = page.locator('[data-uix-chart="donut"] svg path[fill^="url("]');
+  expect(await ring.evaluateAll((paths) => new Set(paths.map((path) => path.getAttribute('fill'))).size)).toBe(4);
 });
 
 test('no serious or critical axe violations', async ({ page }) => {

@@ -13,6 +13,7 @@
  * - it draws in once (a line traces, bars grow from the baseline) and never animates a refresh.
  */
 import type { EChartsOption } from 'echarts';
+import { uixChartAreaGradient, uixChartBarGradient, uixChartTrendGradient } from './chart-theme.js';
 import type { UixChartTokens } from './chart-theme.js';
 
 /** How a glance chart draws in. `play: false` (the default) draws it at rest, with no animation. */
@@ -127,6 +128,9 @@ export function glanceLineOption(k: UixChartTokens, input: GlanceLineInput, moti
     ? [...input.values.map((v, i) => (i === last ? v : null)), ...forecast.values.map((v, i) => (i === forecast.values.length - 1 ? labelled(v, forecast.label ?? format(v), k.textMuted, false) : v))]
     : [];
   const color = seriesColor(k);
+  const wash = uixChartAreaGradient(color);
+  const areaStyle = wash.colorStops[0].color !== color ? { color: wash, opacity: 1 }
+    : k.seriesSoft ? { color: k.seriesSoft, opacity: 1 } : { color, opacity: 0.14 };
   const base = uixGlanceBase(k, motion) as Record<string, any>;
   const title = input.tooltipTitle ?? ((c: string) => c);
   const endText = forecast ? (forecast.label ?? format(forecast.values[forecast.values.length - 1] ?? 0)) : showEnd ? format(input.values[last]) : '';
@@ -139,9 +143,9 @@ export function glanceLineOption(k: UixChartTokens, input: GlanceLineInput, moti
     showSymbol: true,
     symbol: 'circle',
     symbolSize: 0,
-    lineStyle: { width: 2.2, cap: 'round', join: 'round' },
+    lineStyle: { color: forecast ? color : uixChartTrendGradient(color, k), width: 2.2, cap: 'round', join: 'round' },
     itemStyle: { color, borderColor: k.surface, borderWidth: 2 },
-    areaStyle: input.area === false ? undefined : k.seriesSoft ? { color: k.seriesSoft, opacity: 1 } : { color, opacity: 0.14 },
+    areaStyle: input.area === false ? undefined : areaStyle,
     emphasis: { disabled: true },
     animationDuration: motion.trace,
     animationDelay: motion.delay,
@@ -204,7 +208,8 @@ export function pairedBarsOption(k: UixChartTokens, input: PairedBarsInput, moti
   const format = input.format ?? plain;
   const base = uixGlanceBase(k, motion) as Record<string, any>;
   const title = input.tooltipTitle ?? ((c: string) => c);
-  const bar = (name: string, values: number[], color: string, offset: number) => ({
+  const color = seriesColor(k);
+  const bar = (name: string, values: number[], color: string, offset: number, fill: ReturnType<typeof uixChartBarGradient> = color) => ({
     name,
     type: 'bar',
     data: values,
@@ -212,7 +217,7 @@ export function pairedBarsOption(k: UixChartTokens, input: PairedBarsInput, moti
     barMaxWidth: 16,
     barGap: '18%',
     barCategoryGap: '38%',
-    itemStyle: { color, borderRadius: [3, 3, 0, 0] },
+    itemStyle: { color: fill, borderRadius: [3, 3, 0, 0] },
     emphasis: { disabled: true },
     animationDuration: motion.grow,
     animationDelay: (index: number) => motion.delay + index * motion.stagger + offset,
@@ -226,12 +231,16 @@ export function pairedBarsOption(k: UixChartTokens, input: PairedBarsInput, moti
       formatter: (params: any) => {
         const list = Array.isArray(params) ? params : [params];
         if (!list.length) return '';
-        return tooltipHtml(title(list[0].name), list.map((p: any) => ({ color: p.color, name: p.seriesName, value: format(p.value) })));
+        return tooltipHtml(title(list[0].name), list.map((p: any) => ({
+          color: p.seriesIndex === 1 ? k.comparison : color,
+          name: p.seriesName,
+          value: format(p.value),
+        })));
       },
     },
     xAxis: { ...base.xAxis, data: input.categories },
     series: [
-      bar(input.series.name, input.series.values, seriesColor(k), 0),
+      bar(input.series.name, input.series.values, color, 0, uixChartBarGradient(color, k)),
       bar(input.comparison.name, input.comparison.values, k.comparison, motion.stagger),
     ],
   } as EChartsOption;

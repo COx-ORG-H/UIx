@@ -2,7 +2,10 @@
    Requires window.echarts (loaded on demand by guide/app.js). */
 
 import { mergeChartTheme, uixChartAreaGradient, uixChartTheme, uixChartTokens } from './chart-theme.js';
-import { chartPanelsModel, correlationScatterModel, glanceLineOption, pairedBarsOption, GLANCE_AT_REST } from './chart-analytic.js';
+import {
+  chartPanelsModel, correlationScatterModel, glanceLineOption, pairedBarsOption, GLANCE_AT_REST,
+  uixChartBarGradient, uixChartRingGradient, uixChartTrendGradient,
+} from './chart-analytic.js';
 import { ANALYTIC_EXAMPLE, DELIVERY_PANELS, DELIVERY_SCATTER } from './insight-examples.js';
 
 const instances = new Map();
@@ -31,9 +34,9 @@ const OPTIONS = {
       symbolSize: 6,
       showSymbol: false,
       data: [8, 7, 9, 8, 10, 11, 9, 12, 11, 13, 16, 17, 16, 18.7],
-      lineStyle: { width: 2 },
+      lineStyle: { color: uixChartTrendGradient(k.palette[0], k), width: 2 },
       itemStyle: { borderColor: k.surface, borderWidth: 2 },
-      areaStyle: { color: uixChartAreaGradient(k.palette[0]) },
+      areaStyle: { color: uixChartAreaGradient(k.palette[0]), opacity: 1 },
       // a threshold is a SOLID reference line (dashes mean projection), labelled in the right gutter
       markLine: {
         silent: true,
@@ -55,10 +58,18 @@ const OPTIONS = {
     yAxis: { type: 'value', splitNumber: 3 },
     series: [
       // slots 1-3 in fixed order, a 2px surface gap between stacked segments
-      { name: 'Merged', type: 'bar', stack: 'flow', data: [12, 15, 14, 18, 16, 20, 21, 24], itemStyle: { borderRadius: [3, 3, 0, 0], borderColor: k.surface, borderWidth: 1 }, barMaxWidth: 24 },
-      { name: 'Reviewed', type: 'bar', stack: 'flow', data: [5, 4, 6, 5, 7, 5, 6, 5], itemStyle: { borderColor: k.surface, borderWidth: 1 }, barMaxWidth: 24 },
-      { name: 'Returned', type: 'bar', stack: 'flow', data: [3, 2, 4, 2, 3, 2, 2, 1], itemStyle: { borderColor: k.surface, borderWidth: 1 }, barMaxWidth: 24 },
-    ],
+      { name: 'Merged', data: [12, 15, 14, 18, 16, 20, 21, 24] },
+      { name: 'Reviewed', data: [5, 4, 6, 5, 7, 5, 6, 5] },
+      { name: 'Returned', data: [3, 2, 4, 2, 3, 2, 2, 1] },
+    ].map((series, i) => ({
+      ...series, type: 'bar', stack: 'flow', barMaxWidth: 24,
+      itemStyle: {
+        color: uixChartBarGradient(k.palette[i], k),
+        borderRadius: i === 0 ? [3, 3, 0, 0] : 0,
+        borderColor: k.surface,
+        borderWidth: 1,
+      },
+    })),
   }),
 
   donut: (k, status) => ({
@@ -78,11 +89,14 @@ const OPTIONS = {
       startAngle: 90,
       padAngle: 2,
       data: [
-        { value: 19, name: 'Successful' },
-        { value: 6, name: 'Tests' },
-        { value: 3, name: 'Review' },
-        { value: 2, name: 'Deploy' },
-      ],
+        { value: 19, name: 'Successful', tone: 'success' },
+        { value: 6, name: 'Tests', tone: 'attention' },
+        { value: 3, name: 'Review', tone: 'warning' },
+        { value: 2, name: 'Deploy', tone: 'danger' },
+      ].map(({ tone, ...slice }) => ({
+        ...slice,
+        itemStyle: { color: uixChartRingGradient(status[tone], k) },
+      })),
       label: { show: false },
       itemStyle: { borderColor: k.surface, borderWidth: 2, borderRadius: 4 },
       emphasis: { scaleSize: 5 },

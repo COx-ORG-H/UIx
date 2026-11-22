@@ -90,7 +90,11 @@ test('mergeChartTheme adds no axes, legend or title the option does not have', (
 
 test('uixChartAreaGradient fades the series colour to transparent', () => {
   const g = shipped.uixChartAreaGradient('#0455E6');
-  assert.deepEqual(g.colorStops.map((s) => s.color), ['rgba(4,85,230,0.28)', 'rgba(4,85,230,0.06)', 'rgba(4,85,230,0)']);
+  assert.deepEqual(g.colorStops, [
+    { offset: 0, color: 'rgba(4,85,230,0.27)' },
+    { offset: 0.7, color: 'rgba(4,85,230,0.09)' },
+    { offset: 1, color: 'rgba(4,85,230,0)' },
+  ]);
 });
 
 test('the styleguide port produces exactly what the shipped theme produces', () => {
