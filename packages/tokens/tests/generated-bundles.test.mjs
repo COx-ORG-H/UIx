@@ -48,7 +48,7 @@ test("every docs page that links the bundle falls back to the authored styleshee
   const pages = htmlFiles(PKG)
     .map((path) => [path, readFileSync(path, "utf8").match(/<link\b[^>]*build\/css\/styles\.css[^>]*>/)?.[0]])
     .filter(([, link]) => link);
-  assert.deepEqual(pages.map(([path]) => relative(PKG, path).replaceAll("\\", "/")).sort(), ["docs/explorer.html", "tables.html"]);
+  assert.deepEqual(pages.map(([path]) => relative(PKG, path).replaceAll("\\", "/")).sort(), ["docs/explorer.html", "docs/form-recovery.html", "tables.html"]);
 
   for (const [path, link] of pages) {
     const fallback = link.match(/onerror="this\.onerror=null;this\.href='([^']+)'"/)?.[1];
