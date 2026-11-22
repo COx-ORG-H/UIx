@@ -4,46 +4,13 @@
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  Button, ConflictNotice, ErrorSummary, Field, Input, SaveStatus, Textarea, useFormErrors, useLeaveGuard,
+  Button, ConflictNotice, Field, Input, SaveStatus, useLeaveGuard,
 } from '../../../react/src/index.js';
-import type { FormFieldErrors, JsonValue, SaveStatusState } from '../../../react/src/index.js';
-
-interface Incident { title: string; email: string; impact: string }
-const EMPTY: Incident = { title: '', email: '', impact: '' };
-
-const validate = (v: Incident): FormFieldErrors<Incident> => ({
-  title: !v.title.trim() ? 'Enter a title' : v.title.length > 60 ? 'Title must be 60 characters or fewer' : undefined,
-  email: !v.email.trim() ? 'Enter the requester’s email address'
-    : !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v.email) ? 'Enter an email address in the correct format, like name@example.com' : undefined,
-  impact: !v.impact.trim() ? 'Describe the impact on users' : undefined,
-});
+import type { JsonValue, SaveStatusState } from '../../../react/src/index.js';
+import { ErrorSummaryForm } from './shared/error-summary-form.js';
 
 function SummaryDemo() {
-  const [values, setValues] = useState(EMPTY);
-  const [saved, setSaved] = useState(false);
-  const form = useFormErrors({ values, validate });
-  const set = (name: keyof Incident) => (event: { currentTarget: { value: string } }) => {
-    setSaved(false);
-    setValues({ ...values, [name]: event.currentTarget.value });
-  };
-  return (
-    <form noValidate onSubmit={form.handleSubmit(() => { setSaved(true); form.reset(); setValues(EMPTY); })} className="uix-form-stack" style={{ maxWidth: '32rem' }}>
-      <ErrorSummary {...form.summary} />
-      <Field label="Title" {...form.field('title')}>
-        <Input {...form.control('title')} value={values.title} onChange={set('title')} autoComplete="off" />
-      </Field>
-      <Field label="Requester email" hint="The person who reported it" {...form.field('email')}>
-        <Input {...form.control('email')} type="email" value={values.email} onChange={set('email')} autoComplete="off" />
-      </Field>
-      <Field label="Impact" {...form.field('impact')}>
-        <Textarea {...form.control('impact')} rows={3} value={values.impact} onChange={set('impact')} />
-      </Field>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--uix-space-3)' }}>
-        <Button type="submit" variant="primary">Save incident</Button>
-        <SaveStatus state={saved ? 'saved' : 'idle'} delay={0} />
-      </div>
-    </form>
-  );
+  return <ErrorSummaryForm />;
 }
 
 const STATES: SaveStatusState[] = ['idle', 'saving', 'saved', 'failed'];

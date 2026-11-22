@@ -620,6 +620,35 @@ const leave = useLeaveGuard({ dirty, saveState, fields: ['Impact'] });  // befor
 - **`ConflictNotice`:** a warning banner for a 409 / 412: who and when, "your changes are still here", the fields they changed, Reload latest (theirs with yours kept), Review changes in `DiffViewer` where only fields you both changed need a choice before Apply. `mergeRecordConflict` / `recordConflictChanges` are the model.
 - **Words:** `UixLabelsProvider` `errorSummary`, `leaveGuard`, `conflictNotice`.
 
+The [live three-field example](../tokens/docs/live/shared/error-summary-form.tsx) is also the
+[browser fixture](../../tests/error-summary-form/harness.html). It preserves entered values, uses
+the same validation messages inline and in the summary, and keeps an existing `aria-describedby`
+association on the email input. Its `title` formatter supplies localized singular/plural counts;
+the component's default heading remains “There is a problem”.
+
+For a `Combobox`, target its input rather than its wrapper:
+
+```tsx
+const { id: inputId, ...teamControl } = form.control('team');
+<Field label="Team" {...form.field('team')}>
+  <Combobox {...teamControl} inputId={inputId} label="Team"
+    options={teams} value={values.team} onValueChange={setTeam} />
+</Field>
+```
+
+If a linked control is missing, hidden, disabled or otherwise unable to take focus, following its
+error link returns focus to the summary without changing the URL. Reveal conditional fields before
+expecting their links to work. Correcting a field or updating error text does not take focus back.
+Set `autoFocus={false}` to suppress focus when a passive summary appears. While it is visible,
+changing `focusKey` requests focus again; the application can also focus the forwarded ref.
+`useFormErrors` supplies the failed-submit key and silences inline live announcements while the
+summary is present.
+
+The fixture covers zero, one and three errors, keyboard recovery through the Combobox, retained
+values after validation and save, and long German messages at 320 px with 200% text in light and
+dark themes. Axe and browser assertions are automated evidence; screen-reader speech still needs
+manual assistive-technology testing.
+
 ### AI assistance (`AiLabel`, `AiSuggestion`, `Field ai`, `ProposalReview`, `AiOutputCard`, `uix-proposal`)
 
 Every AI value is disclosed, reversible, and, for consequential writes, approved by structure, not

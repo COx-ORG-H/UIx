@@ -113,6 +113,11 @@ try {
     }
   }, null, 2));
   copyFileSync(join(HERE, 'app.tsx'), join(tmp, 'app.tsx'));
+  // Compile the exact live-docs form against the packed public API, including Combobox.inputId.
+  const formFixture = readFileSync(join(ROOT, 'packages/tokens/docs/live/shared/error-summary-form.tsx'), 'utf8');
+  const sourceEntry = '../../../../react/src/index.js';
+  if (!formFixture.includes(sourceEntry)) throw new Error('Shared form fixture no longer imports the React source entry');
+  writeFileSync(join(tmp, 'error-summary-form.tsx'), formFixture.replaceAll(sourceEntry, '@tensor_1/react'));
   copyFileSync(join(HERE, 'tsconfig.json'), join(tmp, 'tsconfig.json'));
   copyFileSync(join(HERE, 'app-rich-text.tsx'), join(tmp, 'app-rich-text.tsx'));
   copyFileSync(join(HERE, 'tsconfig.rich-text.json'), join(tmp, 'tsconfig.rich-text.json'));
