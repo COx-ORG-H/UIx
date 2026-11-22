@@ -2,6 +2,10 @@
 
 A local design exploration for the next UIx chart treatment. Open `index.html` directly in a browser, or serve the repository and visit `/packages/tokens/mockups/gradient-charts/`.
 
+The page opens with **Refined** at **Balanced** strength. Refined keeps a solid trend line, clears the lower half of its fill sooner, and puts the strongest color at the top of each bar. **Edge light** follows the trend contour, bar caps, and outer ring. **Duotone** carries a second hue across each time series and uses a smaller shift within each ring segment. Select **Original** at Balanced strength to compare with the first study.
+
+![The same trend and weekly bars in Refined, Edge light, and Duotone at Balanced strength](balanced-finishes.png)
+
 The brief: show a restrained use of gradients in four familiar chart forms, using UIx's existing typography, chart palette, surfaces, chart cards, buttons, and segmented controls. Compare blue, teal, and orchid palettes, three gradient strengths, light/dark themes, and the same geometry rendered flat. All numbers are explicitly illustrative fixtures; there is no service, tracking, or persistence. This is a mockup, not a package API change.
 
 Acceptance: controls update the charts in place; flat mode preserves values and geometry; visible legends and data tables supplement colour; time-series and bar values can be inspected with pointer or keyboard; the page fits desktop and 320 px layouts in both themes. Check contrast, clipping, keyboard interaction, and script errors in a real browser. Primary risks are low-contrast fades and small-screen chart labels, so marks retain solid edges and narrow charts use a readable minimum plot width inside a labelled scroller.
@@ -17,4 +21,4 @@ Tab to an inspectable chart and use Left/Right, Home/End, or Escape. Expand **Vi
 
 These files stay separate from the shipped component styles and generated tokens. Choosing a treatment for the production ECharts adapter is a later step.
 
-Verified in Microsoft Edge: all 36 appearance combinations preserve chart geometry; pointer and keyboard inspection work; both themes fit 320, 390, 768, 1024, and 1440 px viewports, including expanded tables. Reduced-motion and forced-colour modes were checked, and all 32 sample-data rows remain available with JavaScript disabled. Eight axe scans reported no violations; axe could not assess 38 SVG text nodes, so their computed foreground/background contrast was checked separately (minimum 5.33:1 in light and 7.31:1 in dark). JavaScript syntax and whitespace checks passed. No package build is needed for these standalone files.
+Verified all 144 finish, palette, strength, theme, and flat combinations in Microsoft Edge. Each finish produces a distinct image in each of the four plots. At Balanced blue, flat mode produces identical chart pixels across finishes in each theme. Keyboard selection and inspection work, and controls fit widths down to 320 px. Eight axe scans of the finishes in light and dark reported zero violations and flagged 38 SVG labels for manual contrast review. Those labels sit on the solid card surface and measured at least 5.33:1 in light and 7.31:1 in dark.

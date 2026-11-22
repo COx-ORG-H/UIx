@@ -16,12 +16,13 @@
 
   function appearance() {
     const { palette, strength, theme, flat } = root.dataset;
-    const label = `${cap(palette)} / ${flat === 'true' ? 'Flat' : cap(strength)} / ${cap(theme)}`;
+    const finish = $('[data-finish-option][aria-pressed="true"] strong').textContent;
+    const label = [finish, cap(palette), flat === 'true' ? 'Flat' : cap(strength), cap(theme)].join(' / ');
     $('#preview-label').textContent = label;
     $('#appearance-status').textContent = `Chart appearance: ${label}. Sample values are unchanged.`;
   }
 
-  for (const setting of ['theme', 'palette', 'strength']) {
+  for (const setting of ['theme', 'palette', 'strength', 'finish']) {
     const buttons = document.querySelectorAll(`[data-${setting}-option]`);
     for (const button of buttons) {
       button.addEventListener('click', () => {
@@ -48,8 +49,35 @@
     }).join(' ');
   }
 
-  function wash(id) {
-    return `<linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop class="gradient-base wash-top" offset="0"/><stop class="gradient-base wash-middle" offset=".7"/><stop class="gradient-base wash-bottom" offset="1"/></linearGradient>`;
+  // Shared by the thumbnails and full plots, with SVG paint IDs local to each drawing.
+  function trendLayers(id, points, bottom, prior = '') {
+    const d = line(points);
+    const areaPath = `${d} L${points.at(-1)[0]},${bottom} L${points[0][0]},${bottom} Z`;
+    return `
+      <defs>
+        <linearGradient id="${id}-ink"><stop class="gradient-base"/><stop offset="1" class="gradient-tip"/></linearGradient>
+        <linearGradient id="${id}-wash" x2="0" y2="1">
+          <stop class="wash-top"/><stop offset=".7" class="wash-middle"/><stop offset="1" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="${id}-fade" x2="0" y2="1"><stop stop-color="white" class="wash-top"/><stop offset="1" stop-color="white" stop-opacity="0"/></linearGradient>
+        <mask id="${id}-mask"><path d="${areaPath}" fill="url(#${id}-fade)"/></mask>
+        <clipPath id="${id}-clip"><path d="${areaPath}"/></clipPath>
+        <filter id="${id}-soft" x="-10%" y="-100%" width="120%" height="300%"><feGaussianBlur stdDeviation="2.5"/></filter>
+      </defs>
+      <g class="trend-finish" aria-hidden="true">
+        <path class="vertical-wash" d="${areaPath}" fill="url(#${id}-wash)"/>
+        <path class="duotone-wash" d="${areaPath}" fill="url(#${id}-ink)" mask="url(#${id}-mask)"/>
+        <g class="edge-wash" clip-path="url(#${id}-clip)"><path d="${d}" filter="url(#${id}-soft)"/></g>
+      </g>
+      ${prior}
+      <path class="plot-line current-line" d="${d}" style="--line-ink: url(#${id}-ink)"/>
+    `;
+  }
+
+  for (const button of document.querySelectorAll('[data-finish-option]')) {
+    const finish = button.dataset.finishOption;
+    const points = area.map(({ value }, i) => [2 + i * 8, 42 - value / 4]);
+    button.insertAdjacentHTML('afterbegin', `<svg class="finish-sample" data-finish="${finish}" viewBox="0 0 108 38" aria-hidden="true">${trendLayers('sample-' + finish, points, 38)}</svg>`);
   }
 
   function chart(container, data, { max, ticks, label, unit = '', previous = false, bar = false }) {
@@ -64,21 +92,26 @@
         ? box.left + (index + .5) * plotWidth / data.length
         : box.left + index * plotWidth / (data.length - 1);
       const points = data.map((point, index) => [x(index), y(point.value)]);
-      const d = line(points);
       const tickLabels = ticks.map((value) => `<line class="grid-line" x1="${box.left}" y1="${y(value)}" x2="${box.right}" y2="${y(value)}"/><text class="axis-label" x="${box.left - 9}" y="${y(value) + 4}" text-anchor="end">${value}${unit}</text>`).join('');
       const labels = data.map((point, index) => {
         if (!bar && data.length > 8 && ![0, 3, 6, 9, 13].includes(index)) return '';
         return `<text class="axis-label" x="${x(index)}" y="${height - 7}" text-anchor="middle">${point.label}</text>`;
       }).join('');
-      const gradientId = previous ? 'comparison-wash' : 'area-wash';
-      const areaPath = `<path class="${previous ? 'comparison-fill' : 'area-fill'}" d="${d} L${box.right},${box.bottom} L${box.left},${box.bottom} Z"/>`;
-      const barsMarkup = data.map((point, index) => {
-        const w = Math.min(28, plotWidth / data.length * .56);
-        return `<rect class="bar" x="${x(index) - w / 2}" y="${y(point.value)}" width="${w}" height="${box.bottom - y(point.value)}" rx="3"/><line class="bar-top" x1="${x(index) - w / 2 + 3}" y1="${y(point.value)}" x2="${x(index) + w / 2 - 3}" y2="${y(point.value)}"/>`;
-      }).join('');
+      function barMarks() {
+        const defs = `<defs>
+          <linearGradient id="bar-gradient" x1="0" y1="1" x2="0" y2="0"><stop class="bar-base"/><stop offset="1" class="bar-tip"/></linearGradient>
+          <linearGradient id="bar-edge" x2="0" y2="1"><stop class="edge-tip"/><stop offset=".12" class="gradient-base"/><stop offset="1" class="gradient-base"/></linearGradient>
+          <linearGradient id="bar-duotone" gradientUnits="userSpaceOnUse" x1="${box.left}" x2="${box.right}"><stop class="gradient-base"/><stop offset="1" class="gradient-tip"/></linearGradient>
+        </defs>`;
+        return defs + data.map((point, index) => {
+          const w = Math.min(28, plotWidth / data.length * .56);
+          return `<rect class="bar" x="${x(index) - w / 2}" y="${y(point.value)}" width="${w}" height="${box.bottom - y(point.value)}" rx="3"/><line class="bar-top" x1="${x(index) - w / 2 + 3}" y1="${y(point.value)}" x2="${x(index) + w / 2 - 3}" y2="${y(point.value)}"/>`;
+        }).join('');
+      }
       const prior = previous ? `<path class="plot-line past-line" d="${line(data.map((point, index) => [x(index), y(point.previous)]))}"/>` : '';
-      const marks = bar ? barsMarkup : `${areaPath}${prior}<path class="plot-line ${previous ? '' : 'line-gradient'}" d="${d}"/><circle class="latest-point" cx="${points.at(-1)[0]}" cy="${points.at(-1)[1]}" r="4.5"/>`;
-      container.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${label}. Exact values are in the sample data table."><defs>${wash(gradientId)}<linearGradient id="${bar ? 'bar-gradient' : previous ? 'comparison-line-gradient' : 'area-line-gradient'}" x1="0" y1="${bar ? 1 : 0}" x2="${bar ? 0 : 1}" y2="0"><stop class="gradient-base" offset="0"/><stop class="gradient-tip" offset="1"/></linearGradient></defs>${tickLabels}${marks}${labels}<g class="inspect-marker" visibility="hidden" aria-hidden="true"><line class="inspect-line" y1="${box.top}" y2="${box.bottom}"/><circle class="inspect-dot"/></g></svg><div class="chart-tooltip" role="status" hidden></div>`;
+      const marks = bar ? barMarks() : trendLayers(container.id, points, box.bottom, prior) +
+        `<circle class="latest-point" cx="${points.at(-1)[0]}" cy="${points.at(-1)[1]}" r="4.5"/>`;
+      container.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${label}. Exact values are in the sample data table.">${tickLabels}${marks}${labels}<g class="inspect-marker" visibility="hidden" aria-hidden="true"><line class="inspect-line" y1="${box.top}" y2="${box.bottom}"/><circle class="inspect-dot"/></g></svg><div class="chart-tooltip" role="status" hidden></div>`;
       const svg = container.querySelector('svg');
       const tooltip = container.querySelector('.chart-tooltip');
       const marker = container.querySelector('.inspect-marker');
@@ -137,6 +170,19 @@
     offset += length;
     return arc;
   }).join('');
-  $('#ring-chart').innerHTML = `<svg viewBox="0 0 200 200" role="img" aria-label="${format.format(channelTotal)} sample requests: Portal 58 percent, Email 27 percent, Chat 15 percent."><defs><linearGradient id="ring-primary" x1="0" y1="1" x2="1" y2="0"><stop class="gradient-base" offset="0"/><stop class="gradient-tip" offset="1"/></linearGradient><linearGradient id="ring-secondary" x1="0" y1="1" x2="1" y2="0"><stop class="ring-second-start" offset="0"/><stop class="ring-second-end" offset="1"/></linearGradient><linearGradient id="ring-tertiary" x1="0" y1="1" x2="1" y2="0"><stop class="ring-third-start" offset="0"/><stop class="ring-third-end" offset="1"/></linearGradient></defs><circle class="ring-track" cx="100" cy="100" r="${radius}"/>${segments}<text class="ring-value" x="100" y="100" text-anchor="middle">${format.format(channelTotal)}</text><text class="ring-label" x="100" y="121" text-anchor="middle">total requests</text></svg>`;
+  const ringPaint = ringClasses.map((name) => `
+    <linearGradient id="ring-${name}" x1="0" y1="1" x2="1" y2="0" class="ring-paint ${name}">
+      <stop class="ring-start"/><stop offset="1" class="ring-end"/>
+    </linearGradient>
+    <radialGradient id="rim-${name}" r="57.14%" class="ring-paint ${name}">
+      <stop offset=".93" class="ring-start"/><stop offset="1" class="edge-tip"/>
+    </radialGradient>`).join('');
+  const shares = channels.map(({ label, value }) => `${label} ${Math.round(value / channelTotal * 100)} percent`).join(', ');
+  $('#ring-chart').innerHTML = `<svg viewBox="0 0 200 200" role="img" aria-label="${format.format(channelTotal)} sample requests. ${shares}.">
+    <defs>${ringPaint}</defs>
+    <circle class="ring-track" cx="100" cy="100" r="${radius}"/>${segments}
+    <text class="ring-value" x="100" y="100" text-anchor="middle">${format.format(channelTotal)}</text>
+    <text class="ring-label" x="100" y="121" text-anchor="middle">total requests</text>
+  </svg>`;
   appearance();
 })();
