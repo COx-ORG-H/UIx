@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-strength="balanced" data-palette="blue" data-flat="false" data-finish="original">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Four interactive UIx chart mockups exploring restrained gradients, in light and dark.">
+  <title>Gradient studies — UIx Chart Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../build/css/tokens.css">
+  <link rel="stylesheet" href="../../styles/base.css">
+  <link rel="stylesheet" href="../../styles/components/button.css">
+  <link rel="stylesheet" href="../../styles/components/segmented.css">
+  <link rel="stylesheet" href="../../styles/components/chart.css">
+  <link rel="stylesheet" href="studies.css">
+  <script src="studies.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to chart studies</a>
+  <header class="masthead">
+    <div class="masthead-inner">
+      <a class="wordmark" href="../../docs/explorer.html#introduction" aria-label="UIx documentation"><span class="brand-mark" aria-hidden="true">U</span>UIx <span class="wordmark-divider"></span><span class="lab-name">Chart Lab</span></a>
+      <div class="masthead-end"><span class="draft-label">Design exploration</span><a class="docs-link" href="../../docs/explorer.html#chart">Back to docs</a></div>
+    </div>
+  </header>
+
+  <main id="main" class="study-page">
+    <section class="intro" aria-labelledby="page-title">
+      <div><h1 id="page-title">Gradient studies</h1><p>Choose a finish to compare it across four charts.</p></div>
+      <div class="theme-control uix-segmented" role="group" aria-label="Color theme">
+        <button class="uix-segmented__option" type="button" data-theme-option="light" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg>Light</button>
+        <button class="uix-segmented__option" type="button" data-theme-option="dark" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14A8.5 8.5 0 0 1 10 3.5 8.5 8.5 0 1 0 20.5 14Z"/></svg>Dark</button>
+      </div>
+    </section>
+
+    <div class="finish-picker" role="group" aria-label="Chart finish">
+      <button type="button" data-finish-option="original" aria-pressed="true"><strong>Original</strong><span>First chart study</span></button>
+      <button type="button" data-finish-option="refined" aria-pressed="false"><strong>Refined</strong><span>Soft vertical fade</span></button>
+      <button type="button" data-finish-option="edge" aria-pressed="false"><strong>Edge light</strong><span>Color along the contour</span></button>
+      <button type="button" data-finish-option="duotone" aria-pressed="false"><strong>Duotone</strong><span>Two hues across the plot</span></button>
+    </div>
+    <section class="workbench" aria-label="Adjust chart appearance">
+      <div class="control-set"><span class="control-label" id="palette-label">Palette</span><div class="palette-options" role="group" aria-labelledby="palette-label">
+        <button class="palette-button" type="button" data-palette-option="blue" aria-pressed="true"><span class="palette-swatch swatch-blue" aria-hidden="true"></span>Blue</button>
+        <button class="palette-button" type="button" data-palette-option="teal" aria-pressed="false"><span class="palette-swatch swatch-teal" aria-hidden="true"></span>Teal</button>
+        <button class="palette-button" type="button" data-palette-option="orchid" aria-pressed="false"><span class="palette-swatch swatch-orchid" aria-hidden="true"></span>Orchid</button>
+      </div></div>
+      <div class="control-set strength-control"><span class="control-label" id="strength-label">Strength</span><div class="uix-segmented" role="group" aria-labelledby="strength-label">
+        <button class="uix-segmented__option" type="button" data-strength-option="subtle" aria-pressed="false">Subtle</button>
+        <button class="uix-segmented__option" type="button" data-strength-option="balanced" aria-pressed="true">Balanced</button>
+        <button class="uix-segmented__option" type="button" data-strength-option="vivid" aria-pressed="false">Vivid</button>
+      </div></div>
+      <button class="uix-btn uix-btn--outline flat-toggle" type="button" id="flat-toggle" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3" width="14" height="14" rx="3"/><path d="M10 3v14"/></svg>Compare flat</button>
+    </section>
+
+    <div class="gallery-caption"><h2 id="preview-label">Original / Blue / Balanced / Light</h2><span>Illustrative data</span></div>
+    <noscript><p class="no-script">Enable JavaScript for the interactive charts. All sample values are available in the data tables below.</p></noscript>
+
+    <div class="study-grid">
+      <article class="uix-chart study-card card-area" aria-labelledby="area-title">
+        <header class="card-header"><div><span class="treatment-label">Soft fill</span><h3 id="area-title">Resolved requests</h3></div><span class="period-label">Last 14 days</span></header>
+        <div class="metric-row"><span class="metric" id="request-total">1,444</span><span class="metric-note">requests resolved</span></div>
+        <div class="legend-row"><span class="legend-item"><span class="legend-line primary"></span>Daily volume</span><span class="chart-hint">Hover or use arrow keys</span></div>
+        <div class="plot-scroller" role="region" aria-label="Resolved requests plot"><div class="plot plot-area" id="area-chart"></div></div>
+        <details class="sample-data"><summary>View sample data</summary><div class="data-scroll"><table><caption>Illustrative daily resolved requests, November 9–22</caption><thead><tr><th scope="col">Date</th><th scope="col">Requests</th></tr></thead><tbody id="area-data"><tr><td>Nov 9</td><td>62</td></tr><tr><td>Nov 10</td><td>75</td></tr><tr><td>Nov 11</td><td>69</td></tr><tr><td>Nov 12</td><td>88</td></tr><tr><td>Nov 13</td><td>82</td></tr><tr><td>Nov 14</td><td>104</td></tr><tr><td>Nov 15</td><td>96</td></tr><tr><td>Nov 16</td><td>112</td></tr><tr><td>Nov 17</td><td>101</td></tr><tr><td>Nov 18</td><td>124</td></tr><tr><td>Nov 19</td><td>118</td></tr><tr><td>Nov 20</td><td>137</td></tr><tr><td>Nov 21</td><td>129</td></tr><tr><td>Nov 22</td><td>147</td></tr></tbody></table></div></details>
+      </article>
+
+      <article class="uix-chart study-card card-bars" aria-labelledby="bar-title">
+        <header class="card-header"><div><span class="treatment-label">Satin bars</span><h3 id="bar-title">Weekly throughput</h3></div><span class="period-label">8 weeks</span></header>
+        <div class="metric-row"><span class="metric" id="throughput-total">648</span><span class="metric-note">completed this week</span></div>
+        <div class="legend-row"><span class="legend-item"><span class="legend-square primary"></span>Completed requests</span></div>
+        <div class="plot-scroller" role="region" aria-label="Weekly throughput plot"><div class="plot plot-bars" id="bar-chart"></div></div>
+        <details class="sample-data"><summary>View sample data</summary><div class="data-scroll"><table><caption>Illustrative completed requests by week</caption><thead><tr><th scope="col">Week</th><th scope="col">Completed</th></tr></thead><tbody id="bar-data"><tr><td>W40</td><td>328</td></tr><tr><td>W41</td><td>412</td></tr><tr><td>W42</td><td>376</td></tr><tr><td>W43</td><td>486</td></tr><tr><td>W44</td><td>449</td></tr><tr><td>W45</td><td>561</td></tr><tr><td>W46</td><td>518</td></tr><tr><td>W47</td><td>648</td></tr></tbody></table></div></details>
+      </article>
+
+      <article class="uix-chart study-card card-ring" aria-labelledby="ring-title">
+        <header class="card-header"><div><span class="treatment-label">Chromatic ring</span><h3 id="ring-title">Requests by channel</h3></div><span class="period-label">This week</span></header>
+        <div class="ring-layout"><div class="ring-plot" id="ring-chart"></div><div class="ring-key" id="ring-key">
+          <div><span class="legend-square primary"></span><span>Portal</span><strong>58%</strong></div>
+          <div><span class="legend-square secondary"></span><span>Email</span><strong>27%</strong></div>
+          <div><span class="legend-square tertiary"></span><span>Chat</span><strong>15%</strong></div>
+        </div></div>
+        <details class="sample-data"><summary>View sample data</summary><div class="data-scroll"><table><caption>Illustrative requests by channel</caption><thead><tr><th scope="col">Channel</th><th scope="col">Requests</th><th scope="col">Share</th></tr></thead><tbody id="ring-data"><tr><td>Portal</td><td>580</td><td>58%</td></tr><tr><td>Email</td><td>270</td><td>27%</td></tr><tr><td>Chat</td><td>150</td><td>15%</td></tr></tbody></table></div></details>
+      </article>
+
+      <article class="uix-chart study-card card-comparison" aria-labelledby="comparison-title">
+        <header class="card-header"><div><span class="treatment-label">Layered comparison</span><h3 id="comparison-title">Resolution time</h3></div><span class="period-label">Mon–Sun</span></header>
+        <div class="metric-row"><span class="metric" id="response-average">2.5<span class="metric-unit">h</span></span><span class="metric-note">daily mean, this week</span></div>
+        <div class="legend-row"><span class="legend-item"><span class="legend-line primary"></span>This week</span><span class="legend-item"><span class="legend-line comparison"></span>Previous week</span><span class="chart-hint">Lower is better</span></div>
+        <div class="plot-scroller" role="region" aria-label="Resolution time plot"><div class="plot plot-comparison" id="comparison-chart"></div></div>
+        <details class="sample-data"><summary>View sample data</summary><div class="data-scroll"><table><caption>Illustrative daily mean resolution time in hours</caption><thead><tr><th scope="col">Day</th><th scope="col">This week</th><th scope="col">Previous week</th></tr></thead><tbody id="comparison-data"><tr><td>Mon</td><td>3.2</td><td>4.1</td></tr><tr><td>Tue</td><td>2.8</td><td>3.7</td></tr><tr><td>Wed</td><td>3.0</td><td>3.9</td></tr><tr><td>Thu</td><td>2.4</td><td>3.2</td></tr><tr><td>Fri</td><td>2.1</td><td>3.6</td></tr><tr><td>Sat</td><td>2.3</td><td>3.1</td></tr><tr><td>Sun</td><td>1.9</td><td>2.8</td></tr></tbody></table></div></details>
+      </article>
+    </div>
+
+    <footer class="page-footer"><span>UIx Chart Lab</span><p>Exploratory mockups with sample data. Not a production theme.</p><span>Built on UIx tokens</span></footer>
+    <p class="sr-only" role="status" aria-live="polite" id="appearance-status"></p>
+  </main>
+</body>
+</html>
