@@ -2,7 +2,7 @@
 
 A local design exploration for the next UIx chart treatment. Open `index.html` directly in a browser, or serve the repository and visit `/packages/tokens/mockups/gradient-charts/`.
 
-The page opens with **Refined** at **Balanced** strength. Refined keeps a solid trend line, clears the lower half of its fill sooner, and puts the strongest color at the top of each bar. **Edge light** follows the trend contour, bar caps, and outer ring. **Duotone** carries a second hue across each time series and uses a smaller shift within each ring segment. Select **Original** at Balanced strength to compare with the first study.
+The page opens with the **Original** finish at **Balanced** strength in blue. **Refined** uses a solid trend line, a shorter fade, and a stronger color at the top of each bar. **Edge light** follows the trend contour, bar caps, and outer ring. **Duotone** carries a second hue across each time series and uses a smaller shift within each ring segment.
 
 ![The same trend and weekly bars in Refined, Edge light, and Duotone at Balanced strength](balanced-finishes.png)
 
