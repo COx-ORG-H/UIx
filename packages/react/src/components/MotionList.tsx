@@ -1,7 +1,7 @@
 "use client";
 
 import { Children, cloneElement, createElement, isValidElement, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { HTMLAttributes, ReactElement, ReactNode, TransitionEvent } from 'react';
+import type { DetailedReactHTMLElement, HTMLAttributes, ReactElement, ReactNode, RefObject, TransitionEvent } from 'react';
 import { cx } from '../cx.js';
 import { prefersReducedMotion } from '../hooks/useReducedMotion.js';
 
@@ -53,7 +53,15 @@ interface ListState<T> { items: readonly T[]; entries: Entry<T>[]; exiting: Map<
  * Reduced motion keeps the fades and drops every glide and rise. For a list that re-sorts
  * itself (live data), hold the order while the person is pointing at it: `useDeferredReorder`.
  */
-export function MotionList<T>({ items, getKey, renderItem, as = 'ul', onExited, className, ...props }: MotionListProps<T>) {
+// Name the structural return contract: inference expands all DOM attributes in filesystem-dependent
+// order, making the API report differ between Windows and Linux without an actual API change.
+export function MotionList<T>({ items, getKey, renderItem, as = 'ul', onExited, className, ...props }: MotionListProps<T>): DetailedReactHTMLElement<
+  Omit<HTMLAttributes<HTMLElement>, 'children' | 'className' | 'onTransitionEnd'> & {
+    ref: RefObject<HTMLElement>;
+    className: string;
+    onTransitionEnd: (event: TransitionEvent<HTMLElement>) => void;
+  }, HTMLElement
+> {
   const containerRef = useRef<HTMLElement>(null);
   // Leaving items, derived while rendering (not in an effect): the removed item stays in place
   // in the same commit that drops it from `items`, so nothing beside it jumps and jumps back.
