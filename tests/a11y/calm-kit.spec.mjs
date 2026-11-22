@@ -97,6 +97,7 @@ test('glance charts: dashed gridlines, a direct label, a dark tooltip with the e
   await expect(stage(page)).toHaveAttribute('data-uix-arrive', 'rest', { timeout: 3000 });
   const card = page.locator('#card-backlog');
   await expect(card.locator('svg text', { hasText: 'Prognose 140' })).toHaveCount(1);
+  await expect(card.locator('svg path[fill^="url("]')).toHaveCount(1);
   const dashed = await card.locator('svg path[stroke-dasharray]').count();
   expect(dashed).toBeGreaterThanOrEqual(3);
   const box = await card.locator('[role="img"]').boundingBox();
@@ -115,6 +116,7 @@ test('glance charts: dashed gridlines, a direct label, a dark tooltip with the e
   });
   expect(colours.bg).toBe(colours.ink);
   // the paired bars: blue and grey, no legend drawn by the chart (the note carries the key)
+  await expect(page.locator('#card-flow svg path[fill^="url("]').first()).toBeAttached();
   await expect(page.locator('#card-flow .uix-legend__item')).toHaveCount(2);
   await expect(page.locator('#card-flow table.uix-visually-hidden th')).toHaveText(['Tag', 'eröffnet', 'gelöst']);
 });

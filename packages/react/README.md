@@ -1012,8 +1012,8 @@ For a home page that greets before it warns: one question per card, red only for
 
 **Glance cards.** `ChartCard` asks a question (`question`, a heading), answers it (`headline` large, `answer` short), holds one chart and a `note` line; `empty` replaces all of it with one sentence. The chart is one of:
 
-- `GlanceLineChart` (`@tensor_1/react/chart` or `/chart/preset`): one series in `--uix-chart-series`, labelled at its end, an optional dashed `forecast`, three dashed gridlines, sans tabular axis digits and a dark tooltip with a crosshair. Builds a hidden data table from the data; pass `ariaLabel` and `categoryLabel`.
-- `PairedBarChart` (same entries): per bucket the measure in blue beside its comparison in grey, up to 12 buckets (it warns above). Put the key in `note` with `ChartLegend`.
+- `GlanceLineChart` (`@tensor_1/react/chart` or `/chart/preset`) shows one series in `--uix-chart-series`, with an end label, a soft area fade, and an optional dashed `forecast`. It uses three dashed gridlines, sans tabular axis digits, and a dark tooltip with a crosshair. Pass `ariaLabel` and `categoryLabel` for the hidden data table. Use `area={false}` to show the line on its own.
+- `PairedBarChart` (same entries) shows the measured bar with a blue gradient beside its flat grey comparison. It warns above 12 buckets. Put the key in `note` with `ChartLegend`.
 - `BarList`: label, bar, value per bucket; every value written out.
 - `Meter target={95} targetLabel="Ziel 95 %"`: an ink mark at the goal, said after the value.
 - `StatusStrip`: one cell per service and only the affected ones listed, critical first.

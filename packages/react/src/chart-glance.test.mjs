@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as theme from './chart-theme.ts';
-import * as glance from './chart-glance.ts';
+import * as glance from '../dist/chart-glance.js';
 import * as port from '../../tokens/guide/chart-analytic.js';
 
 const css = readFileSync(new URL('../../tokens/build/css/tokens.css', import.meta.url), 'utf8');
@@ -45,6 +45,8 @@ test('the series is chart-1 and the comparison grey; red and amber never encode 
     assert.ok(k.seriesSoft.startsWith('rgba('), k.seriesSoft);
     const bars = glance.pairedBarsOption(k, BARS);
     assert.deepEqual(bars.series.map((s) => s.color), [k.series, k.comparison]);
+    assert.equal(bars.series[0].itemStyle.color.colorStops[0].color, k.series);
+    assert.equal(bars.series[1].itemStyle.color, k.comparison);
     const line = glance.glanceLineOption(k, LINE);
     for (const s of [...bars.series, ...line.series]) {
       assert.notEqual(s.color, k.danger);
@@ -83,6 +85,9 @@ test('a line is labelled at its end; a forecast continues dashed from the last m
   assert.deepEqual(o.xAxis.data, [...LINE.categories, ...LINE.forecast.categories]);
   assert.deepEqual(o.series[0].data, [20, 21, 60, { value: 85, symbolSize: 8 }, null, null], 'the forecast carries the end label; the last measured point keeps its dot');
   assert.equal(end.symbolSize, 8, 'the endpoint dot');
+  assert.equal(plain.series[0].lineStyle.color.x2, 1, 'the single trend shifts colour left to right');
+  assert.equal(plain.series[0].areaStyle.color.colorStops.at(-1).color, 'rgba(4,85,230,0)');
+  assert.equal(glance.glanceLineOption(light, { ...LINE, area: false }).series[0].areaStyle, undefined);
   assert.equal(o.series[1].data.at(-1).symbolSize, 0);
   assert.deepEqual(o.series[1].data.slice(0, -1), [null, null, null, 85, 102]);
   assert.equal(o.series[1].data.at(-1).value, 140);
@@ -98,10 +103,11 @@ test('the tooltip names the point and its value, escaped', () => {
   assert.match(out, /&lt;b&gt;offen&lt;\/b&gt;/);
   assert.match(out, /<span class="uix-glance-tooltip__value">85<\/span>/);
   const bars = glance.pairedBarsOption(light, BARS).tooltip.formatter([
-    { name: 'Mi', seriesName: 'eröffnet', value: 19, color: light.series },
-    { name: 'Mi', seriesName: 'gelöst', value: 13, color: light.comparison },
+    { name: 'Mi', seriesIndex: 0, seriesName: 'eröffnet', value: 19, color: theme.uixChartBarGradient(light.series, light) },
+    { name: 'Mi', seriesIndex: 1, seriesName: 'gelöst', value: 13, color: light.comparison },
   ]);
   assert.match(bars, /eröffnet<span class="uix-glance-tooltip__value">19<\/span>.*gelöst<span class="uix-glance-tooltip__value">13<\/span>/s);
+  assert.ok(bars.includes(`--swatch:${light.series}`) && bars.includes(`--swatch:${light.comparison}`));
 });
 
 test('at rest nothing animates; playing, a line traces and bars grow bucket by bucket; no refresh is animated', () => {

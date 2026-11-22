@@ -15,7 +15,7 @@ import type {
   XAXisComponentOption,
   YAXisComponentOption,
 } from 'echarts';
-import { uixChartAreaGradient } from './chart-theme.js';
+import { uixChartAreaGradient, uixChartBarGradient } from './chart-theme.js';
 import type { UixChartTokens } from './chart-theme.js';
 import {
   DEFAULT_ANALYTIC_LABELS,
@@ -278,7 +278,7 @@ export function chartPanelsModel(spec: ChartPanelsSpec, tokens: UixChartTokens, 
           ...axes,
           data: pairs(s.values),
           barMaxWidth: 24,
-          itemStyle: { color, borderRadius: [4, 4, 0, 0], borderColor: tokens.surface, borderWidth: 1 },
+          itemStyle: { color: uixChartBarGradient(color, tokens), borderRadius: [4, 4, 0, 0], borderColor: tokens.surface, borderWidth: 1 },
           animation: false,
           z: 2,
           ...marks,
@@ -296,7 +296,7 @@ export function chartPanelsModel(spec: ChartPanelsSpec, tokens: UixChartTokens, 
           connectNulls: false,
           lineStyle: { color, width: 2, type: 'solid' },
           itemStyle: { color, borderColor: tokens.surface, borderWidth: 2 },
-          ...(panel.kind === 'area' ? { areaStyle: { color: uixChartAreaGradient(color) } } : {}),
+          ...(panel.kind === 'area' ? { areaStyle: { color: uixChartAreaGradient(color), opacity: 1 } } : {}),
           emphasis: { focus: 'none' },
           animation: false,
           z: 2,

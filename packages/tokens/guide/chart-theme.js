@@ -80,7 +80,7 @@ export function uixChartAreaGradient(color) {
   };
   return {
     type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
-    colorStops: [{ offset: 0, color: alpha(0.28) }, { offset: 0.72, color: alpha(0.06) }, { offset: 1, color: alpha(0) }],
+    colorStops: [{ offset: 0, color: alpha(0.27) }, { offset: 0.7, color: alpha(0.09) }, { offset: 1, color: alpha(0) }],
   };
 }
 

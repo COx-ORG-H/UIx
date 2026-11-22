@@ -3,5 +3,6 @@
 export { chartPanelsModel } from './chart-panels-model.js';
 export { correlationScatterModel, formatCorrelation, DEFAULT_CORRELATION_SCATTER_LABELS } from './correlation-scatter-model.js';
 export { DEFAULT_CHART_PANELS_LABELS } from './chart-panels-model.js';
+export { uixChartBarGradient, uixChartRingGradient, uixChartTrendGradient } from './chart-theme.js';
 // the glance charts (calm kit 2.56): the docs draw the shipped ChartCard options
 export { GLANCE_AT_REST, glanceLineOption, pairedBarsOption, uixGlanceBase } from './chart-glance.js';
