@@ -184,6 +184,12 @@ test('the demo page offers recoverable, translated and disappearing-field scenar
   await page.screenshot({ path: testInfo.outputPath('demo-mobile.png'), fullPage: true });
   await page.getByRole('button', { name: '03 · A field disappears' }).click();
   await page.getByRole('button', { name: 'Check details' }).click();
+  await page.getByRole('textbox', { name: 'Incident title' }).fill(' ');
+  await expect(page.locator('[data-uix-error-summary]')).toBeVisible();
+  await page.getByRole('textbox', { name: 'Incident title' }).fill('Mail relay down');
+  await expect(page.locator('[data-uix-error-summary]')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Reset example' }).click();
+  await page.getByRole('button', { name: 'Check details' }).click();
   await page.getByRole('button', { name: 'Hide field' }).click();
   const before = page.url();
   await page.getByRole('link', { name: 'Enter the incident title' }).click();

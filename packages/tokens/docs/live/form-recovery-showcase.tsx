@@ -29,7 +29,10 @@ function UnavailableField() {
   return <div className="uix-form-stack">
     <ErrorSummary errors={shown ? [{ message: 'Enter the incident title', target: 'demo-conditional-title' }] : []} focusKey={attempt} />
     {visible && <Field label="Incident title" error={shown ? 'Enter the incident title' : undefined} errorAnnounce="off" errorPrefix="Error:">
-      <Input id="demo-conditional-title" value={value} onChange={(event) => { setValue(event.currentTarget.value); setShown(false); }} />
+      <Input id="demo-conditional-title" value={value} onChange={(event) => {
+        setValue(event.currentTarget.value);
+        if (event.currentTarget.value.trim()) setShown(false);
+      }} />
     </Field>}
     <div className="uix-cluster">
       <Button variant="primary" wrap onClick={() => { setShown(!value.trim()); setAttempt((current) => current + 1); }}>Check details</Button>
