@@ -87,6 +87,50 @@ const submit = async (form) => act(async () => {
 
 // ---------- ErrorSummary ----------
 
+for (const kind of ['missing', 'disabled', 'hidden-input', 'non-focusable']) {
+  test(`ErrorSummary: an unavailable ${kind} target keeps navigation and focus in the summary`, async () => {
+    const target = kind === 'missing' ? null
+      : kind === 'non-focusable' ? h('div', { id: 'unavailable' }, 'Field group')
+      : h('input', { id: 'unavailable', disabled: kind === 'disabled', type: kind === 'hidden-input' ? 'hidden' : 'text' });
+    const el = await render(h('div', null,
+      h(ui.ErrorSummary, { errors: [{ message: 'Check the unavailable field', target: 'unavailable' }] }),
+      target,
+    ));
+    const summary = el.querySelector('.uix-validation-summary');
+    const link = summary.querySelector('a');
+    assert.equal(link.getAttribute('tabindex'), '0', 'recovery links explicitly participate in sequential focus');
+    link.focus();
+    const event = new window.MouseEvent('click', { bubbles: true, cancelable: true, button: 0 });
+    await act(async () => link.dispatchEvent(event));
+    assert.equal(event.defaultPrevented, true, 'no hash navigation to an unavailable target');
+    assert.ok(document.activeElement === summary, 'the summary remains a usable focus destination');
+  });
+}
+
+test('ErrorSummary: passive renders and message changes do not steal focus; a changed focusKey requests it once', async () => {
+  let focused = 0;
+  const content = (message, focusKey) => h('div', null,
+    h('input', { id: 'working' }),
+    h(ui.ErrorSummary, {
+      errors: [{ message, target: 'working' }], autoFocus: false, focusKey,
+      onFocus: () => { focused += 1; },
+    }),
+  );
+  const el = await render(content('Enter a title', 0));
+  const input = el.querySelector('input');
+  input.focus();
+  await act(async () => root.render(content('Use a shorter title', 0)));
+  assert.equal(document.activeElement, input);
+  assert.equal(focused, 0);
+  await act(async () => root.render(content('Use a shorter title', 1)));
+  assert.equal(document.activeElement, el.querySelector('.uix-validation-summary'));
+  assert.equal(focused, 1);
+  input.focus();
+  await act(async () => root.render(content('Use a different title', 1)));
+  assert.equal(document.activeElement, input);
+  assert.equal(focused, 1);
+});
+
 test('ErrorSummary: heading, one linked entry per error, form-level entry unlinked, focus, alert inside', async () => {
   const el = await render(h('div', null,
     h('input', { id: 'title' }),

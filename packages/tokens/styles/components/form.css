@@ -22,13 +22,14 @@
     font-family: var(--uix-font-heading); font-size: var(--uix-text-h3); line-height: var(--uix-leading-h3); font-weight: 600; color: var(--uix-text);
   }
   .uix-validation-summary {
+    min-inline-size: 0; overflow-wrap: anywhere;
     border: 1px solid var(--uix-danger); background: var(--uix-danger-bg); color: var(--uix-text);
     border-radius: var(--uix-radius-md); padding: var(--uix-space-3) var(--uix-space-4); font-size: var(--uix-text-meta);
   }
   .uix-validation-summary strong { color: var(--uix-danger-text); }
   .uix-validation-summary ul { margin: var(--uix-space-2) 0 0; padding-inline-start: var(--uix-space-5); }
   /* each error link stands on its own line, so it owns a 24 px target (WCAG 2.5.8, HAR-3215) */
-  .uix-validation-summary a { display: inline-flex; align-items: center; min-height: 24px; color: var(--uix-danger-text); text-decoration: underline; }
+  .uix-validation-summary a { display: inline-flex; align-items: center; max-inline-size: 100%; min-height: 24px; color: var(--uix-danger-text); text-decoration: underline; }
   /* ErrorSummary: the heading, an optional line, the list. Focus lands here after a failed submit
      (tabindex="-1"), so the ring shows on every focus, as GOV.UK's does, not only keyboard focus. */
   .uix-validation-summary__title { margin: 0; font-size: var(--uix-text-body); line-height: var(--uix-leading-body); font-weight: 600; color: var(--uix-danger-text); }

@@ -28,7 +28,8 @@ export interface ErrorSummaryItem {
   /**
    * The id of the control the error belongs to. The entry links there, and following the link
    * focuses the control and scrolls its field into view. For a group (radios, a date in parts)
-   * the first control of the group. Absent for an error of the whole form: plain text, no link.
+   * the first control of the group. If it is missing or cannot take focus, focus returns to the
+   * summary without changing the URL. Absent for an error of the whole form: plain text, no link.
    */
   target?: string;
   /** React key. Default: `target`, else the position. */
@@ -95,10 +96,11 @@ export const ErrorSummary = forwardRef<HTMLDivElement, ErrorSummaryProps>(functi
         <Heading className="uix-validation-summary__title">{title ?? labels.title}</Heading>
         {children != null && <div className="uix-validation-summary__body">{children}</div>}
         <ul className="uix-validation-summary__list">
+          {/* Explicit tab stops keep recovery links reachable in WebKit's restricted keyboard mode. */}
           {errors.map((item, index) => (
             <li key={item.key ?? item.target ?? index}>
               {item.target
-                ? <a href={`#${item.target}`} onClick={(event) => followErrorLink(event, item.target as string)}>{item.message}</a>
+                ? <a href={`#${item.target}`} tabIndex={0} onClick={(event) => followErrorLink(event, item.target as string, ref.current)}>{item.message}</a>
                 : item.message}
             </li>
           ))}
@@ -118,13 +120,20 @@ function scrollNearest(el: Element) {
  * scroll its whole field, label to message, into view. A plain hash jump would scroll the label
  * out of sight and leave focus on the link.
  */
-function followErrorLink(event: ReactMouseEvent<HTMLAnchorElement>, target: string) {
-  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-  const control = document.getElementById(target);
-  if (!control) return;
+function followErrorLink(event: ReactMouseEvent<HTMLAnchorElement>, target: string, summary: HTMLDivElement | null) {
+  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  const ownerDocument = event.currentTarget.ownerDocument;
+  const control = ownerDocument.getElementById(target);
   event.preventDefault();
-  control.focus({ preventScroll: true });
-  scrollNearest(control.closest('.uix-field, fieldset') ?? control);
+  control?.focus({ preventScroll: true });
+  if (control && ownerDocument.activeElement === control) {
+    scrollNearest(control.closest('.uix-field, fieldset') ?? control);
+  } else if (summary) {
+    // A conditional field may have disappeared or become disabled since submit. A hash jump
+    // would leave the reader at a destination they cannot use, sometimes on an unrelated page anchor.
+    summary.focus({ preventScroll: true });
+    scrollNearest(summary);
+  }
 }
 
 /** `title` with the error prefix in front, once: `errorTitle('Edit incident')` is "Error: Edit incident". */

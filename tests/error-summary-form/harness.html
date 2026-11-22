@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Error summary form recovery</title>
+  <script>
+    document.documentElement.setAttribute('data-theme', localStorage.getItem('uix-theme') || 'light');
+  </script>
+  <link rel="stylesheet" href="../../packages/tokens/build/css/styles.css">
+  <style>
+    body { margin: 0; padding: var(--uix-space-4); background: var(--uix-bg-app); color: var(--uix-text); }
+    main { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--uix-space-6); max-inline-size: 36rem; margin: 0 auto; }
+    main > h1 { overflow-wrap: anywhere; }
+    section { min-inline-size: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--uix-space-3); }
+  </style>
+</head>
+<body>
+  <main id="root"></main>
+  <script type="module" src="dist/harness.js"></script>
+</body>
+</html>

@@ -5,6 +5,7 @@
 // Only the main @tensor_1/react entry + @tensor_1/tokens/ts are imported here; the ./chart
 // entry pulls in echarts types, so its packaging is checked via require.resolve
 // in run.mjs instead of a typed import (keeps the smoke lean).
+import { ErrorSummaryForm } from './error-summary-form.js';
 import {
   BrandProfiles,
   Avatar,
@@ -89,6 +90,7 @@ const sortMany = DataWorkspace({ label: 'Books', rows: [] as Book[], getRowId: (
 const bodyMetric = <ChartMetric value={0} label="Vorgänge" delta="−12 %" deltaTone="positive" align="start" />;
 
 export default {
+  ErrorSummaryForm,
   BrandProfiles, BuilderCanvas, Button, Card, ColorPicker, DateRangePicker,
   DiffViewer, Flow, LicensePositionBar, MatchReview, MetricInput, Modal, Pipeline, PipelineStage,
   RelationshipGraph, RuleBuilder, SchedulingCalendar, StatusPill, Chart,

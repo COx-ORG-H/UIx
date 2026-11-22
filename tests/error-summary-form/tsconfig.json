@@ -1,0 +1,6 @@
+{
+  "extends": "../../packages/react/tsconfig.json",
+  "compilerOptions": { "noEmit": true },
+  "include": ["harness.tsx", "../../packages/tokens/docs/live/form-recovery-showcase.tsx"],
+  "exclude": ["dist", "node_modules"]
+}
