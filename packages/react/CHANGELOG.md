@@ -1,5 +1,15 @@
 # @tensor_1/react
 
+## 2.72.0
+
+### Minor Changes
+
+- 11dd90d: Add one-level comment threads that keep unread replies visible, message audience labels and surfaces, and a controlled composer with audience-specific hints and submit labels. The kit also provides an unread navigation divider and reaction button. Existing flat comments keep their current rendering.
+
+### Patch Changes
+
+- 48a25d0: Apply the Original Balanced finish to UIx glance and analytic charts. Measured areas fade toward the baseline, and measured bars gain a subtle gradient. Forecasts, comparisons, and thresholds retain distinct styling.
+
 ## 2.71.0
 
 ### Minor Changes

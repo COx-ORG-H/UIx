@@ -1,5 +1,11 @@
 # @tensor_1/tokens
 
+## 2.72.0
+
+### Minor Changes
+
+- 11dd90d: Add one-level comment threads that keep unread replies visible, message audience labels and surfaces, and a controlled composer with audience-specific hints and submit labels. The kit also provides an unread navigation divider and reaction button. Existing flat comments keep their current rendering.
+
 ## 2.71.0
 
 ### Minor Changes
