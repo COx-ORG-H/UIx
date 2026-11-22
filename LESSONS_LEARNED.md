@@ -1,5 +1,9 @@
 # UIx engineering lessons
 
+### 2026-11-22 · Inferred DOM return types destabilize API reports
+
+- **Rule:** give exported components an explicit structural return type when inference expands a spread of DOM attributes. **Why:** MotionList's inferred return emitted the same properties in different orders on Windows and Linux, so local API checks passed but PR #339 failed the Linux API lock. **Gate:** the explicit `DetailedReactHTMLElement` return and checked API report preserve the existing attributes without depending on their inferred order; CI `gates` runs `test:api`.
+
 <!-- lesson-skip: 37c6e9e2 same trap as the b6d558eb entry (scroll-padding adds no scroll range; the end of a scroller needs room), now for the page and the shell main; pinned by the sticky-focus spec -->
 <!-- lesson-skip: ea12d0c2 routine: the contract gate named two 0px fallbacks; a hit-test grid sampled a rounded button's corners (calibration of this PR's own new spec) -->
 <!-- lesson-skip: 8a8a97d6 routine review fixes on unreleased selection scope (a note state not reset by later picks, new keys leaking into the legacy selection path, a click on an inert cell landing on its row, a total offered mid-refetch), found by a fresh-context review; the first three pinned by jsdom tests -->
