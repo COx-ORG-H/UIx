@@ -2,20 +2,59 @@
    correlation-scatter-model, chart-analytic-model, chart-stats, chart-theme, chart-glance). Do not edit; re-run the script. */
 
 // src/chart-theme.ts
+var rgbChannels = (color) => /^#?[0-9a-f]{6}$/i.test(color) ? color.replace("#", "").match(/.{2}/g).map((channel) => Number.parseInt(channel, 16)) : void 0;
+function mixChartColors(color, tint, weight) {
+  const base = rgbChannels(color);
+  const end = rgbChannels(tint);
+  if (!base || !end) return color;
+  return `rgb(${base.map((channel, i) => Math.round(channel + (end[i] - channel) * weight)).join(",")})`;
+}
 function uixChartAreaGradient(color) {
-  const alpha = (opacity) => {
-    const hex = color.replace("#", "");
-    if (!/^[0-9a-f]{6}$/i.test(hex)) return color;
-    const [r, g, b] = hex.match(/.{2}/g).map((channel) => Number.parseInt(channel, 16));
-    return `rgba(${r},${g},${b},${opacity})`;
-  };
+  const channels = rgbChannels(color);
+  const alpha = (opacity) => channels ? `rgba(${channels.join(",")},${opacity})` : color;
   return {
     type: "linear",
     x: 0,
     y: 0,
     x2: 0,
     y2: 1,
-    colorStops: [{ offset: 0, color: alpha(0.28) }, { offset: 0.72, color: alpha(0.06) }, { offset: 1, color: alpha(0) }]
+    colorStops: [{ offset: 0, color: alpha(0.27) }, { offset: 0.7, color: alpha(0.09) }, { offset: 1, color: alpha(0) }]
+  };
+}
+function balancedTint(color, k) {
+  return color === k.palette[0] || color === k.series ? mixChartColors(color, k.palette[6] ?? color, 0.55) : mixChartColors(color, k.text, 0.2475);
+}
+function uixChartBarGradient(color, k) {
+  const tint = balancedTint(color, k);
+  return tint === color ? color : {
+    type: "linear",
+    x: 0,
+    y: 1,
+    x2: 0,
+    y2: 0,
+    colorStops: [{ offset: 0, color }, { offset: 1, color: tint }]
+  };
+}
+function uixChartRingGradient(color, k) {
+  const tint = balancedTint(color, k);
+  return tint === color ? color : {
+    type: "linear",
+    x: 0,
+    y: 1,
+    x2: 1,
+    y2: 0,
+    colorStops: [{ offset: 0, color }, { offset: 1, color: tint }]
+  };
+}
+function uixChartTrendGradient(color, k) {
+  const tint = balancedTint(color, k);
+  return tint === color ? color : {
+    type: "linear",
+    x: 0,
+    y: 0,
+    x2: 1,
+    y2: 0,
+    colorStops: [{ offset: 0, color }, { offset: 1, color: tint }]
   };
 }
 
@@ -415,7 +454,7 @@ function chartPanelsModel(spec, tokens, labelOverrides) {
           ...axes,
           data: pairs(s.values),
           barMaxWidth: 24,
-          itemStyle: { color, borderRadius: [4, 4, 0, 0], borderColor: tokens.surface, borderWidth: 1 },
+          itemStyle: { color: uixChartBarGradient(color, tokens), borderRadius: [4, 4, 0, 0], borderColor: tokens.surface, borderWidth: 1 },
           animation: false,
           z: 2,
           ...marks
@@ -433,7 +472,7 @@ function chartPanelsModel(spec, tokens, labelOverrides) {
           connectNulls: false,
           lineStyle: { color, width: 2, type: "solid" },
           itemStyle: { color, borderColor: tokens.surface, borderWidth: 2 },
-          ...panel.kind === "area" ? { areaStyle: { color: uixChartAreaGradient(color) } } : {},
+          ...panel.kind === "area" ? { areaStyle: { color: uixChartAreaGradient(color), opacity: 1 } } : {},
           emphasis: { focus: "none" },
           animation: false,
           z: 2,
@@ -820,6 +859,8 @@ function glanceLineOption(k, input, motion = GLANCE_AT_REST) {
   ];
   const projected = forecast ? [...input.values.map((v, i) => i === last ? v : null), ...forecast.values.map((v, i) => i === forecast.values.length - 1 ? labelled(v, forecast.label ?? format(v), k.textMuted, false) : v)] : [];
   const color = seriesColor(k);
+  const wash = uixChartAreaGradient(color);
+  const areaStyle = wash.colorStops[0].color !== color ? { color: wash, opacity: 1 } : k.seriesSoft ? { color: k.seriesSoft, opacity: 1 } : { color, opacity: 0.14 };
   const base = uixGlanceBase(k, motion);
   const title = input.tooltipTitle ?? ((c) => c);
   const endText = forecast ? forecast.label ?? format(forecast.values[forecast.values.length - 1] ?? 0) : showEnd ? format(input.values[last]) : "";
@@ -832,9 +873,9 @@ function glanceLineOption(k, input, motion = GLANCE_AT_REST) {
     showSymbol: true,
     symbol: "circle",
     symbolSize: 0,
-    lineStyle: { width: 2.2, cap: "round", join: "round" },
+    lineStyle: { color: forecast ? color : uixChartTrendGradient(color, k), width: 2.2, cap: "round", join: "round" },
     itemStyle: { color, borderColor: k.surface, borderWidth: 2 },
-    areaStyle: input.area === false ? void 0 : k.seriesSoft ? { color: k.seriesSoft, opacity: 1 } : { color, opacity: 0.14 },
+    areaStyle: input.area === false ? void 0 : areaStyle,
     emphasis: { disabled: true },
     animationDuration: motion.trace,
     animationDelay: motion.delay,
@@ -881,15 +922,16 @@ function pairedBarsOption(k, input, motion = GLANCE_AT_REST) {
   const format = input.format ?? plain;
   const base = uixGlanceBase(k, motion);
   const title = input.tooltipTitle ?? ((c) => c);
-  const bar = (name, values, color, offset) => ({
+  const color = seriesColor(k);
+  const bar = (name, values, color2, offset, fill = color2) => ({
     name,
     type: "bar",
     data: values,
-    color,
+    color: color2,
     barMaxWidth: 16,
     barGap: "18%",
     barCategoryGap: "38%",
-    itemStyle: { color, borderRadius: [3, 3, 0, 0] },
+    itemStyle: { color: fill, borderRadius: [3, 3, 0, 0] },
     emphasis: { disabled: true },
     animationDuration: motion.grow,
     animationDelay: (index) => motion.delay + index * motion.stagger + offset,
@@ -903,12 +945,16 @@ function pairedBarsOption(k, input, motion = GLANCE_AT_REST) {
       formatter: (params) => {
         const list = Array.isArray(params) ? params : [params];
         if (!list.length) return "";
-        return tooltipHtml2(title(list[0].name), list.map((p) => ({ color: p.color, name: p.seriesName, value: format(p.value) })));
+        return tooltipHtml2(title(list[0].name), list.map((p) => ({
+          color: p.seriesIndex === 1 ? k.comparison : color,
+          name: p.seriesName,
+          value: format(p.value)
+        })));
       }
     },
     xAxis: { ...base.xAxis, data: input.categories },
     series: [
-      bar(input.series.name, input.series.values, seriesColor(k), 0),
+      bar(input.series.name, input.series.values, color, 0, uixChartBarGradient(color, k)),
       bar(input.comparison.name, input.comparison.values, k.comparison, motion.stagger)
     ]
   };
@@ -922,5 +968,8 @@ export {
   formatCorrelation,
   glanceLineOption,
   pairedBarsOption,
+  uixChartBarGradient,
+  uixChartRingGradient,
+  uixChartTrendGradient,
   uixGlanceBase
 };

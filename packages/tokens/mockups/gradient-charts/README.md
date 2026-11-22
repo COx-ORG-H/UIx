@@ -19,6 +19,6 @@ The studies:
 
 Tab to an inspectable chart and use Left/Right, Home/End, or Escape. Expand **View sample data** for exact values. With JavaScript disabled, the data tables remain available. No motion is added; all changes are immediate. For forced-colour displays the charts defer to system colours and the tables retain the values.
 
-These files stay separate from the shipped component styles and generated tokens. Choosing a treatment for the production ECharts adapter is a later step.
+The production styleguide applies Original Balanced in [Data display](../../docs/explorer.html#examples-data-display) and [Decision-grade charts](../../docs/explorer.html#examples-insight-charts).
 
 Verified all 144 finish, palette, strength, theme, and flat combinations in Microsoft Edge. Each finish produces a distinct image in each of the four plots. At Balanced blue, flat mode produces identical chart pixels across finishes in each theme. Keyboard selection and inspection work, and controls fit widths down to 320 px. Eight axe scans of the finishes in light and dark reported zero violations and flagged 38 SVG labels for manual contrast review. Those labels sit on the solid card surface and measured at least 5.33:1 in light and 7.31:1 in dark.

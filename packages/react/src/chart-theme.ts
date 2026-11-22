@@ -128,17 +128,54 @@ export function uixChartTheme(source?: ChartTokenSource): EChartsOption {
   } as EChartsOption;
 }
 
-/** A vertical area fill that fades the series colour (28 % → 6 % → 0) toward the baseline. */
+const rgbChannels = (color: string) =>
+  /^#?[0-9a-f]{6}$/i.test(color) ? color.replace('#', '').match(/.{2}/g)!.map((channel) => Number.parseInt(channel, 16)) : undefined;
+
+function mixChartColors(color: string, tint: string, weight: number): string {
+  const base = rgbChannels(color);
+  const end = rgbChannels(tint);
+  if (!base || !end) return color;
+  return `rgb(${base.map((channel, i) => Math.round(channel + (end[i] - channel) * weight)).join(',')})`;
+}
+
+/** A vertical area fill that fades the series colour (27 % → 9 % → 0) toward the baseline. */
 export function uixChartAreaGradient(color: string) {
-  const alpha = (opacity: number) => {
-    const hex = color.replace('#', '');
-    if (!/^[0-9a-f]{6}$/i.test(hex)) return color;
-    const [r, g, b] = hex.match(/.{2}/g)!.map((channel) => Number.parseInt(channel, 16));
-    return `rgba(${r},${g},${b},${opacity})`;
-  };
+  const channels = rgbChannels(color);
+  const alpha = (opacity: number) => channels ? `rgba(${channels.join(',')},${opacity})` : color;
   return {
     type: 'linear' as const, x: 0, y: 0, x2: 0, y2: 1,
-    colorStops: [{ offset: 0, color: alpha(0.28) }, { offset: 0.72, color: alpha(0.06) }, { offset: 1, color: alpha(0) }],
+    colorStops: [{ offset: 0, color: alpha(0.27) }, { offset: 0.7, color: alpha(0.09) }, { offset: 1, color: alpha(0) }],
+  };
+}
+
+/** Blue shifts toward cyan as in the Balanced study. Other series keep their hue and gain contrast. */
+function balancedTint(color: string, k: UixChartTokens): string {
+  return color === k.palette[0] || color === k.series
+    ? mixChartColors(color, k.palette[6] ?? color, 0.55)
+    : mixChartColors(color, k.text, 0.2475);
+}
+
+export function uixChartBarGradient(color: string, k: UixChartTokens) {
+  const tint = balancedTint(color, k);
+  return tint === color ? color : {
+    type: 'linear' as const, x: 0, y: 1, x2: 0, y2: 0,
+    colorStops: [{ offset: 0, color }, { offset: 1, color: tint }],
+  };
+}
+
+export function uixChartRingGradient(color: string, k: UixChartTokens) {
+  const tint = balancedTint(color, k);
+  return tint === color ? color : {
+    type: 'linear' as const, x: 0, y: 1, x2: 1, y2: 0,
+    colorStops: [{ offset: 0, color }, { offset: 1, color: tint }],
+  };
+}
+
+export function uixChartTrendGradient(color: string, k: UixChartTokens) {
+  const tint = balancedTint(color, k);
+  return tint === color ? color : {
+    type: 'linear' as const, x: 0, y: 0, x2: 1, y2: 0,
+    colorStops: [{ offset: 0, color }, { offset: 1, color: tint }],
   };
 }
 
