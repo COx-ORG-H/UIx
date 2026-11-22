@@ -12,6 +12,7 @@ const EMPTY: Incident = { title: '', email: '', team: '' };
 export const ERROR_SUMMARY_FORM_LABELS = {
   title: 'Title',
   titleError: 'Enter a title',
+  titleLengthError: 'Title must be 60 characters or fewer',
   email: 'Requester email',
   emailHint: 'The person who reported it',
   emailError: 'Enter the requester’s email address',
@@ -44,10 +45,10 @@ export function ErrorSummaryForm({ idPrefix, labels, teams = TEAMS, onSave }: Er
   const [values, setValues] = useState(EMPTY);
   const [saved, setSaved] = useState(false);
   const validate = (value: Incident): FormFieldErrors<Incident> => ({
-    title: !value.title.trim() ? text.titleError : undefined,
+    title: !value.title.trim() ? text.titleError : value.title.length > 60 ? text.titleLengthError : undefined,
     email: !value.email.trim() ? text.emailError
       : !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value.email) ? text.emailFormatError : undefined,
-    team: !value.team ? text.teamError : undefined,
+    team: !teams.some((team) => team.value === value.team && !team.disabled) ? text.teamError : undefined,
   });
   const form = useFormErrors({ values, validate, idPrefix, labels: { errorPrefix: text.errorPrefix } });
   const set = (name: keyof Incident, value: string) => {

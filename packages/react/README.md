@@ -620,6 +620,9 @@ const leave = useLeaveGuard({ dirty, saveState, fields: ['Impact'] });  // befor
 - **`ConflictNotice`:** a warning banner for a 409 / 412: who and when, "your changes are still here", the fields they changed, Reload latest (theirs with yours kept), Review changes in `DiffViewer` where only fields you both changed need a choice before Apply. `mergeRecordConflict` / `recordConflictChanges` are the model.
 - **Words:** `UixLabelsProvider` `errorSummary`, `leaveGuard`, `conflictNotice`.
 
+Try the [interactive form recovery demo](../tokens/docs/form-recovery.html) for validation,
+translations, disappearing fields, theme switching and a resettable walkthrough.
+
 The [live three-field example](../tokens/docs/live/shared/error-summary-form.tsx) is also the
 [browser fixture](../../tests/error-summary-form/harness.html). It preserves entered values, uses
 the same validation messages inline and in the summary, and keeps an existing `aria-describedby`

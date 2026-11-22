@@ -9,7 +9,7 @@ declare global {
 }
 
 const GERMAN_LABELS: ErrorSummaryFormProps['labels'] = {
-  title: 'Titel', titleError: 'Geben Sie einen Titel ein',
+  title: 'Titel', titleError: 'Geben Sie einen Titel ein', titleLengthError: 'Der Titel darf höchstens 60 Zeichen enthalten',
   email: 'E-Mail-Adresse der meldenden Person', emailHint: 'Die Person, die den Vorfall gemeldet hat',
   emailError: 'Geben Sie die E-Mail-Adresse der meldenden Person ein',
   emailFormatError: 'Geben Sie eine E-Mail-Adresse im Format name@beispiel.de ein',
@@ -19,6 +19,16 @@ const GERMAN_LABELS: ErrorSummaryFormProps['labels'] = {
   summaryTitle: (count) => count === 1 ? '1 Feld muss korrigiert werden' : `${count} Felder müssen korrigiert werden`,
 };
 const GERMAN_TEAMS = [{ value: 'operations', label: 'Betrieb' }, { value: 'support', label: 'Support' }];
+
+function TeamAvailability() {
+  const [teams, setTeams] = useState([{ value: 'operations', label: 'Operations', disabled: false }]);
+  return <section id="availability" aria-labelledby="availability-heading">
+    <h2 id="availability-heading">Changing team availability</h2>
+    <Button wrap onClick={() => setTeams([])}>Remove Operations</Button>
+    <Button wrap onClick={() => setTeams([{ value: 'operations', label: 'Operations', disabled: true }])}>Disable Operations</Button>
+    <ErrorSummaryForm idPrefix="availability" teams={teams} onSave={save} />
+  </section>;
+}
 
 function PassiveSummary() {
   const [version, setVersion] = useState(0);
@@ -53,5 +63,6 @@ createRoot(document.getElementById('root')!).render(
       <ErrorSummaryForm idPrefix="localized" labels={GERMAN_LABELS} teams={GERMAN_TEAMS} onSave={save} />
     </section>
     <PassiveSummary />
+    <TeamAvailability />
   </StrictMode>,
 );

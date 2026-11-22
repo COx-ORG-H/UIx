@@ -7,6 +7,29 @@ import { settleAnimations } from './settle.mjs';
 const themeOf = (testInfo) => testInfo.project.name === 'dark' ? 'dark' : 'light';
 const HARNESS = '/tests/error-summary-form/harness.html';
 
+test('title length validation accepts 60 characters and rejects 61', async ({ page }) => {
+  const form = page.locator('#recovery');
+  await form.locator('#recovery-title').fill('x'.repeat(61));
+  await form.getByRole('button', { name: 'Save incident' }).click();
+  await expect(form.locator('[data-uix-error-summary]')).toContainText('Title must be 60 characters or fewer');
+  await form.locator('#recovery-title').fill('x'.repeat(60));
+  await expect(form.locator('[data-uix-error-summary]')).not.toContainText('Title must be 60 characters or fewer');
+  expect(await page.evaluate(() => window.__errorSummary.saves)).toBe(0);
+});
+
+for (const change of ['Remove', 'Disable']) test(`${change} a selected team prevents saving its stale value`, async ({ page }) => {
+  const form = page.locator('#availability');
+  await form.locator('#availability-title').fill('Mail relay down');
+  await form.locator('#availability-email').fill('ana@example.com');
+  await form.getByRole('combobox').focus();
+  await page.keyboard.press('Enter');
+  await expect(form.getByRole('combobox')).toHaveValue('Operations');
+  await form.getByRole('button', { name: `${change} Operations` }).click();
+  await form.getByRole('button', { name: 'Save incident' }).click();
+  await expect(form.locator('[data-uix-error-summary]')).toContainText('Select the team that owns this incident');
+  expect(await page.evaluate(() => window.__errorSummary.saves)).toBe(0);
+});
+
 test.beforeEach(async ({ page }, testInfo) => {
   await page.addInitScript((theme) => localStorage.setItem('uix-theme', theme), themeOf(testInfo));
   await page.goto(HARNESS);
@@ -143,4 +166,35 @@ test('the live documentation mounts the shared form and recovers to its Combobox
   await summary.getByRole('link').last().click();
   await expect(demo.getByRole('combobox', { name: 'Team' })).toBeFocused();
   await checkAxe(page, '[data-live-demo="form-errors-demo"][data-demo="summary"]');
+});
+
+test('the demo page offers recoverable, translated and disappearing-field scenarios', async ({ page }, testInfo) => {
+  await page.goto('/packages/tokens/docs/form-recovery.html');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('A clear way back');
+  await page.getByRole('button', { name: 'Save incident' }).click();
+  await expect(page.locator('[data-uix-error-summary]')).toBeFocused();
+  await checkAxe(page, 'main');
+  await page.screenshot({ path: testInfo.outputPath('demo-desktop.png'), fullPage: true });
+  await page.getByRole('button', { name: '02 · Longer translations' }).click();
+  await page.getByRole('button', { name: 'Vorfall speichern' }).click();
+  await expect(page.locator('[data-uix-error-summary]')).toContainText('3 Felder müssen korrigiert werden');
+  await page.setViewportSize({ width: 320, height: 800 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await checkAxe(page, 'main');
+  await page.screenshot({ path: testInfo.outputPath('demo-mobile.png'), fullPage: true });
+  await page.getByRole('button', { name: '03 · A field disappears' }).click();
+  await page.getByRole('button', { name: 'Check details' }).click();
+  await page.getByRole('button', { name: 'Hide field' }).click();
+  const before = page.url();
+  await page.getByRole('link', { name: 'Enter the incident title' }).click();
+  await expect(page.locator('[data-uix-error-summary]')).toBeFocused();
+  expect(page.url()).toBe(before);
+  await page.getByRole('button', { name: 'Show field' }).click();
+  await page.getByRole('link', { name: 'Enter the incident title' }).click();
+  await expect(page.getByRole('textbox', { name: 'Incident title' })).toBeFocused();
+  await page.getByRole('button', { name: 'Reset example' }).click();
+  await expect(page.locator('[data-uix-error-summary]')).toHaveCount(0);
+  const theme = await page.locator('html').getAttribute('data-theme');
+  await page.getByRole('button', { name: theme === 'dark' ? 'Use light theme' : 'Use dark theme' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', theme === 'dark' ? 'light' : 'dark');
 });
