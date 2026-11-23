@@ -60,6 +60,18 @@ function Tiles() {
   );
 }
 
+function AccessibleStatNames() {
+  return (
+    <section id="stat-accessible-names" aria-labelledby="stat-accessible-names-title">
+      <h2 id="stat-accessible-names-title">Interactive facts with supporting text</h2>
+      <p id="stat-hint">Opens the priority editor.</p>
+      <Stat data-case="plain" label="Priorität" value="P1" onActivate={() => { window.__op.activations += 1; }} activateLabel="ändern" aria-describedby="stat-hint" />
+      <Stat data-case="meta" label="SLA" value="Verletzt" meta="Incident P1 – resolve within 4 hours" onActivate={() => {}} activateLabel="SLA-Timer" />
+      <Stat data-case="trend" label="Incidents" value="12" trend={{ direction: 'up', label: '5%' }} meta="last week" onActivate={() => {}} activateLabel="view" />
+    </section>
+  );
+}
+
 /* HAR-1753: tiles of unequal content height in one row. The row stretches every tile to the
  * tallest one, and each label and value must still start at the same offset from its tile's top
  * edge, whether the tile is a <div>, a <button> or an <a>. The last tile is pending until
@@ -117,6 +129,7 @@ if (root) {
     <StrictMode>
       <ScrollingTabs />
       <Tiles />
+      <AccessibleStatNames />
       <StretchedRow id="row-compact" size="compact" layout="grid" />
       <StretchedRow id="row-hero" size="hero" layout="flex" />
       <Copying />

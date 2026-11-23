@@ -75,10 +75,8 @@ test('a keepMounted panel keeps what was typed while another tab is shown', asyn
   await expect(page.locator('#worklog-draft')).toHaveValue('Rolled back the gateway');
 });
 
-test('an interactive Stat is one button named "label: value, action" that opens its editor', async ({ page }) => {
-  // aria-labelledby joins its parts with spaces, so the computed name is 'Priority : P1 , change';
-  // screen readers speak it the same as 'Priority: P1, change'. Match the words and their order.
-  const tile = page.getByRole('button', { name: /^Priority\s*:\s*P1\s*,\s*change$/ });
+test('an interactive Stat includes its support text in the button name and opens its editor', async ({ page }) => {
+  const tile = page.getByRole('button', { name: /^Priority\s*:\s*P1\s+Impact high · urgency high\s*,\s*change$/ });
   await expect(tile).toHaveAttribute('aria-haspopup', 'dialog');
   await expect(tile).toHaveAttribute('aria-expanded', 'false');
   await tile.focus();
