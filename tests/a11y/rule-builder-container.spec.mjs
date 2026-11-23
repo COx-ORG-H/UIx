@@ -29,6 +29,23 @@ for (const width of [1440, 320]) test(`RuleBuilder fits its container at ${width
   const intrinsicWidth = await intrinsic.evaluate(element => element.getBoundingClientRect().width);
   expect(intrinsicWidth).toBeGreaterThanOrEqual(190);
   expect(await intrinsic.evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
+  if (width === 320) {
+    const phone = page.locator('[data-example="phone-labels"] .uix-rule-builder');
+    await expect(phone.getByRole('combobox')).toHaveCount(3);
+    for (const select of await phone.getByRole('combobox').all()) {
+      const fits = await select.evaluate(element => {
+        const box = element.getBoundingClientRect();
+        const container = element.closest('.uix-rule-builder').getBoundingClientRect();
+        return box.left >= container.left && box.right <= container.right + 1;
+      });
+      expect(fits).toBe(true);
+    }
+    const field = phone.getByRole('combobox').nth(1);
+    await field.click();
+    await expect(page.getByRole('option', { name: 'Ersatz für ein bestehendes Gerät' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    expect(await phone.evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
+  }
   const wide = page.locator('[data-example="default"]');
   await wide.getByRole('button', { name: 'Bedingung hinzufügen', exact: true }).click();
   expect(await wide.locator('.uix-rule-builder__condition').evaluate(element => getComputedStyle(element).gridTemplateColumns.split(' ').length)).toBe(width === 1440 ? 4 : 1);

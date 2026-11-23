@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { cx } from '../cx.js';
 import { copyText } from '../copy-model.js';
+import type { ButtonSize, ButtonVariant } from './Button.js';
 
 /** How long the check icon and the "copied" announcement stay, in milliseconds. */
 const CONFIRM_MS = 1500;
@@ -10,7 +11,7 @@ const CONFIRM_MS = 1500;
 export interface CopyButtonProps {
   /** The text written to the clipboard. */
   value: string;
-  /** Accessible name of the button, e.g. "Copy email". */
+  /** Accessible name of the icon-only button, e.g. "Copy email". */
   label: string;
   /** Announced through a polite status region after a successful copy, e.g. "Copied". */
   copiedLabel: string;
@@ -20,6 +21,12 @@ export interface CopyButtonProps {
    * false is shown, but the person is left guessing why nothing happened.
    */
   failedLabel?: string;
+  /** Visible button text. When supplied, it also names the button. */
+  text?: string;
+  /** Button appearance; defaults to ghost. */
+  variant?: ButtonVariant;
+  /** Button size; defaults to sm. */
+  size?: ButtonSize;
   className?: string;
 }
 
@@ -37,11 +44,10 @@ const CheckGlyph = () => (
 );
 
 /**
- * Icon-only ghost button that copies `value`. On success it shows a check for 1.5 s and
- * announces `copiedLabel`. On failure (no clipboard, or the write was refused) it shows no
- * check and announces `failedLabel` when one is given.
+ * Copies `value` with an icon-only button or optional visible text. On success it shows a check
+ * for 1.5 s and announces `copiedLabel`. On failure it announces `failedLabel` when given.
  */
-export function CopyButton({ value, label, copiedLabel, failedLabel, className }: CopyButtonProps) {
+export function CopyButton({ value, label, copiedLabel, failedLabel, text, variant = 'ghost', size = 'sm', className }: CopyButtonProps) {
   const [outcome, setOutcome] = useState<'idle' | 'copied' | 'failed'>('idle');
   const copied = outcome === 'copied';
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -68,12 +74,13 @@ export function CopyButton({ value, label, copiedLabel, failedLabel, className }
     <>
       <button
         type="button"
-        className={cx('uix-btn', 'uix-btn--ghost', 'uix-btn--icon', 'uix-btn--sm', 'uix-copy-button', className)}
-        aria-label={label}
+        className={cx('uix-btn', `uix-btn--${variant}`, text == null && 'uix-btn--icon', size !== 'md' && `uix-btn--${size}`, 'uix-copy-button', className)}
+        aria-label={text == null ? label : undefined}
         data-copied={copied || undefined}
         onClick={onClick}
       >
         {copied ? <CheckGlyph /> : <CopyGlyph />}
+        {text != null && <span>{copied ? copiedLabel : text}</span>}
       </button>
       <span role="status" className="uix-visually-hidden">
         {outcome === 'copied' ? copiedLabel : outcome === 'failed' ? failedLabel : ''}

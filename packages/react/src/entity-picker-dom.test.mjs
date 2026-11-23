@@ -117,9 +117,9 @@ test('a failed search shows the error and a Retry row the arrow keys reach', asy
   key(input, 'ArrowDown');
   assert.equal(input.getAttribute('aria-activedescendant'), retry.id, 'the keyboard reaches Retry');
   key(input, 'Enter');
+  assert.equal(input.getAttribute('aria-expanded'), 'true', 'Retry keeps the list open');
   await settle();
-  input.focus();
-  await settle();
+  assert.equal(input.getAttribute('aria-expanded'), 'true', 'results remain visible');
   assert.deepEqual([...host.querySelectorAll('[role="option"]')].map((o) => o.textContent.replace(/\s+/g, ' ').trim()).filter((t) => t.startsWith('Ada') || t.startsWith('Ben')).length, 2);
   unmount();
 });

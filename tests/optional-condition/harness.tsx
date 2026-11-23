@@ -44,6 +44,19 @@ function IntrinsicExample() {
     </div>
   </section>;
 }
+function PhoneRules() {
+  const [value, setValue] = useState<RuleDefinition>({
+    when: { id: 'phone', combinator: 'and', conditions: [{ id: 'device', field: 'device', operator: 'eq', value: 'Ja' }] },
+    then: [],
+  });
+  return <section data-example="phone-labels">
+    <h2>Regel für ein Gerät</h2>
+    <RuleBuilder value={value} onChange={setValue}
+      fields={[{ id: 'device', label: 'Ersatz für ein bestehendes Gerät' }]}
+      operators={operators} conditionsOnly
+      labels={{ ...OPTIONAL_RULE_LABELS, match: 'Zutreffen müssen', all: 'alle Bedingungen (UND)' }} />
+  </section>;
+}
 createRoot(document.getElementById('root')!).render(<StrictMode>
   <h1>Optionale Bedingung</h1>
   <p>Ohne Bedingung gilt die Regel immer. Eine Bedingung lässt sich bearbeiten und entfernen.</p>
@@ -55,4 +68,5 @@ createRoot(document.getElementById('root')!).render(<StrictMode>
   <Example id="mid-width" title="Regel mit ausreichend Platz" initial={one} limit={1} />
   <ConstrainedActions />
   <IntrinsicExample />
+  <PhoneRules />
 </StrictMode>);

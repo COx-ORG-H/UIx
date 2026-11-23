@@ -29,6 +29,8 @@ export interface SearchSuggestAction {
   label: string;
   /** Runs when the action is chosen. */
   onSelect: () => void;
+  /** Keep the suggestions open after selecting the footer action. */
+  keepOpen?: boolean;
 }
 
 /** Props of {@link SearchSuggest}. */
@@ -268,8 +270,13 @@ export function SearchSuggest({
       // free text: the row's title becomes the value
       if (freeText && option.title !== value) onValueChange(option.title);
       onSelect?.(option.id, option);
-    } else if (footer && index === options.length) footer.onSelect();
-    else return;
+    } else if (footer && index === options.length) {
+      footer.onSelect();
+      if (footer.keepOpen) {
+        setActive(-1);
+        return;
+      }
+    } else return;
     setOpen(false);
     setActive(-1);
   };

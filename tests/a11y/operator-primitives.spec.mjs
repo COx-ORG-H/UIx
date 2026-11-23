@@ -157,6 +157,17 @@ test('CopyButton writes the value, shows a check and announces "Copied"', async 
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('ada@example.com');
 });
 
+test('a labelled CopyButton shows its confirmation and copies the value', async ({ page }) => {
+  const button = page.locator('button.uix-copy-button').nth(1);
+  await expect(button).toHaveAccessibleName('Copy 13');
+  await expect(button).toHaveClass(/uix-btn--outline/);
+  await expect(button).toHaveClass(/uix-btn--sm/);
+  await button.click();
+  await expect(button).toHaveAccessibleName('Copied');
+  await expect(page.getByRole('status').filter({ hasText: 'Copied' })).toHaveCount(1);
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('13 items');
+});
+
 test('a refused copy shows no check and announces the failure', async ({ page }) => {
   await page.evaluate(() => {
     Object.defineProperty(navigator, 'clipboard', {
@@ -168,4 +179,8 @@ test('a refused copy shows no check and announces the failure', async ({ page })
   await button.click();
   await expect(page.getByRole('status').filter({ hasText: 'Could not copy' })).toHaveCount(1);
   await expect(button).not.toHaveAttribute('data-copied', /.*/);
+  const labelled = page.getByRole('button', { name: 'Copy 13' });
+  await labelled.click();
+  await expect(labelled).toHaveAccessibleName('Copy 13');
+  await expect(labelled).not.toHaveAttribute('data-copied', /.*/);
 });

@@ -2019,7 +2019,10 @@ export interface CopyButtonProps {
     copiedLabel: string;
     failedLabel?: string;
     label: string;
+    size?: ButtonSize;
+    text?: string;
     value: string;
+    variant?: ButtonVariant;
 }
 
 // @public
@@ -8175,6 +8178,7 @@ export function SearchSuggest(input: SearchSuggestProps): react.JSX.Element;
 
 // @public
 export interface SearchSuggestAction {
+    keepOpen?: boolean;
     label: string;
     onSelect: () => void;
 }

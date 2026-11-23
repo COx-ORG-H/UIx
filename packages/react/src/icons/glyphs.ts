@@ -15,6 +15,7 @@ export const glyphArrowUpDown: IconNode = [["path",{"d":"m21 16-4 4-4-4"}],["pat
 export const glyphArrowUpRight: IconNode = [["path",{"d":"M7 7h10v10"}],["path",{"d":"M7 17 17 7"}]];
 export const glyphAward: IconNode = [["path",{"d":"m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"}],["circle",{"cx":"12","cy":"8","r":"6"}]];
 export const glyphBadgeCheck: IconNode = [["path",{"d":"M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"}],["path",{"d":"m16 9-5.5 5.5L8 12"}]];
+export const glyphBan: IconNode = [["circle",{"cx":"12","cy":"12","r":"10"}],["path",{"d":"M4.929 4.929 19.07 19.071"}]];
 export const glyphBanknote: IconNode = [["rect",{"width":"20","height":"12","x":"2","y":"6","rx":"2"}],["circle",{"cx":"12","cy":"12","r":"2"}],["path",{"d":"M6 12h.01M18 12h.01"}]];
 export const glyphBell: IconNode = [["path",{"d":"M10.268 21a2 2 0 0 0 3.464 0"}],["path",{"d":"M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"}]];
 export const glyphBellOff: IconNode = [["path",{"d":"M10.268 21a2 2 0 0 0 3.464 0"}],["path",{"d":"M17 17H4a1 1 0 0 1-.74-1.673C4.59 13.956 6 12.499 6 8a6 6 0 0 1 .258-1.742"}],["path",{"d":"m2 2 20 20"}],["path",{"d":"M8.668 3.01A6 6 0 0 1 18 8c0 2.687.77 4.653 1.707 6.05"}]];
@@ -94,6 +95,7 @@ export const glyphFileText: IconNode = [["path",{"d":"M6 22a2 2 0 0 1-2-2V4a2 2 
 export const glyphFileUp: IconNode = [["path",{"d":"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"}],["path",{"d":"M14 2v5a1 1 0 0 0 1 1h5"}],["path",{"d":"M12 12v6"}],["path",{"d":"m15 15-3-3-3 3"}]];
 export const glyphFlag: IconNode = [["path",{"d":"M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528"}]];
 export const glyphFolderCheck: IconNode = [["path",{"d":"M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"}],["path",{"d":"m9 13 2 2 4-4"}]];
+export const glyphFolderCode: IconNode = [["path",{"d":"M10 10.5 8 13l2 2.5"}],["path",{"d":"m14 10.5 2 2.5-2 2.5"}],["path",{"d":"M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z"}]];
 export const glyphFolderKanban: IconNode = [["path",{"d":"M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"}],["path",{"d":"M8 10v4"}],["path",{"d":"M12 10v2"}],["path",{"d":"M16 10v6"}]];
 export const glyphFolderTree: IconNode = [["path",{"d":"M20 10a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2.5a1 1 0 0 1-.8-.4l-.9-1.2A1 1 0 0 0 15 3h-2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z"}],["path",{"d":"M20 21a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-2.9a1 1 0 0 1-.88-.55l-.42-.85a1 1 0 0 0-.92-.6H13a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z"}],["path",{"d":"M3 5a2 2 0 0 0 2 2h3"}],["path",{"d":"M3 3v13a2 2 0 0 0 2 2h3"}]];
 export const glyphFunnel: IconNode = [["path",{"d":"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"}]];
@@ -102,6 +104,7 @@ export const glyphGitBranch: IconNode = [["path",{"d":"M15 6a9 9 0 0 0-9 9V3"}],
 export const glyphGitBranchPlus: IconNode = [["path",{"d":"M6 3v12"}],["path",{"d":"M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"}],["path",{"d":"M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"}],["path",{"d":"M15 6a9 9 0 0 0-9 9"}],["path",{"d":"M18 15v6"}],["path",{"d":"M21 18h-6"}]];
 export const glyphGitCompareArrows: IconNode = [["circle",{"cx":"5","cy":"6","r":"3"}],["path",{"d":"M12 6h5a2 2 0 0 1 2 2v7"}],["path",{"d":"m15 9-3-3 3-3"}],["circle",{"cx":"19","cy":"18","r":"3"}],["path",{"d":"M12 18H7a2 2 0 0 1-2-2V9"}],["path",{"d":"m9 15 3 3-3 3"}]];
 export const glyphGitMerge: IconNode = [["circle",{"cx":"18","cy":"18","r":"3"}],["circle",{"cx":"6","cy":"6","r":"3"}],["path",{"d":"M6 21V9a9 9 0 0 0 9 9"}]];
+export const glyphGitPullRequest: IconNode = [["circle",{"cx":"18","cy":"18","r":"3"}],["circle",{"cx":"6","cy":"6","r":"3"}],["path",{"d":"M13 6h3a2 2 0 0 1 2 2v7"}],["line",{"x1":"6","x2":"6","y1":"9","y2":"21"}]];
 export const glyphGitPullRequestArrow: IconNode = [["circle",{"cx":"5","cy":"6","r":"3"}],["path",{"d":"M5 9v12"}],["circle",{"cx":"19","cy":"18","r":"3"}],["path",{"d":"m15 9-3-3 3-3"}],["path",{"d":"M12 6h5a2 2 0 0 1 2 2v7"}]];
 export const glyphGitPullRequestClosed: IconNode = [["path",{"d":"m15.5 3.5 5 5"}],["path",{"d":"m15.5 8.5 5-5"}],["path",{"d":"M18 11.62V15"}],["path",{"d":"M6 9v12"}],["circle",{"cx":"18","cy":"18","r":"3"}],["circle",{"cx":"6","cy":"6","r":"3"}]];
 export const glyphGlobe: IconNode = [["circle",{"cx":"12","cy":"12","r":"10"}],["path",{"d":"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"}],["path",{"d":"M2 12h20"}]];
@@ -208,6 +211,7 @@ export const glyphShoppingCart: IconNode = [["path",{"d":"m2.05 2.05 1.099-.028a
 export const glyphSignpost: IconNode = [["path",{"d":"M12 13v8"}],["path",{"d":"M12 3v3"}],["path",{"d":"M2.354 10.354a1.207 1.207 0 0 1 0-1.708l2.06-2.06A2 2 0 0 1 5.828 6h12.344a2 2 0 0 1 1.414.586l2.06 2.06a1.207 1.207 0 0 1 0 1.708l-2.06 2.06a2 2 0 0 1-1.414.586H5.828a2 2 0 0 1-1.414-.586z"}]];
 export const glyphSiren: IconNode = [["path",{"d":"M7 18v-6a5 5 0 1 1 10 0v6"}],["path",{"d":"M5 21a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2z"}],["path",{"d":"M21 12h1"}],["path",{"d":"M18.5 4.5 18 5"}],["path",{"d":"M2 12h1"}],["path",{"d":"M12 2v1"}],["path",{"d":"m4.929 4.929.707.707"}],["path",{"d":"M12 12v6"}]];
 export const glyphSlidersHorizontal: IconNode = [["path",{"d":"M10 5H3"}],["path",{"d":"M12 19H3"}],["path",{"d":"M14 3v4"}],["path",{"d":"M16 17v4"}],["path",{"d":"M21 12h-9"}],["path",{"d":"M21 19h-5"}],["path",{"d":"M21 5h-7"}],["path",{"d":"M8 10v4"}],["path",{"d":"M8 12H3"}]];
+export const glyphSnowflake: IconNode = [["path",{"d":"m10 20-1.25-2.5L6 18"}],["path",{"d":"M10 4 8.75 6.5 6 6"}],["path",{"d":"m14 20 1.25-2.5L18 18"}],["path",{"d":"m14 4 1.25 2.5L18 6"}],["path",{"d":"m17 21-3-6h-4"}],["path",{"d":"m17 3-3 6 1.5 3"}],["path",{"d":"M2 12h6.5L10 9"}],["path",{"d":"m20 10-1.5 2 1.5 2"}],["path",{"d":"M22 12h-6.5L14 15"}],["path",{"d":"m4 10 1.5 2L4 14"}],["path",{"d":"m7 21 3-6-1.5-3"}],["path",{"d":"m7 3 3 6h4"}]];
 export const glyphSparkles: IconNode = [["path",{"d":"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"}],["path",{"d":"M20 2v4"}],["path",{"d":"M22 4h-4"}],["circle",{"cx":"4","cy":"20","r":"2"}]];
 export const glyphSquare: IconNode = [["rect",{"width":"18","height":"18","x":"3","y":"3","rx":"2"}]];
 export const glyphSquareChartGantt: IconNode = [["rect",{"width":"18","height":"18","x":"3","y":"3","rx":"2"}],["path",{"d":"M9 8h7"}],["path",{"d":"M8 12h6"}],["path",{"d":"M11 16h5"}]];
@@ -265,6 +269,7 @@ export const ICON_GLYPHS = {
   'arrow-up-right': glyphArrowUpRight,
   'award': glyphAward,
   'badge-check': glyphBadgeCheck,
+  'ban': glyphBan,
   'banknote': glyphBanknote,
   'bell': glyphBell,
   'bell-off': glyphBellOff,
@@ -344,6 +349,7 @@ export const ICON_GLYPHS = {
   'file-up': glyphFileUp,
   'flag': glyphFlag,
   'folder-check': glyphFolderCheck,
+  'folder-code': glyphFolderCode,
   'folder-kanban': glyphFolderKanban,
   'folder-tree': glyphFolderTree,
   'funnel': glyphFunnel,
@@ -352,6 +358,7 @@ export const ICON_GLYPHS = {
   'git-branch-plus': glyphGitBranchPlus,
   'git-compare-arrows': glyphGitCompareArrows,
   'git-merge': glyphGitMerge,
+  'git-pull-request': glyphGitPullRequest,
   'git-pull-request-arrow': glyphGitPullRequestArrow,
   'git-pull-request-closed': glyphGitPullRequestClosed,
   'globe': glyphGlobe,
@@ -458,6 +465,7 @@ export const ICON_GLYPHS = {
   'signpost': glyphSignpost,
   'siren': glyphSiren,
   'sliders-horizontal': glyphSlidersHorizontal,
+  'snowflake': glyphSnowflake,
   'sparkles': glyphSparkles,
   'square': glyphSquare,
   'square-chart-gantt': glyphSquareChartGantt,
