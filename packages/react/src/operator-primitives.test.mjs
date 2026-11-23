@@ -57,17 +57,16 @@ test('Stat tone and size add modifier classes; neutral and hero add none', () =>
   assert.doesNotMatch(renderToStaticMarkup(h(Stat, { label: 'x', value: 'y', tone: 'neutral', size: 'hero' })), /uix-stat--/);
 });
 
-test('interactive Stat is a dialog-opening button named "label: value, action"', () => {
+test('interactive Stat includes visible support in its dialog-opening button name', () => {
   const html = renderToStaticMarkup(h(Stat, {
     label: 'Priority', value: 'P1', meta: 'Raised by the SLA policy', onActivate() {}, activateLabel: 'change', expanded: false, tone: 'warning',
   }));
   assert.match(html, /^<button type="button" class="uix-stat uix-stat--warning uix-stat--interactive" aria-haspopup="dialog" aria-expanded="false"/);
   const labelledby = html.match(/aria-labelledby="([^"]+)"/)[1].split(' ');
-  assert.equal(labelledby.length, 4);
+  assert.equal(labelledby.length, 5);
   const text = (id) => html.match(new RegExp(`id="${id}"[^>]*>([^<]*)<`))[1];
-  assert.deepEqual(labelledby.map(text), ['Priority', ':', 'P1', ', change']);
-  const describedby = html.match(/aria-describedby="([^"]+)"/)[1];
-  assert.equal(text(describedby), 'Raised by the SLA policy');
+  assert.deepEqual(labelledby.map(text), ['Priority', ': ', 'P1', 'Raised by the SLA policy', ', change']);
+  assert.doesNotMatch(html, /aria-describedby/);
   assert.match(html, /class="uix-stat__chevron" aria-hidden="true"/);
   // phrasing content only inside the button
   assert.doesNotMatch(html, /<div/);

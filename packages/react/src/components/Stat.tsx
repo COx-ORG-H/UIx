@@ -108,26 +108,34 @@ export const Stat = forwardRef<HTMLElement, StatProps>(function Stat(
     <>
       <Row className="uix-stat__label">
         <span id={interactive ? `${id}-label` : undefined}>{label}</span>
+        {interactive && <span id={`${id}-sep`} className="uix-visually-hidden">{': '}</span>}
         {icon}
         {interactive && haspopup !== false && <Chevron />}
         {linked && <Go />}
       </Row>
+      {/* Keep text boundaries in DOM order as well as in the computed name. */}
+      {interactive && ' '}
       <Row className="uix-stat__value" id={interactive ? `${id}-value` : undefined}>{value}</Row>
       {(meta != null || trend != null) && (
-        <Row className="uix-stat__meta" id={interactive ? `${id}-meta` : undefined}>
-          {trend != null && (
-            <span className={cx('uix-stat__trend', `uix-stat__trend--${trend.direction}`, trend.sentiment != null && trend.sentiment !== 'neutral' && `uix-stat__trend--${trend.sentiment}`)}>
-              {/* direction glyph + hidden text — the chip is otherwise colour-only (UIX-A11Y-4) */}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                {trend.direction === 'up' ? <path d="M12 19V5m-6 6 6-6 6 6" /> : <path d="M12 5v14m6-6-6 6-6-6" />}
-              </svg>
-              <span className="uix-visually-hidden">{trend.direction === 'up' ? (trendLabels?.up ?? 'up') : (trendLabels?.down ?? 'down')}</span>
-              {trend.label}
-            </span>
-          )}
-          {meta}
-        </Row>
+        <>
+          {interactive && ' '}
+          <Row className="uix-stat__meta" id={interactive ? `${id}-meta` : undefined}>
+            {trend != null && (
+              <span className={cx('uix-stat__trend', `uix-stat__trend--${trend.direction}`, trend.sentiment != null && trend.sentiment !== 'neutral' && `uix-stat__trend--${trend.sentiment}`)}>
+                {/* direction glyph + hidden text — the chip is otherwise colour-only (UIX-A11Y-4) */}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  {trend.direction === 'up' ? <path d="M12 19V5m-6 6 6-6 6 6" /> : <path d="M12 5v14m6-6-6 6-6-6" />}
+                </svg>
+                <span className="uix-visually-hidden">{trend.direction === 'up' ? (trendLabels?.up ?? 'up') : (trendLabels?.down ?? 'down')}</span>
+                {trend.label}
+              </span>
+            )}
+            {interactive && trend != null && meta != null && ' '}
+            {meta}
+          </Row>
+        </>
       )}
+      {interactive && activateLabel && <span id={`${id}-action`} className="uix-visually-hidden">, {activateLabel}</span>}
     </>
   );
 
@@ -140,8 +148,8 @@ export const Stat = forwardRef<HTMLElement, StatProps>(function Stat(
     return <div ref={ref as Ref<HTMLDivElement>} className={classes} onClick={onClick} onKeyDown={onKeyDown} {...(props as HTMLAttributes<HTMLDivElement>)}>{body}</div>;
   }
 
-  // Name = "label: value, action"; the meta line is the description, so a long SLA or
-  // reason line doesn't bury the value.
+  // Visible text belongs in the name, so voice-control users can say what they see.
+  // A caller's aria-describedby remains available for additional, non-visible context.
   return (
     <button
       type="button"
@@ -150,8 +158,7 @@ export const Stat = forwardRef<HTMLElement, StatProps>(function Stat(
       className={classes}
       aria-haspopup={haspopup === false ? undefined : haspopup}
       aria-expanded={expanded}
-      aria-labelledby={`${id}-label ${id}-sep ${id}-value${activateLabel ? ` ${id}-action` : ''}`}
-      aria-describedby={meta != null || trend != null ? `${id}-meta` : undefined}
+      aria-labelledby={`${id}-label ${id}-sep ${id}-value${meta != null || trend != null ? ` ${id}-meta` : ''}${activateLabel ? ` ${id}-action` : ''}`}
       // spread, so a tile that is not pending keeps an aria-busy the consumer set itself
       {...(pending ? { 'aria-busy': true, 'aria-disabled': true } : null)}
       onClick={(e) => {
@@ -161,8 +168,6 @@ export const Stat = forwardRef<HTMLElement, StatProps>(function Stat(
       }}
       onKeyDown={pending ? undefined : onKeyDown}
     >
-      <span id={`${id}-sep`} className="uix-visually-hidden">:</span>
-      {activateLabel && <span id={`${id}-action`} className="uix-visually-hidden">, {activateLabel}</span>}
       {body}
     </button>
   );
