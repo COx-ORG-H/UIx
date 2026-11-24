@@ -1,5 +1,13 @@
 # @tensor_1/react
 
+## 2.72.1
+
+### Patch Changes
+
+- 8fc2e55: Keep ErrorSummary recovery links in the keyboard tab order across browser engines. Return focus to the summary when a linked control has disappeared or cannot take focus, without changing the URL. Wrap long translated error messages within the available width. Share the documented three-field form with browser regression coverage, including a Combobox, localized count headings, silent inline submit errors, and draft preservation.
+- 8fc2e55: Keep MotionList's existing structural return type explicit so its public API report is stable across Windows and Linux builds.
+- 9f732c0: Include an interactive Stat's visible supporting text and trend in its accessible name, so voice-control users can identify the tile by its displayed text. Preserve caller-supplied accessible descriptions.
+
 ## 2.72.0
 
 ### Minor Changes
