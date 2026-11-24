@@ -127,6 +127,39 @@ test.describe('Tabs: an accessible name reaches the tablist', () => {
 
 // ── CollapsibleSection and Steps (HAR-1628) ──────────────────────────────────
 test.describe('CollapsibleSection: remembered state, openRequest, compact rows', () => {
+  test('compact card rows align to the card inset and keep their summary hit areas', async ({ page }, testInfo) => {
+    await open(page, testInfo);
+    const compact = page.locator('#compact-spacing-card');
+    const measure = async () => page.evaluate(() => {
+      const edge = (id, selector) => {
+        const card = document.querySelector(id).getBoundingClientRect();
+        const text = document.querySelector(`${id} ${selector}`).getBoundingClientRect();
+        return { top: text.top - card.top, bottom: card.bottom - text.bottom };
+      };
+      return {
+        plain: edge('#plain-spacing-card', '.uix-collapsible__title'),
+        first: edge('#compact-spacing-card', '.uix-collapsible:first-child .uix-collapsible__title'),
+        last: edge('#compact-spacing-card', '.uix-collapsible:last-child .uix-collapsible__title'),
+      };
+    });
+    const closed = await measure();
+    expect(closed.first.top).toBeCloseTo(closed.plain.top, 0);
+    expect(closed.last.bottom).toBeCloseTo(closed.plain.bottom, 0);
+    const summaries = compact.locator('summary');
+    const referenceHeight = await page.locator('#compact-spacing-reference summary').evaluate(el => el.getBoundingClientRect().height);
+    for (const summary of await summaries.all()) {
+      const height = await summary.evaluate(el => el.getBoundingClientRect().height);
+      expect(height).toBeCloseTo(referenceHeight, 0);
+      expect(height).toBeGreaterThanOrEqual(24);
+    }
+    await summaries.last().click();
+    await settleAnimations(page);
+    const openBottom = await compact.evaluate(card => {
+      const text = card.querySelector('.uix-collapsible:last-child .uix-collapsible__body span');
+      return card.getBoundingClientRect().bottom - text.getBoundingClientRect().bottom;
+    });
+    expect(openBottom).toBeCloseTo(closed.plain.bottom, 0);
+  });
   test('defaultOpen applies on a first visit; the choice is kept in localStorage and wins on the next', async ({ page }, testInfo) => {
     await open(page, testInfo);
     const details = page.locator('#sec-details');

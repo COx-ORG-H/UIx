@@ -61,6 +61,10 @@
   .uix-collapsible--compact + .uix-collapsible--compact { border-top: 1px solid var(--uix-border); }
   .uix-collapsible--compact > .uix-collapsible__summary { padding: var(--uix-space-2) 0; border-radius: var(--uix-radius-sm); }
   .uix-collapsible--compact > .uix-collapsible__body { padding: 0 0 var(--uix-space-3); }
+  /* Let the outer row padding occupy the card inset, preserving the summary's hit area. */
+  .uix-card__body > .uix-collapsible--compact:first-child { margin-block-start: calc(-1 * var(--uix-space-2)); }
+  .uix-card__body > .uix-collapsible--compact:last-child:not([open]) { margin-block-end: calc(-1 * var(--uix-space-2)); }
+  .uix-card__body > .uix-collapsible--compact:last-child[open] > .uix-collapsible__body { padding-block-end: 0; }
 }
 
 /* Inset (HAR-1818): a bordered, sunken well inside a card body for a preview or a specimen (a

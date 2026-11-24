@@ -100,6 +100,12 @@ function CollapsibleCases() {
           <p>CHG-1042 blocks this incident.</p>
         </CollapsibleSection>
       </Card>
+      <Card id="plain-spacing-card"><span className="uix-collapsible__title">Reference</span></Card>
+      <Card id="compact-spacing-card">
+        <CollapsibleSection compact title="First row">First content</CollapsibleSection>
+        <CollapsibleSection compact title="Last row"><span className="uix-collapsible__title">Last content</span></CollapsibleSection>
+      </Card>
+      <div id="compact-spacing-reference"><CollapsibleSection compact title="Reference row">Reference body</CollapsibleSection></div>
       <div style={{ height: 900 }} aria-hidden="true" />
     </section>
   );
