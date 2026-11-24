@@ -119,6 +119,8 @@ function Copying() {
         <span>ada@example.com</span>
         <CopyButton value="ada@example.com" label="Copy email" copiedLabel="Copied" failedLabel="Could not copy" />
       </p>
+      <CopyButton value="13 items" label="Copy items" text="Copy 13" copiedLabel="Copied" failedLabel="Could not copy" variant="outline" size="sm" />
+      <CopyButton value="8 items" label="Copy items" text="Copy 8" copiedLabel="Copied" failedLabel="Could not copy" />
     </section>
   );
 }

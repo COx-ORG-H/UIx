@@ -228,6 +228,18 @@ test.describe('EntityPicker', () => {
     await input.fill('fail');
     await expect(page.locator('#entity').getByRole('option', { name: /Retry|Try again/ })).toBeVisible();
   });
+
+  test('Retry keeps the list open while searching and when results arrive', async ({ page }) => {
+    const input = page.locator('#entity-input');
+    const list = page.locator('#entity').getByRole('listbox');
+    await input.fill('retry-once');
+    await expect(list.getByRole('option', { name: /Retry|Try again/ })).toBeVisible();
+    await input.press('ArrowDown');
+    await input.press('Enter');
+    await expect(input).toHaveAttribute('aria-expanded', 'true');
+    await expect(list.getByRole('option', { name: /Amra Kovač/ })).toBeVisible();
+    await expect(input).toHaveAttribute('aria-expanded', 'true');
+  });
 });
 
 test.describe('DatePicker', () => {

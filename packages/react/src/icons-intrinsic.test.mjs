@@ -8,6 +8,14 @@ import { fileURLToPath } from 'node:url';
 import * as intrinsic from '../dist/icons-intrinsic.js';
 import { createIcon, ICON_GLYPHS, XIcon } from '../dist/icons.js';
 
+test('Mission Control icons are exported in both icon families', async () => {
+  const standard = await import('../dist/icons.js');
+  for (const name of ['SnowflakeIcon', 'BanIcon', 'GitPullRequestIcon', 'FolderCodeIcon']) {
+    assert.equal(typeof standard[name], 'object', `${name} is exported`);
+    assert.equal(typeof intrinsic[name], 'object', `${name} has an intrinsic version`);
+  }
+});
+
 test('a named intrinsic icon tree-shakes the unused family', async () => {
   const result = await build({ stdin: { contents: "export { XIcon } from './dist/icons-intrinsic.js';", resolveDir: fileURLToPath(new URL('../', import.meta.url)) }, bundle: true, format: 'esm', external: ['react'], minify: true, write: false, logLevel: 'silent' });
   const code = result.outputFiles[0].text;

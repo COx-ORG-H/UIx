@@ -99,9 +99,12 @@ const PEOPLE: SearchSuggestOption[] = [
   { id: 'u3', title: 'Lejla Hadžić', meta: ['Finance'] },
   { id: 'u4', title: 'Max Oberhuber', meta: ['Facilities'] },
 ];
+let retryOnceFailed = false;
 const searchPeople = (query: string) => new Promise<readonly SearchSuggestOption[]>((resolve, reject) => {
   setTimeout(() => {
     if (query.toLowerCase() === 'fail') reject(new Error('directory unavailable'));
+    else if (query.toLowerCase() === 'retry-once' && !retryOnceFailed) { retryOnceFailed = true; reject(new Error('directory unavailable')); }
+    else if (query.toLowerCase() === 'retry-once') resolve(PEOPLE.slice(0, 1));
     else resolve(PEOPLE.filter((p) => p.title.toLowerCase().includes(query.toLowerCase())));
   }, 300);
 });

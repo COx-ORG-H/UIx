@@ -61,6 +61,14 @@ function Harness() {
           })}
         />
       </section>
+      <section>
+        <h2>Entscheidung</h2>
+        <MatchReview
+          className="harness-decide" incoming={RECORD} incomingLabel="Katalogeintrag" fields={FIELDS} candidates={candidates}
+          onBulkDecision={() => {}}
+          labels={{ selectedCount: '{count} ausgewählt', acceptSelected: 'Auswahl zuordnen', dismissSelected: 'Auswahl verwerfen' }}
+        />
+      </section>
     </UixLabelsProvider>
   );
 }

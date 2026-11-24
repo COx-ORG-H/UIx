@@ -19,6 +19,27 @@ const open = async (page, testInfo, viewport) => {
   await expect(page.locator('.harness-match')).toBeVisible();
 };
 
+test('decide mode fits a phone and keeps the candidate table scrollable', async ({ page }, testInfo) => {
+  await open(page, testInfo, { width: 320, height: 900 });
+  const review = page.locator('.harness-decide');
+  const dimensions = await review.evaluate((element) => {
+    const table = element.querySelector('.uix-match-review__table-wrap');
+    return {
+      width: element.getBoundingClientRect().width,
+      scroll: element.scrollWidth,
+      client: element.clientWidth,
+      tableScroll: table.scrollWidth,
+      tableClient: table.clientWidth,
+      documentScroll: document.documentElement.scrollWidth,
+      documentClient: document.documentElement.clientWidth,
+    };
+  });
+  expect(dimensions.width).toBe(288);
+  expect(dimensions.scroll).toBeLessThanOrEqual(dimensions.client);
+  expect(dimensions.tableScroll).toBeGreaterThan(dimensions.tableClient);
+  expect(dimensions.documentScroll).toBeLessThanOrEqual(dimensions.documentClient);
+});
+
 test('DiffViewer: names instead of paths, values as the product shows them, where each came from', async ({ page }, testInfo) => {
   await open(page, testInfo);
   const diff = page.locator('.harness-diff');

@@ -10,7 +10,7 @@
  */
 import { useRef, useState } from 'react';
 import {
-  Alert, Attachment, AttachmentList, Button, Chip, ChipGroup, FileUpload, Heartbeat, LiveIndicator, Meter, Note, Popover,
+  Alert, Attachment, AttachmentList, Button, ButtonLink, Chip, ChipGroup, FileUpload, Heartbeat, LiveIndicator, Meter, Note, Popover,
   PromptDialog, Spinner, StatusPill, UixLabelsProvider, ViewMenu,
 } from '../../packages/react/src/index.js';
 import type { FileUploadItem } from '../../packages/react/src/index.js';
@@ -115,6 +115,9 @@ function CalloutCases() {
         </Alert>
       )}
       <Alert id="unbroken" tone="warning" title={`Export ${LONG_NAME} konnte nicht erstellt werden`} />
+      <Alert id="narrow-action" title="Single Sign-on" actions={<ButtonLink href="#help" variant="link">So wird Single Sign-on eingerichtet</ButtonLink>}>
+        Verbinden Sie Ihren Identitätsanbieter mit Ihrem Unternehmen.
+      </Alert>
       <Alert id="form-error" ref={errorRef} tone="danger" tabIndex={-1} title="Could not save">The name is already taken.</Alert>
       <Button id="focus-error" onClick={() => errorRef.current?.focus()}>Save</Button>
       <Note id="plain-note" tone={undefined}>A note with no tone.</Note>

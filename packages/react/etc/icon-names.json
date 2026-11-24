@@ -65,6 +65,10 @@
       "component": "BadgeCheckIcon",
       "glyph": "badge-check"
     },
+    "Ban": {
+      "component": "BanIcon",
+      "glyph": "ban"
+    },
     "Banknote": {
       "component": "BanknoteIcon",
       "glyph": "banknote"
@@ -373,6 +377,10 @@
       "component": "FolderCheckIcon",
       "glyph": "folder-check"
     },
+    "FolderCode": {
+      "component": "FolderCodeIcon",
+      "glyph": "folder-code"
+    },
     "FolderKanban": {
       "component": "FolderKanbanIcon",
       "glyph": "folder-kanban"
@@ -408,6 +416,10 @@
     "GitMerge": {
       "component": "GitMergeIcon",
       "glyph": "git-merge"
+    },
+    "GitPullRequest": {
+      "component": "GitPullRequestIcon",
+      "glyph": "git-pull-request"
     },
     "GitPullRequestArrow": {
       "component": "GitPullRequestArrowIcon",
@@ -852,6 +864,10 @@
     "SmilePlus": {
       "component": "SmilePlusIcon",
       "glyph": "face-slightly-smiling-plus"
+    },
+    "Snowflake": {
+      "component": "SnowflakeIcon",
+      "glyph": "snowflake"
     },
     "Sparkles": {
       "component": "SparklesIcon",

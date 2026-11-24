@@ -261,7 +261,7 @@ export function EntityPicker({
         idle={tooShort ? fillLabel(minQueryLength === 1 ? labels.typeToSearch : plural(labels.tooShort, minQueryLength), { count: minQueryLength }) : undefined}
         note={status === 'done' && hasMore ? labels.more : undefined}
         error={status === 'error' ? (fatal ?? labels.error) : undefined}
-        footer={status === 'error' && fatal == null ? { label: labels.retry, onSelect: () => setAttempt((n) => n + 1) } : undefined}
+        footer={status === 'error' && fatal == null ? { label: labels.retry, onSelect: () => setAttempt((n) => n + 1), keepOpen: true } : undefined}
         status={status === 'done' ? fillLabel(plural(hasMore ? labels.resultsMore : labels.results, results.length), { count: results.length }) : undefined}
         strategy="fixed"
       />

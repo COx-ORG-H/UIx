@@ -57,6 +57,9 @@ export const AwardIcon: UixIcon;
 export const BadgeCheckIcon: UixIcon;
 
 // @public (undocumented)
+export const BanIcon: UixIcon;
+
+// @public (undocumented)
 export const BanknoteIcon: UixIcon;
 
 // @public (undocumented)
@@ -321,6 +324,9 @@ export const FlagIcon: UixIcon;
 export const FolderCheckIcon: UixIcon;
 
 // @public (undocumented)
+export const FolderCodeIcon: UixIcon;
+
+// @public (undocumented)
 export const FolderKanbanIcon: UixIcon;
 
 // @public (undocumented)
@@ -352,6 +358,9 @@ export const GitPullRequestArrowIcon: UixIcon;
 
 // @public (undocumented)
 export const GitPullRequestClosedIcon: UixIcon;
+
+// @public (undocumented)
+export const GitPullRequestIcon: UixIcon;
 
 // @public (undocumented)
 export const GlobeIcon: UixIcon;
@@ -401,6 +410,7 @@ export const ICON_GLYPHS: {
     readonly 'arrow-up-right': IconNode;
     readonly award: IconNode;
     readonly 'badge-check': IconNode;
+    readonly ban: IconNode;
     readonly banknote: IconNode;
     readonly bell: IconNode;
     readonly 'bell-off': IconNode;
@@ -480,6 +490,7 @@ export const ICON_GLYPHS: {
     readonly 'file-up': IconNode;
     readonly flag: IconNode;
     readonly 'folder-check': IconNode;
+    readonly 'folder-code': IconNode;
     readonly 'folder-kanban': IconNode;
     readonly 'folder-tree': IconNode;
     readonly funnel: IconNode;
@@ -488,6 +499,7 @@ export const ICON_GLYPHS: {
     readonly 'git-branch-plus': IconNode;
     readonly 'git-compare-arrows': IconNode;
     readonly 'git-merge': IconNode;
+    readonly 'git-pull-request': IconNode;
     readonly 'git-pull-request-arrow': IconNode;
     readonly 'git-pull-request-closed': IconNode;
     readonly globe: IconNode;
@@ -594,6 +606,7 @@ export const ICON_GLYPHS: {
     readonly signpost: IconNode;
     readonly siren: IconNode;
     readonly 'sliders-horizontal': IconNode;
+    readonly snowflake: IconNode;
     readonly sparkles: IconNode;
     readonly square: IconNode;
     readonly 'square-chart-gantt': IconNode;
@@ -958,6 +971,9 @@ export const SmileIcon: UixIcon;
 
 // @public (undocumented)
 export const SmilePlusIcon: UixIcon;
+
+// @public (undocumented)
+export const SnowflakeIcon: UixIcon;
 
 // @public (undocumented)
 export const SparklesIcon: UixIcon;

@@ -327,6 +327,26 @@ test.describe('FileUpload and Attachment in a narrow rail', () => {
 
 // ── Alert, Note, StatusPill, PromptDialog, Popover (HAR-1614) ────────────────
 test.describe('Callouts and dialogs', () => {
+  test('Alert wraps a long action below its content in a narrow container', async ({ page }, testInfo) => {
+    await open(page, testInfo);
+    const alert = page.locator('#narrow-action');
+    await alert.evaluate((element) => { element.style.width = '236px'; element.style.boxSizing = 'border-box'; });
+    const narrow = await alert.evaluate((element) => {
+      const content = element.querySelector('.uix-alert__content').getBoundingClientRect();
+      const action = element.querySelector('.uix-alert__actions').getBoundingClientRect();
+      return { scroll: element.scrollWidth, client: element.clientWidth, contentWidth: content.width, actionWidth: action.width, contentBottom: content.bottom, actionTop: action.top };
+    });
+    expect(narrow.scroll).toBeLessThanOrEqual(narrow.client);
+    expect(narrow.contentWidth).toBeGreaterThan(narrow.actionWidth);
+    expect(narrow.actionTop).toBeGreaterThanOrEqual(narrow.contentBottom);
+    await alert.evaluate((element) => { element.style.width = '700px'; });
+    const sideBySide = await alert.evaluate((element) => {
+      const content = element.querySelector('.uix-alert__content').getBoundingClientRect();
+      const action = element.querySelector('.uix-alert__actions').getBoundingClientRect();
+      return action.left >= content.right - 1 && action.top < content.bottom;
+    });
+    expect(sideBySide).toBe(true);
+  });
   test('Alert at 320 px: a long title wraps in a column that fills the row; actions and × keep their size', async ({ page }, testInfo) => {
     await open(page, testInfo);
     await page.setViewportSize({ width: 320, height: 800 });

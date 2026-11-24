@@ -1110,6 +1110,10 @@
       "subpath": "./icons"
     },
     {
+      "name": "BanIcon",
+      "subpath": "./icons"
+    },
+    {
       "name": "BanknoteIcon",
       "subpath": "./icons"
     },
@@ -1462,6 +1466,10 @@
       "subpath": "./icons"
     },
     {
+      "name": "FolderCodeIcon",
+      "subpath": "./icons"
+    },
+    {
       "name": "FolderKanbanIcon",
       "subpath": "./icons"
     },
@@ -1503,6 +1511,10 @@
     },
     {
       "name": "GitPullRequestClosedIcon",
+      "subpath": "./icons"
+    },
+    {
+      "name": "GitPullRequestIcon",
       "subpath": "./icons"
     },
     {
@@ -1954,6 +1966,10 @@
       "subpath": "./icons"
     },
     {
+      "name": "SnowflakeIcon",
+      "subpath": "./icons"
+    },
+    {
       "name": "SparklesIcon",
       "subpath": "./icons"
     },
@@ -2183,6 +2199,10 @@
     },
     {
       "name": "BadgeCheckIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "BanIcon",
       "subpath": "./icons/intrinsic"
     },
     {
@@ -2538,6 +2558,10 @@
       "subpath": "./icons/intrinsic"
     },
     {
+      "name": "FolderCodeIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
       "name": "FolderKanbanIcon",
       "subpath": "./icons/intrinsic"
     },
@@ -2579,6 +2603,10 @@
     },
     {
       "name": "GitPullRequestClosedIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "GitPullRequestIcon",
       "subpath": "./icons/intrinsic"
     },
     {
@@ -3023,6 +3051,10 @@
     },
     {
       "name": "SmilePlusIcon",
+      "subpath": "./icons/intrinsic"
+    },
+    {
+      "name": "SnowflakeIcon",
       "subpath": "./icons/intrinsic"
     },
     {
