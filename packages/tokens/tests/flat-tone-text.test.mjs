@@ -33,7 +33,6 @@ const GLYPH_ONLY = new Map([
   [".uix-toast--success .uix-toast__icon", "the toast's icon"],
   [".uix-toast--danger .uix-toast__icon", "the toast's icon"],
   [".uix-toast--info .uix-toast__icon", "the toast's icon"],
-  [".uix-copy-button[data-copied]", "the icon-only copy button's check (its words are a visually hidden status)"],
 ]);
 
 /** A rule's selector list as single-spaced selectors. */

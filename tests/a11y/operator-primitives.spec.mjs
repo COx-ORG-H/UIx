@@ -8,6 +8,7 @@
  * when rendered — the markup contract is in packages/react/src/operator-primitives.test.mjs. */
 import { test, expect } from '@playwright/test';
 import AxeBuilder from './axe.mjs';
+import { settleAnimations } from './settle.mjs';
 
 const HARNESS = '/tests/operator-primitives/harness.html';
 const GATED = new Set(['serious', 'critical']);
@@ -166,6 +167,27 @@ test('a labelled CopyButton shows its confirmation and copies the value', async 
   await expect(button).toHaveAccessibleName('Copied');
   await expect(page.getByRole('status').filter({ hasText: 'Copied' })).toHaveCount(1);
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('13 items');
+});
+
+test('a ghost CopyButton uses the success text color for its visible confirmation', async ({ page }) => {
+  const button = page.locator('button.uix-copy-button').nth(2);
+  await expect(button).toHaveAccessibleName('Copy 8');
+  await button.click();
+  await expect(button).toHaveAttribute('data-copied', 'true');
+  await settleAnimations(page);
+  const colors = await button.evaluate(element => ({
+    actual: getComputedStyle(element).color,
+    expected: getComputedStyle(element).getPropertyValue('--uix-success-text').trim(),
+  }));
+  const expected = await button.evaluate((element, value) => {
+    const probe = document.createElement('span');
+    probe.style.color = value;
+    element.append(probe);
+    const color = getComputedStyle(probe).color;
+    probe.remove();
+    return color;
+  }, colors.expected);
+  expect(colors.actual).toBe(expected);
 });
 
 test('a refused copy shows no check and announces the failure', async ({ page }) => {
