@@ -1,5 +1,11 @@
 # @tensor_1/tokens
 
+## 2.72.1
+
+### Patch Changes
+
+- 8fc2e55: Keep ErrorSummary recovery links in the keyboard tab order across browser engines. Return focus to the summary when a linked control has disappeared or cannot take focus, without changing the URL. Wrap long translated error messages within the available width. Share the documented three-field form with browser regression coverage, including a Combobox, localized count headings, silent inline submit errors, and draft preservation.
+
 ## 2.72.0
 
 ### Minor Changes
