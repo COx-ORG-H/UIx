@@ -17,7 +17,8 @@ const field = (id, attrs = '', fallback = false) => `
   </form>`;
 
 const PAGE = `<!doctype html><html><head><meta charset="utf-8">
-<link rel="stylesheet" href="/packages/tokens/build/css/styles.css"></head>
+<link rel="stylesheet" href="/packages/tokens/build/css/styles.css">
+<style>/* read end states, not a frame of the border-colour transition */ *, *::before, *::after { transition: none !important; }</style></head>
 <body style="margin:0;padding:24px;display:grid;gap:16px;width:480px">
   ${field('rest')}
   ${field('disabled', 'data-disabled=""')}
