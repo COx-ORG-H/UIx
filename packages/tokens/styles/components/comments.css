@@ -74,12 +74,6 @@
   .uix-comment__files { margin-block-start: var(--uix-space-2); min-inline-size: 0; }
   .uix-composer--audience { min-inline-size: 0; }
   .uix-composer--audience textarea { box-sizing: border-box; }
-  /* The composer frames a rich-text field: no box in a box. */
-  .uix-composer--audience > .uix-rich-text,
-  .uix-composer--audience > .uix-rich-text:hover,
-  .uix-composer--audience > .uix-rich-text:focus-within {
-    border: 0; border-radius: 0; background: transparent; box-shadow: none;
-  }
   .uix-composer__audience {
     display: flex; align-items: center; flex-wrap: wrap; gap: var(--uix-space-2);
     padding: var(--uix-space-2); min-inline-size: 0;
