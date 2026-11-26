@@ -1675,17 +1675,17 @@ export { Comment_2 as Comment }
 export interface CommentAudience {
     // (undocumented)
     kind: 'internal' | 'external';
-    label?: string;
+    label?: ReactNode;
 }
 
 // @public
 export function CommentComposer(input: CommentComposerProps): react.JSX.Element;
 
-// @public (undocumented)
+// @public
 export interface CommentComposerAudience {
-    hint: string;
-    label: string;
-    submitLabel: string;
+    hint: ReactNode;
+    label: ReactNode;
+    submitLabel: ReactNode;
 }
 
 // @public (undocumented)

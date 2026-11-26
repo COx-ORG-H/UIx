@@ -48,9 +48,10 @@ export interface CommentAudience {
   kind: 'internal' | 'external';
   /**
    * The visible badge text, e.g. "Intern" or "An Sophie Wagner · per E-Mail". Default: the
-   * `comments` labels' `internal` or `external`. Name the person on an outside message.
+   * `comments` labels' `internal` or `external`. Name the person on an outside message. A node
+   * lets a product tag the name it carries (a redaction or capture marker) without losing it.
    */
-  label?: string;
+  label?: ReactNode;
 }
 
 export function CommentAudienceIcon({ kind }: Pick<CommentAudience, 'kind'>) {
