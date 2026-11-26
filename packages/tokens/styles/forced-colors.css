@@ -59,6 +59,9 @@
     }
     /* field shells: their focus-within ring is a border colour and a shadow (forced-colors lane) */
     :is(.uix-taginput, .uix-composer, .uix-rich-text, .uix-stepper):focus-within { outline: 2px solid Highlight; outline-offset: 1px; }
+    /* a rich-text field inside a CommentComposer: the composer draws the one outline */
+    .uix-composer--audience > .uix-rich-text:focus-within,
+    .uix-composer--audience > .uix-rich-text--fallback .uix-rich-text__source:focus-visible { outline: none; }
     .uix-cmdk__input:focus-visible { outline: 2px solid Highlight; outline-offset: -2px; }
     /* the code field's input is transparent over its cells; the flow's chips and nodes ring with a shadow */
     .uix-otp:has(> .uix-otp__input:focus-visible) { outline: 2px solid Highlight; outline-offset: 2px; }

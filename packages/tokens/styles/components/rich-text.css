@@ -180,6 +180,17 @@
   /* A mention is one token: never typed into (it may wrap, so a long name fits 320 px). */
   .uix-rich-text__content .uix-mention { cursor: default; overflow-wrap: anywhere; }
 
+  /* Inside a CommentComposer the composer frames the field, in every state: no box in a box.
+     After the state rules, one class stronger, so disabled, read-only, invalid and the loading
+     fallback lose their own frame too. The composer shows focus and the invalid border. */
+  .uix-composer.uix-composer--audience > .uix-rich-text,
+  .uix-composer.uix-composer--audience > .uix-rich-text:is(:hover, :focus-within, [data-disabled], [data-readonly], [data-invalid]),
+  .uix-composer.uix-composer--audience > .uix-rich-text--fallback .uix-rich-text__source.uix-textarea,
+  .uix-composer.uix-composer--audience > .uix-rich-text--fallback .uix-rich-text__source.uix-textarea:focus {
+    border: 0; border-radius: 0; background: transparent; box-shadow: none;
+  }
+  .uix-composer.uix-composer--audience:has(> .uix-rich-text[data-invalid]) { border-color: var(--uix-danger); }
+
   @media (prefers-reduced-motion: reduce) {
     .uix-rich-text, .uix-rich-text__tool { transition: none; }
     /* a steady gap cursor: no blink */

@@ -422,9 +422,9 @@
       "brotli": 3590
     },
     "styles/components/rich-text.css": {
-      "raw": 13156,
-      "gzip": 3402,
-      "brotli": 2907
+      "raw": 14249,
+      "gzip": 3653,
+      "brotli": 3125
     },
     "styles/components/rule-builder.css": {
       "raw": 2667,
@@ -592,9 +592,9 @@
       "brotli": 1958
     },
     "styles/forced-colors.css": {
-      "raw": 10266,
-      "gzip": 2922,
-      "brotli": 2492
+      "raw": 10525,
+      "gzip": 2991,
+      "brotli": 2549
     },
     "styles/motion.css": {
       "raw": 13894,

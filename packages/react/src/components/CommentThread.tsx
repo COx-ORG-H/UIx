@@ -177,6 +177,12 @@ export interface CommentComposerProps extends FormHTMLAttributes<HTMLFormElement
   onAudienceChange?: (audience: 'internal' | 'external') => void;
   pending?: boolean;
   submitDisabled?: boolean;
+  /**
+   * How the commit button is drawn. Omitted: filled (`primary`) for the outside audience and
+   * bordered for internal. `secondary` keeps it bordered for both, for a page whose one filled
+   * action is elsewhere (TENSOR's incident header); `primary` fills it for both.
+   */
+  submitVariant?: 'primary' | 'secondary';
   footerActions?: ReactNode;
   feedback?: ReactNode;
   labels?: Partial<CommentLabels>;
@@ -189,7 +195,7 @@ export interface CommentComposerProps extends FormHTMLAttributes<HTMLFormElement
  */
 export function CommentComposer({
   audience = 'internal', recipient, internal: internalProp, external: externalProp, audienceLabel, onAudienceChange,
-  pending = false, submitDisabled = false, footerActions, feedback, labels: labelsProp,
+  pending = false, submitDisabled = false, submitVariant, footerActions, feedback, labels: labelsProp,
   children, className, onSubmit, 'aria-describedby': describedBy, ...props
 }: CommentComposerProps) {
   const labels = useCommentLabels(labelsProp);
@@ -252,7 +258,7 @@ export function CommentComposer({
         {footerActions}
         <Button
           type="submit" wrap loading={pending} disabled={submitDisabled}
-          variant={selected === 'external' ? 'primary' : 'secondary'}
+          variant={submitVariant ?? (selected === 'external' ? 'primary' : 'secondary')}
         >
           <CommentAudienceIcon kind={selected} />{copy.submitLabel}
         </Button>
