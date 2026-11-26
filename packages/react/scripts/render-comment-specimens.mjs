@@ -40,9 +40,9 @@ export async function renderCommentSpecimens() {
   // ── the worklog at its real width ────────────────────────────────────────────────────────
   const internal = { kind: 'internal' };
   const messageActions = [
-    { id: 'quote', label: 'Zitieren in neuer Nachricht', keys: 'q', run: noop },
-    { id: 'link', label: 'Link kopieren', keys: 'l', run: noop },
-    { id: 'task', label: 'Als Aufgabe übernehmen', keys: 't', run: noop },
+    { id: 'quote', label: 'Zitieren in neuer Nachricht', keys: 'q', onSelect: noop },
+    { id: 'link', label: 'Link kopieren', keys: 'l', onSelect: noop },
+    { id: 'task', label: 'Als Aufgabe übernehmen', keys: 't', onSelect: noop },
   ];
   // The reply's `unread` / `own` reach its Comment through the thread: no second flag.
   const reply = (id, name, time, text, extra = {}, flags = {}) => ({
