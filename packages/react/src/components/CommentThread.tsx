@@ -144,13 +144,17 @@ export function CommentThread({
   );
 }
 
+/**
+ * The words of one audience. Nodes, so a product can tag the person's name inside them (a
+ * redaction or capture marker); the kit renders them as they are.
+ */
 export interface CommentComposerAudience {
   /** Visible label of the audience option. */
-  label: string;
+  label: ReactNode;
   /** Persistent hint that names who can or cannot see the draft. */
-  hint: string;
+  hint: ReactNode;
   /** The visible commit label, specific to the selected audience. */
-  submitLabel: string;
+  submitLabel: ReactNode;
 }
 
 export interface CommentComposerProps extends FormHTMLAttributes<HTMLFormElement> {

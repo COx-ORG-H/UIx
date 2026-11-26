@@ -98,6 +98,19 @@ test('the composer: internal first, the person named in hint, choice and button,
   assert.match(custom, /Sophie Wagner sieht das nicht\./);
 });
 
+test('badge and composer words may be nodes, so a product can tag the person\'s name (capture/redaction)', () => {
+  const tagged = (name) => h('span', { 'data-classified': 'identifying' }, name);
+  const badge = inDe(h(ui.Comment, { author: 'Daniel', audience: { kind: 'external', label: h('span', null, 'An ', tagged('Sophie Wagner'), ' · per E-Mail') } }, 'x'));
+  assert.match(badge, /uix-comment__audience" data-audience="external"><svg[^]*?<\/svg><span>An <span data-classified="identifying">Sophie Wagner<\/span> · per E-Mail<\/span>/);
+  const box = inDe(h(ui.CommentComposer, {
+    external: { label: h('span', null, 'An ', tagged('Sophie Wagner')), hint: h('span', null, 'Geht per E-Mail an ', tagged('Sophie Wagner'), '.'), submitLabel: h('span', null, 'An ', tagged('Sophie Wagner'), ' senden') },
+    internal: { hint: h('span', null, tagged('Sophie Wagner'), ' sieht das nicht.') },
+    audience: 'external', onAudienceChange() {},
+  }));
+  assert.equal(count(box, /data-classified="identifying"/g), 3, 'option, hint and button carry the tag; the internal hint is not shown');
+  assert.match(box, /<input type="hidden" name="audience" value="external"\/>/);
+});
+
 test('submitVariant: omitted fills the outside commit, secondary keeps both bordered, primary fills both', () => {
   const submitOf = (html) => html.match(/<button[^>]*type="submit"[^>]*>/)?.[0] ?? '';
   const outside = (extra) => inDe(h(ui.CommentComposer, { recipient: 'Sophie Wagner', external: true, audience: 'external', onAudienceChange() {}, ...extra }));
