@@ -80,6 +80,8 @@ const drafts = useCommentDrafts();
 - `audience={{ kind: 'internal' }}` takes "Intern" from the labels. Name the person on an outside message with `label`.
 - Read the audience to send with from the submitted form, `new FormData(form).get('audience')` (or `form.dataset.audience`), never from your own state alone. The kit owns the field named `audience`: do not add one of your own. A thread without `external` is locked internal and submits `internal` whatever `audience` says.
 - The composer's choice is always in the same order, internal first. The line under it says who will see the message, the commit button names the audience ("Intern speichern" / "An Sophie Wagner senden"), and the frame restyles with the audience. Pass `recipient` and `external` (true, or your own words per field) to offer the outside choice. For a root with internal visibility, omit `external`: the kit shows a lock label and no switch. The consumer still enforces authorization and visibility at the server boundary.
+- The commit button is filled for the outside audience and bordered for internal. A page whose one filled action sits elsewhere (an incident header's next step) passes `submitVariant="secondary"`: the button stays bordered for both audiences and still names the person and carries the envelope (one primary per screen).
+- The field can be a plain `textarea` or the kit `RichTextEditor` (field variant). As a direct child of the composer the editor draws no frame of its own: the composer's frame and focus ring hold it, so there is no box in a box.
 
 ## New entries
 

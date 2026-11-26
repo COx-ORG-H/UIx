@@ -1707,6 +1707,7 @@ export interface CommentComposerProps extends FormHTMLAttributes<HTMLFormElement
     recipient?: string;
     // (undocumented)
     submitDisabled?: boolean;
+    submitVariant?: 'primary' | 'secondary';
 }
 
 // @public (undocumented)

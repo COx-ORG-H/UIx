@@ -98,6 +98,19 @@ test('the composer: internal first, the person named in hint, choice and button,
   assert.match(custom, /Sophie Wagner sieht das nicht\./);
 });
 
+test('submitVariant: omitted fills the outside commit, secondary keeps both bordered, primary fills both', () => {
+  const submitOf = (html) => html.match(/<button[^>]*type="submit"[^>]*>/)?.[0] ?? '';
+  const outside = (extra) => inDe(h(ui.CommentComposer, { recipient: 'Sophie Wagner', external: true, audience: 'external', onAudienceChange() {}, ...extra }));
+  const internal = (extra) => inDe(h(ui.CommentComposer, { recipient: 'Sophie Wagner', external: true, audience: 'internal', onAudienceChange() {}, ...extra }));
+  assert.match(submitOf(outside()), /uix-btn--primary/, 'default: outside is filled');
+  assert.match(submitOf(internal()), /uix-btn--secondary/, 'default: internal is bordered');
+  const bordered = outside({ submitVariant: 'secondary' });
+  assert.match(submitOf(bordered), /uix-btn--secondary/);
+  assert.doesNotMatch(submitOf(bordered), /uix-btn--primary/);
+  assert.match(bordered, /An Sophie Wagner senden/, 'it still names the person');
+  assert.match(submitOf(internal({ submitVariant: 'primary' })), /uix-btn--primary/);
+});
+
 test('the new-since notice: nothing at 0; one entry has no stepper; more step with named buttons', () => {
   assert.equal(inDe(h(ui.CommentNewNotice, { count: 0, onShow() {} })), '');
   const single = inDe(h(ui.CommentNewNotice, { count: 1, onShow() {}, onStep() {} }));
