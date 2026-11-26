@@ -53,6 +53,7 @@ import type { ButtonResultLabels } from './components/ButtonFeedback.js';
 import type { AuditLogLabels } from './components/AuditLog.js';
 import type { DataWorkspaceLabels } from './components/DataWorkspace.js';
 import type { ActionPanelLabels } from './components/ActionPanel.js';
+import type { CommentLabels } from './comment-labels.js';
 import type { AiLabels } from './ai-labels.js';
 import type { UseTableLabels } from './hooks/useTable.js';
 import { countLabel } from './plural.js';
@@ -180,6 +181,12 @@ export interface UixLabels {
   dataWorkspace?: Partial<DataWorkspaceLabels>;
   /** `ActionPanel` (roadmap #10): the panel's title and search, the item's Mod+K, the confirm step. */
   actionPanel?: Partial<ActionPanelLabels>;
+  /**
+   * `Comment`, `CommentThread`, `CommentComposer`, `CommentNewNotice` and `useCommentDrafts`
+   * (HAR-4713): the audience words, the new chip, the fold, the new-since notice, the draft guard.
+   * `showEarlier`, `newCount` and `leaveDescription` take plural forms.
+   */
+  comments?: Partial<CommentLabels>;
   filterEditor?: Partial<FilterEditorLabels>;
   /**
    * `summarizeFilter` as a filter chip shows it (DataWorkspace): the operators, ranges and the

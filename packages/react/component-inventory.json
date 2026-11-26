@@ -194,6 +194,10 @@
       "subpath": "."
     },
     {
+      "name": "CommentNewNotice",
+      "subpath": "."
+    },
+    {
       "name": "CommentReaction",
       "subpath": "."
     },

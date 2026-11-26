@@ -52,10 +52,14 @@
   .uix-comment--audience .uix-comment__meta,
   .uix-comment__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-1) var(--uix-space-2); }
   .uix-comment__actions { margin-block-start: var(--uix-space-2); }
+  /* Audience never rests on colour alone: internal is a hairline outline on the page with a filled
+     lock badge, outside is a filled bubble with an outlined envelope badge (HAR-4713, ADR-0360).
+     Neutral only: amber and red stay for attention and breakage. */
   .uix-comment[data-audience="internal"] .uix-comment__body,
   .uix-composer[data-audience="internal"] { background: transparent; border-color: var(--uix-border-strong); }
   .uix-comment[data-audience="external"] .uix-comment__body,
-  .uix-composer[data-audience="external"] { background: var(--uix-bg-subtle); }
+  .uix-composer[data-audience="external"] { background: var(--uix-bg-subtle); border-color: transparent; }
+  .uix-composer--audience { transition: background-color var(--uix-dur-fast) var(--uix-ease-out), border-color var(--uix-dur-fast) var(--uix-ease-out); }
   .uix-composer--audience:focus-within { border-color: var(--uix-ring); }
   .uix-comment__audience, .uix-comment__unread {
     display: inline-flex; align-items: center; gap: var(--uix-space-1);
@@ -64,7 +68,10 @@
     color: var(--uix-text);
   }
   .uix-comment__audience { border: 1px solid var(--uix-border-strong); }
-  .uix-comment__unread { background: var(--uix-brand-muted); }
+  .uix-comment__audience[data-audience="internal"] { background: var(--uix-bg-active); border-color: transparent; }
+  /* The new chip is information, not a warning: the kit's info accent, a pill, never on one's own entry. */
+  .uix-comment__unread { background: var(--uix-info-bg); color: var(--uix-info-text); border-radius: var(--uix-radius-pill); padding-inline: var(--uix-space-2); font-weight: 500; white-space: nowrap; }
+  .uix-comment__files { margin-block-start: var(--uix-space-2); min-inline-size: 0; }
   .uix-composer--audience { min-inline-size: 0; }
   .uix-composer--audience textarea { box-sizing: border-box; }
   .uix-composer__audience {
@@ -81,4 +88,40 @@
   .uix-comment-unread__line { flex: 1 1 var(--uix-space-4); border-block-start: 1px solid var(--uix-border-strong); }
   .uix-comment-reaction { border-radius: var(--uix-radius-pill); font-variant-numeric: tabular-nums; }
   .uix-comment-reaction[aria-pressed="true"] { background: var(--uix-brand-muted); border-color: var(--uix-border-strong); }
+  .uix-comment-reaction > span { display: inline-flex; align-items: center; }
+
+  /* A thread's unsent reply while its composer is closed: a neutral Draft tag (the info tint
+     means "new" only) and the start of the text's first line. */
+  .uix-comment-thread__draft {
+    display: flex; align-items: center; gap: var(--uix-space-2); inline-size: 100%; min-inline-size: 0; margin: 0;
+    padding: var(--uix-space-1) 0; border: 0; background: none; color: var(--uix-text-muted);
+    font: inherit; font-size: var(--uix-text-meta); text-align: start;
+  }
+  button.uix-comment-thread__draft { cursor: pointer; border-radius: var(--uix-radius-sm); }
+  button.uix-comment-thread__draft:hover .uix-comment-thread__draft-text { color: var(--uix-text); }
+  button.uix-comment-thread__draft:focus-visible { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
+  .uix-comment-thread__draft-tag {
+    flex: none; border-radius: var(--uix-radius-sm); padding-inline: var(--uix-space-1);
+    background: var(--uix-bg-active); color: var(--uix-text); font-weight: 600;
+  }
+  .uix-comment-thread__draft-text { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* The one "new since your last visit" notice: a divider, then one row with the count, the
+     stepper (only above one entry) and the show button. Wraps at 320 px. */
+  .uix-comment-new { display: grid; gap: var(--uix-space-2); min-inline-size: 0; }
+  .uix-comment-new__divider {
+    display: flex; align-items: center; gap: var(--uix-space-3);
+    color: var(--uix-info-text); font-size: var(--uix-text-meta); font-weight: 500;
+  }
+  .uix-comment-new__divider::before,
+  .uix-comment-new__divider::after { content: ""; flex: 1 1 var(--uix-space-4); border-block-start: 1px solid currentColor; opacity: .5; }
+  .uix-comment-new__row {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--uix-space-2);
+    padding-block: var(--uix-space-1); padding-inline: var(--uix-space-3) var(--uix-space-1);
+    border-radius: var(--uix-radius-md); background: var(--uix-info-bg); color: var(--uix-text); font-size: var(--uix-text-meta);
+  }
+  .uix-comment-new__summary { min-inline-size: 0; overflow-wrap: anywhere; }
+  .uix-comment-new__controls { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--uix-space-1); }
+  .uix-comment-new__step { color: var(--uix-text-muted); font-variant-numeric: tabular-nums; padding-inline: var(--uix-space-1); }
+  .uix-comment-new__controls .uix-btn svg { flex: none; }
 }
