@@ -432,12 +432,16 @@ export type { LabelProps } from './components/Label.js';
 export { Avatar, AvatarGroup, PresenceDot, UserChip, DEFAULT_PRESENCE_LABELS } from './components/Avatar.js';
 export type { AvatarProps, AvatarGroupProps, UserChipProps, AvatarPresence, PresenceDotProps } from './components/Avatar.js';
 
-export { Comments, Comment } from './components/Comments.js';
+export { Comments, Comment, useCommentLabels } from './components/Comments.js';
 export type { CommentsProps, CommentProps, CommentAudience } from './components/Comments.js';
-export { CommentThread, CommentComposer, CommentUnreadDivider, CommentReaction } from './components/CommentThread.js';
+export { DEFAULT_COMMENT_LABELS } from './comment-labels.js';
+export type { CommentLabels } from './comment-labels.js';
+export { useCommentDrafts } from './hooks/useCommentDrafts.js';
+export type { UseCommentDraftsOptions, CommentDiscardOptions, CommentDraftsApi } from './hooks/useCommentDrafts.js';
+export { CommentThread, CommentComposer, CommentNewNotice, CommentUnreadDivider, CommentReaction } from './components/CommentThread.js';
 export type {
   CommentThreadProps, CommentThreadReply, CommentComposerProps, CommentComposerAudience,
-  CommentUnreadDividerProps, CommentReactionProps,
+  CommentNewNoticeProps, CommentUnreadDividerProps, CommentReactionProps,
 } from './components/CommentThread.js';
 export { SaveStatus, DEFAULT_SAVE_STATUS_LABELS } from './components/SaveStatus.js';
 export { BusyRegion } from './components/BusyRegion.js';

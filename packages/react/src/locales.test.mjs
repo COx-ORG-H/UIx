@@ -204,7 +204,7 @@ const PACK_DEFAULTS = {
   attachment: 'DEFAULT_ATTACHMENT_LABELS', tagInput: 'DEFAULT_TAG_INPUT_LABELS', passwordInput: 'DEFAULT_PASSWORD_INPUT_LABELS',
   pagination: 'DEFAULT_PAGINATION_LABELS', table: 'DEFAULT_USE_TABLE_LABELS', shortcuts: 'DEFAULT_SHORTCUT_LABELS',
   kanban: 'DEFAULT_KANBAN_LABELS', dashboardCanvas: 'DEFAULT_DASHBOARD_CANVAS_LABELS', ai: 'DEFAULT_AI_LABELS', slaTimer: 'DEFAULT_SLA_TIMER_LABELS',
-  sessionTimeout: 'DEFAULT_SESSION_TIMEOUT_LABELS',
+  sessionTimeout: 'DEFAULT_SESSION_TIMEOUT_LABELS', comments: 'DEFAULT_COMMENT_LABELS',
 };
 
 test('the en pack is the kit\'s English: equal to every exported default it covers', () => {

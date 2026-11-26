@@ -1675,7 +1675,7 @@ export { Comment_2 as Comment }
 export interface CommentAudience {
     // (undocumented)
     kind: 'internal' | 'external';
-    label: string;
+    label?: string;
 }
 
 // @public
@@ -1690,38 +1690,110 @@ export interface CommentComposerAudience {
 
 // @public (undocumented)
 export interface CommentComposerProps extends FormHTMLAttributes<HTMLFormElement> {
-    // (undocumented)
     audience?: 'internal' | 'external';
-    // (undocumented)
-    audienceLabel: string;
-    // (undocumented)
-    external?: CommentComposerAudience;
+    audienceLabel?: string;
+    external?: Partial<CommentComposerAudience> | boolean;
     // (undocumented)
     feedback?: ReactNode;
     // (undocumented)
     footerActions?: ReactNode;
+    internal?: Partial<CommentComposerAudience>;
     // (undocumented)
-    internal: CommentComposerAudience;
+    labels?: Partial<CommentLabels>;
     // (undocumented)
     onAudienceChange?: (audience: 'internal' | 'external') => void;
     // (undocumented)
     pending?: boolean;
+    recipient?: string;
     // (undocumented)
     submitDisabled?: boolean;
 }
 
 // @public (undocumented)
+export interface CommentDiscardOptions {
+    onDiscard?: () => void;
+    onKeep?: () => void;
+    recipient?: string;
+}
+
+// @public (undocumented)
+export interface CommentDraftsApi {
+    clear: (threadId: string) => void;
+    confirmLeave: (proceed: () => void, stay?: () => void) => boolean;
+    dialog: ReactNode;
+    discard: (threadId: string, options?: CommentDiscardOptions) => boolean;
+    get: (threadId: string) => string;
+    has: (threadId: string) => boolean;
+    set: (threadId: string, text: string) => void;
+    unsent: readonly string[];
+}
+
+// @public
+export interface CommentLabels {
+    audience: string;
+    discard: string;
+    discardDescription: string;
+    discardDescriptionNamed: string;
+    discardTitle: string;
+    draft: string;
+    external: string;
+    externalHint: string;
+    externalHintUnnamed: string;
+    externalOption: string;
+    hideEarlier: string;
+    internal: string;
+    internalHint: string;
+    internalHintNamed: string;
+    keepWriting: string;
+    leaveDescription: UixCountLabel;
+    leaveTitle: string;
+    new: string;
+    newCount: UixCountLabel;
+    newSince: string;
+    nextNew: string;
+    previousNew: string;
+    replies: string;
+    replyTo: string;
+    saveInternal: string;
+    send: string;
+    sendUnnamed: string;
+    show: string;
+    showEarlier: UixCountLabel;
+    step: string;
+    system: string;
+}
+
+// @public
+export function CommentNewNotice(input: CommentNewNoticeProps): react.JSX.Element | null;
+
+// @public (undocumented)
+export interface CommentNewNoticeProps extends HTMLAttributes<HTMLDivElement> {
+    count: number;
+    current?: number;
+    direction?: 'above' | 'below';
+    // (undocumented)
+    labels?: Partial<CommentLabels>;
+    onShow: () => void;
+    onStep?: (step: 1 | -1) => void;
+    summary?: ReactNode;
+}
+
+// @public (undocumented)
 export interface CommentProps extends HTMLAttributes<HTMLDivElement> {
     actions?: ReactNode;
-    // (undocumented)
+    attachments?: ReactNode;
     audience?: CommentAudience;
     // (undocumented)
     author?: ReactNode;
     avatar?: ReactNode;
     // (undocumented)
     children?: ReactNode;
+    isNew?: boolean;
+    // (undocumented)
+    labels?: Partial<CommentLabels>;
     // (undocumented)
     meta?: ReactNode;
+    own?: boolean;
     replyTo?: ReactNode;
     replyToLabel?: string;
     systemLabel?: string;
@@ -1729,16 +1801,14 @@ export interface CommentProps extends HTMLAttributes<HTMLDivElement> {
     variant?: 'person' | 'system';
 }
 
-// @public (undocumented)
+// @public
 export function CommentReaction(input: CommentReactionProps): react.JSX.Element;
 
 // @public (undocumented)
 export interface CommentReactionProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
     // (undocumented)
     count: number;
-    // (undocumented)
     glyph: ReactNode;
-    // (undocumented)
     label: string;
     // (undocumented)
     pressed: boolean;
@@ -1759,18 +1829,18 @@ export function CommentThread(input: CommentThreadProps): react.JSX.Element;
 // @public (undocumented)
 export interface CommentThreadProps extends HTMLAttributes<HTMLElement> {
     composer?: ReactNode;
+    draft?: string;
+    hideEarlierLabel?: string;
+    label?: string;
     // (undocumented)
-    hideEarlierLabel: string;
-    // (undocumented)
-    label: string;
+    labels?: Partial<CommentLabels>;
+    onResumeDraft?: () => void;
     replies: readonly CommentThreadReply[];
     revealReplyId?: string;
     // (undocumented)
     root: ReactNode;
-    // (undocumented)
-    showEarlierLabel: (count: number) => string;
-    // (undocumented)
-    summary: ReactNode;
+    showEarlierLabel?: UixCountLabel;
+    summary?: ReactNode;
 }
 
 // @public (undocumented)
@@ -1778,11 +1848,11 @@ export interface CommentThreadReply {
     // (undocumented)
     content: ReactNode;
     id: string;
-    // (undocumented)
+    own?: boolean;
     unread?: boolean;
 }
 
-// @public
+// @public @deprecated
 export function CommentUnreadDivider(input: CommentUnreadDividerProps): react.JSX.Element;
 
 // @public (undocumented)
@@ -2759,6 +2829,9 @@ export const DEFAULT_CODE_DISPLAY_LABELS: CodeDisplayLabels;
 
 // @public (undocumented)
 export const DEFAULT_COLOR_PICKER_LABELS: ColorPickerLabels;
+
+// @public (undocumented)
+export const DEFAULT_COMMENT_LABELS: CommentLabels;
 
 // @public (undocumented)
 export const DEFAULT_CONFLICT_NOTICE_LABELS: ConflictNoticeLabels;
@@ -10400,6 +10473,7 @@ export interface UixLabels {
         retry?: string;
         breadcrumb?: string;
     };
+    comments?: Partial<CommentLabels>;
     confirmDialog?: {
         typeToConfirm?: string;
         compensation?: string;
@@ -10610,6 +10684,18 @@ export interface UseCommandFrecencyOptions {
     storage?: CommandFrecencyStorage | null;
     storageKey?: string;
 }
+
+// @public
+export function useCommentDrafts(input?: UseCommentDraftsOptions): CommentDraftsApi;
+
+// @public (undocumented)
+export interface UseCommentDraftsOptions {
+    initial?: Readonly<Record<string, string>>;
+    labels?: Partial<CommentLabels>;
+}
+
+// @public
+export function useCommentLabels(own?: Partial<CommentLabels>): CommentLabels;
 
 // Warning: (ae-forgotten-export) The symbol "Key" needs to be exported by the entry point index.d.ts
 //
