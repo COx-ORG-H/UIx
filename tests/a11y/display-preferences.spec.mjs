@@ -300,11 +300,10 @@ async function arrivalFilters(page) {
   return filters;
 }
 
-test('a Select opened with the pointer: the options clear from a blur under standard, and never blur under reduce', async ({ page }) => {
+test('a Select opened with the pointer: its options never blur (they come with the list), under standard or reduce', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await open(page, { theme: 'light', transparency: 'standard' });
-  const standard = await arrivalFilters(page);
-  expect(standard.some((f) => /^blur\((?!0(\.00)?px)/.test(f)), `standard: ${standard}`).toBe(true);
+  expect(await arrivalFilters(page), 'standard: the frequency rule dropped the row arrival').toEqual([]);
   await page.locator('#prefs').getByRole('radiogroup', { name: 'Transparency' }).getByRole('radio', { name: 'Reduce' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-transparency', 'reduce');
   expect(await arrivalFilters(page)).toEqual([]);
