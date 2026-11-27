@@ -120,7 +120,10 @@
   .uix-rundown__item-title { margin-top: var(--uix-space-1); font-weight: 600; line-height: 1.2; }
 
   /* ── section heads ─────────────────────────────────────────────────────────── */
-  .uix-section-head { min-height: 36px; margin-bottom: var(--uix-space-3); display: flex; align-items: center; justify-content: space-between; gap: var(--uix-space-4); }
+  /* HAR-4803: the row wraps, so an action with no room beside the title moves under it whole
+     (a three-option Segmented used to wrap inside itself at 320 px); the title may still break. */
+  .uix-section-head { min-height: 36px; margin-bottom: var(--uix-space-3); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--uix-space-2) var(--uix-space-4); }
+  .uix-section-head > :first-child { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
   .uix-section-title { margin: 0; font-family: var(--uix-font-heading); font-size: var(--uix-text-h2); font-weight: 400; letter-spacing: var(--uix-tracking-tight); }
   .uix-section-head__title-row { display: flex; align-items: baseline; gap: var(--uix-space-1); min-width: 0; font-family: var(--uix-font-heading); font-size: var(--uix-text-h2); }
   /* inline-flex + min-height: the link stands on its own, so it owns a 24 px target (WCAG 2.5.8, HAR-3097) */

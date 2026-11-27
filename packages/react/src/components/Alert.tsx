@@ -11,8 +11,10 @@ export interface AlertProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'
   icon?: ReactNode;
   children?: ReactNode;
   /**
-   * A trailing slot for what the alert offers to do: a `Button`, a link (HAR-1614). It keeps
-   * its place at the end while the text beside it wraps.
+   * A trailing slot for what the alert offers to do: a `Button`, a link (HAR-1614). It sits at
+   * the end of the text; when the alert is narrower than 30rem (its own width, not the screen's)
+   * it moves to a row under the text, lined up with it, so the sentence keeps its measure
+   * (HAR-4803).
    */
   actions?: ReactNode;
   /**

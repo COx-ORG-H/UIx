@@ -26,3 +26,18 @@
   .uix-alert__actions .uix-btn--link { max-width: 100%; white-space: normal; text-align: start; }
   .uix-alert__dismiss { flex: none; align-self: flex-start; margin-block: calc(-1 * var(--uix-space-1) / 2); margin-inline-end: calc(-1 * var(--uix-space-1)); color: var(--uix-text-hushed); }
 }
+
+/* HAR-4803: beside the text, an action took the room the sentence needed: at 320 px the
+   sentence of an alert with a button broke a letter or a few per line. The alert is its own
+   inline-size container, so the rule follows the alert's width, not the screen's: below 30rem the
+   actions take a row of their own under the text, lined up with it, and the × keeps its place at
+   the top end. `contain-intrinsic-inline-size` keeps an alert sized by its content (a flex item
+   with no width) from collapsing, which inline-size containment would otherwise do; `min-width: 0`
+   lets that item still shrink to a phone. */
+@layer uix.components {
+  .uix-alert { container: uix-alert / inline-size; contain-intrinsic-inline-size: auto 20rem; min-width: 0; }
+  @container uix-alert (max-width: 30rem) {
+    .uix-alert__actions { order: 1; flex: 1 0 100%; max-width: none; box-sizing: border-box; }
+    .uix-alert:has(> .uix-alert__icon) > .uix-alert__actions { padding-inline-start: calc(var(--uix-icon-md) + var(--uix-space-3)); }
+  }
+}
