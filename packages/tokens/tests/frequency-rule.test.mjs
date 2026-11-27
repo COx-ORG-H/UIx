@@ -42,3 +42,15 @@ test("a radio dot grows from .6 over --uix-dur-fast on --uix-ease-out, with no o
   assert.equal(effect["ease-bounce"], undefined, "the 2.60 bounce spring is gone");
   assert.equal(effect["dur-bounce"], undefined);
 });
+
+test("the side peek slides in over --uix-dur-slow on --uix-ease-out, with no overshoot; the drawer keeps its own", () => {
+  const drawer = css("drawer");
+  const open = /\n  \.uix-peek\[open\] \{([^}]*)\}/.exec(drawer)[1];
+  assert.match(open, /transform var\(--uix-dur-slow\) var\(--uix-ease-out\)/);
+  assert.doesNotMatch(open, /--uix-ease-drawer|--uix-dur-drawer/);
+  const closed = /\n  \.uix-peek \{([^}]*)\}/.exec(drawer)[1];
+  assert.match(closed, /transform var\(--uix-dur-exit-slow\) var\(--uix-ease-out\)/, "and leaves without speeding up");
+  const shared = /:is\(\.uix-drawer, \.uix-peek\)\[open\] \{([^}]*)\}/.exec(drawer)[1];
+  assert.match(shared, /transform var\(--uix-dur-drawer\) var\(--uix-ease-drawer\)/, "the drawer's slide is unchanged");
+  assert.ok(ms("dur-slow") <= 240);
+});

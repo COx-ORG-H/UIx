@@ -34,6 +34,21 @@
                 overlay var(--uix-dur-drawer) allow-discrete, display var(--uix-dur-drawer) allow-discrete;
   }
   @starting-style { :is(.uix-drawer, .uix-peek)[open] { transform: translateX(calc(100% + 2 * var(--uix-drawer-gap))); opacity: 0; } }
+  /* The side peek opens and closes many times a day, one row after another, so it moves less than a
+     drawer (the frequency rule, Foundations → Motion): it slides in over --uix-dur-slow on
+     --uix-ease-out, with no overshoot, and leaves over --uix-dur-exit-slow, also on --uix-ease-out.
+     The scrim keeps the drawer's fade. Opened or closed from the keyboard it is instant (useDialog). */
+  .uix-peek {
+    transition: transform var(--uix-dur-exit-slow) var(--uix-ease-out),
+                opacity var(--uix-dur-fade-in) var(--uix-ease-out) calc(var(--uix-dur-exit-slow) - var(--uix-dur-fade-in)),
+                translate var(--uix-dur-exit-slow) var(--uix-ease-out),
+                overlay var(--uix-dur-overlay) allow-discrete, display var(--uix-dur-overlay) allow-discrete;
+  }
+  .uix-peek[open] {
+    transition: transform var(--uix-dur-slow) var(--uix-ease-out), opacity var(--uix-dur-fade-in) var(--uix-ease-out),
+                translate var(--uix-dur-exit-slow) var(--uix-ease-out),
+                overlay var(--uix-dur-slow) allow-discrete, display var(--uix-dur-slow) allow-discrete;
+  }
   /* a drag in progress follows the finger exactly */
   :is(.uix-drawer, .uix-peek)[data-swiping] { transition: none; user-select: none; }
   /* 2.60: the page behind softens under --uix-scrim-blur while the dim fades in; a swipe in progress
