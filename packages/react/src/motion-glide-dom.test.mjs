@@ -201,3 +201,23 @@ test('the select trigger marks a changed value (never the first render) and the 
   assert.ok(picked.hasAttribute('data-just-chosen'), 'the option just picked draws its check');
   await m.unmount();
 });
+
+test('a sidebar group toggled from the keyboard changes at once ([data-uix-key-opened]); a click fades it', async () => {
+  const m = mount();
+  await m.render(h(ui.Sidebar, { brand: 'Servis' },
+    h(ui.NavGroup, { label: 'Reports', defaultExpanded: false },
+      h(ui.SubNavItem, { href: '#r1' }, 'Monthly'),
+      h(ui.SubNavItem, { href: '#r2' }, 'Yearly'))));
+  const group = m.host.querySelector('.uix-navgroup');
+  const trigger = group.querySelector('.uix-navgroup__trigger');
+  // Enter on a button: the key press, then the click it makes
+  await act(async () => { trigger.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); });
+  await act(async () => { trigger.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); });
+  assert.equal(trigger.getAttribute('aria-expanded'), 'true');
+  assert.ok(group.hasAttribute('data-uix-key-opened'), 'a keyboard open is instant');
+  await act(async () => { window.document.dispatchEvent(new window.Event('pointerdown')); });
+  await act(async () => { trigger.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); });
+  assert.equal(trigger.getAttribute('aria-expanded'), 'false');
+  assert.ok(!group.hasAttribute('data-uix-key-opened'), 'a pointer toggle keeps its short fade');
+  await m.unmount();
+});
