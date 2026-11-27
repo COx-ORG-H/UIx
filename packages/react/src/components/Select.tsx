@@ -11,7 +11,7 @@ import { useUixLabels, useUixLocale } from '../labels-context.js';
 import { countLabel } from '../plural.js';
 import type { UixCountLabel } from '../plural.js';
 import { useAnchoredPosition, zoomOf } from '../hooks/useAnchoredPosition.js';
-import { blurIn, keyboardInitiated, tokenEase, tokenMs, tokenPx, watchInputModality } from '../motion.js';
+import { blurIn, keyboardInitiated, markKeyOpened, tokenEase, tokenMs, tokenPx, watchInputModality } from '../motion.js';
 import { prefersReducedMotion } from '../hooks/useReducedMotion.js';
 import { useHoverGlide } from '../hooks/useHoverGlide.js';
 import { useArrivalBlur } from '../hooks/useArrivalBlur.js';
@@ -680,10 +680,14 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
       // growing) shrinks the box, not offsetWidth, which also ignores CSS zoom (Chromium, WebKit)
       popup.style.minWidth = `${Math.round(trigger.offsetWidth || r.width / zoom)}px`;
       popup.style.maxHeight = `${Math.max(96, Math.min(MAX_HEIGHT, Math.floor(room)))}px`;
-      // 2.60: from the keyboard too it grows in and its rows arrive (operator, as animate-ui)
+      // A key open (↓, Enter, Space, Alt+↓) is instant, its rows included: a select is opened from the
+      // keyboard many times a day and the next key must not wait (motion.css [data-uix-key-opened]).
+      // A pointer open grows in. Marked before showPopover, so the first frame already knows.
+      if (!isOpen()) markKeyOpened(popup);
       try { if (!isOpen()) popup.showPopover(); } catch { /* no Popover API: `hidden` drives it */ }
       if (isSearchable) searchRef.current?.focus({ preventScroll: true });
     } else {
+      if (isOpen()) markKeyOpened(popup);
       try { if (isOpen()) popup.hidePopover(); } catch { /* no Popover API */ }
     }
   }, [showing, isSearchable]);

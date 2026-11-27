@@ -144,7 +144,7 @@ const ROWS = "const o = [...document.querySelectorAll('.uix-select__popup:popove
 /** Some frame shows the rows arriving top to bottom (the first ahead of the last) with the last still blurred. */
 const arriving = (frames) => frames.some(({ v }) => v.length > 2 && v[0][0] > v.at(-1)[0] && v.at(-1)[1].includes('blur'));
 
-test('select rows arrive top to bottom, clearing from a blur, from a pointer and from the keyboard', async ({ page }) => {
+test('select rows arrive top to bottom, clearing from a blur, from a pointer; the keyboard shows them at once', async ({ page }) => {
   let frames = await record(page, ROWS);
   await page.locator('#team').click();
   expect(arriving(await frames()), 'the rows arrive top to bottom, the later ones still blurred').toBe(true);
@@ -155,11 +155,13 @@ test('select rows arrive top to bottom, clearing from a blur, from a pointer and
   await page.locator('#team').focus();
   // the list holds open --uix-hold-pick after a pointer pick; an Escape closed it at once
   await expect(page.locator('.uix-select__popup')).toBeHidden();
-  // 2.60 (operator 2026-11-08, as animate-ui): the keyboard gets the same arrival
+  // the frequency rule: a list opened from the keyboard is there at once, its rows included
   frames = await record(page, ROWS);
   await page.keyboard.press('ArrowDown');
-  expect(arriving(await frames()), 'opened from the keyboard, the rows arrive too, clearing from a blur').toBe(true);
-  await expect.poll(async () => Math.min(...(await opacities(page)))).toBe(1);
+  await expect(page.locator('.uix-select__popup')).toHaveAttribute('data-uix-key-opened', '');
+  expect(arriving(await frames()), 'opened from the keyboard, nothing arrives').toBe(false);
+  expect(Math.min(...(await opacities(page))), 'every row is fully shown').toBe(1);
+  expect([...new Set(await filters(page))], 'and sharp').toEqual(['none']);
 });
 
 test('the side drawer floats 8 px in from the edges and still fades under reduced motion', async ({ page }) => {
