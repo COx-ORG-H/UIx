@@ -55,6 +55,29 @@ for (const width of [1440, 320]) test(`long German shortcut terms leave readable
   await page.screenshot({ path: info.outputPath('german-shortcuts.png') });
 });
 
+for (const width of [1440, 320]) test(`lists that share a termWidth start their values at one edge at ${width}px`, async ({ page }, info) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await open(page, info, { width, height: 1000 });
+  const edges = (id) => page.locator(`dl#${id}`).evaluate((dl) => {
+    const list = dl.getBoundingClientRect();
+    return Array.from(dl.querySelectorAll('dt, dd')).map((el) => ({
+      tag: el.tagName, left: Math.round(el.getBoundingClientRect().left - list.left), top: Math.round(el.getBoundingClientRect().top),
+    }));
+  });
+  const a = await edges('shared-a');
+  const b = await edges('shared-b');
+  const valueLefts = [...a, ...b].filter((e) => e.tag === 'DD').map((e) => e.left);
+  if (width === 1440) {
+    // Short terms ("Quelle") and a long one ("Ausgleichende Maßnahme") alike: one value edge.
+    expect(new Set(valueLefts).size).toBe(1);
+    expect(valueLefts[0]).toBeGreaterThan(0);
+  } else {
+    // A phone still stacks each label above its value, at the list's own edge.
+    expect(valueLefts.every((left) => left === 0)).toBe(true);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
 /** Every label/value pair of a list, as boxes. */
 const pairs = (page, id) => page.locator(`dl#${id}`).evaluate((dl) => {
   const box = (el) => { const r = el.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width }; };

@@ -66,6 +66,19 @@ function Harness() {
         </dl>
       </section>
       <section>
+        <h2>Zwei Karten, eine Begriffsspalte</h2>
+        <div style={{ display: 'grid', gap: 'var(--uix-space-4)', width: '48rem', maxWidth: '100%' }}>
+          <Card><DescriptionList id="shared-a" termWidth="11rem" items={[
+            { term: 'Quelle', description: 'Von Hand erfasst' },
+            { term: 'Port', description: '8080' },
+          ]} /></Card>
+          <Card><DescriptionList id="shared-b" termWidth="11rem" items={[
+            { term: 'Ausgleichende Maßnahme', description: 'JNDI-Lookups per Systemeigenschaft deaktiviert' },
+            { term: 'Beendet am', description: '17.11.2026' },
+          ]} /></Card>
+        </div>
+      </section>
+      <section>
         <h2>Neben einem Avatar</h2>
         <div id="flex-row" style={{ display: 'flex', gap: 'var(--uix-space-4)', alignItems: 'flex-start' }}>
           <Avatar size="lg">AH</Avatar>

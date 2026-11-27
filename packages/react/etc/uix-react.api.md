@@ -3044,6 +3044,7 @@ export interface DescriptionListProps extends HTMLAttributes<HTMLDListElement> {
     children?: ReactNode;
     // (undocumented)
     items?: DescriptionListItem[];
+    termWidth?: string;
 }
 
 // @public

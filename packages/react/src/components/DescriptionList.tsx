@@ -1,4 +1,4 @@
-import type { ReactNode, HTMLAttributes } from 'react';
+import type { CSSProperties, ReactNode, HTMLAttributes } from 'react';
 import { Fragment } from 'react';
 import { cx } from '../cx.js';
 
@@ -24,6 +24,11 @@ import { cx } from '../cx.js';
  *
  * In two columns, terms take at most half the list and wrap; short terms retain
  * their natural width. This keeps long labels from crushing the value column.
+ *
+ * Several lists on one page (a record's cards) size their term columns apart, so
+ * their values start at different edges. Give them one `termWidth` (a CSS length,
+ * e.g. `11rem`) and every list's values start at the same distance from its left
+ * edge. The width is still capped at half the list, and a narrow list still stacks.
  * Below 22rem of its own width (a phone, a side rail, a narrow column) each label
  * sits above its value and both take the full width (HAR-2032), so a long label
  * never squeezes the value. A `DetailLayout` side column always stacks.
@@ -49,11 +54,19 @@ export interface DescriptionListItem {
 export interface DescriptionListProps extends HTMLAttributes<HTMLDListElement> {
   items?: DescriptionListItem[];
   children?: ReactNode;
+  /**
+   * One term-column width (a CSS length such as `11rem`) shared by the lists of a page, so
+   * their values line up. At most half the list; omitted, terms keep their natural width.
+   */
+  termWidth?: string;
 }
 
-export function DescriptionList({ items, children, className, ...props }: DescriptionListProps) {
+export function DescriptionList({ items, children, className, termWidth, style, ...props }: DescriptionListProps) {
+  const sized = termWidth
+    ? ({ ...style, '--uix-dl-terms': `min(${termWidth}, 50%)` } as CSSProperties)
+    : style;
   return (
-    <dl className={cx('uix-dl', className)} {...props}>
+    <dl className={cx('uix-dl', className)} style={sized} {...props}>
       {items?.map((item, i) => (
         <Fragment key={item.id ?? i}>
           <dt {...item.termProps}>{item.term}</dt>
