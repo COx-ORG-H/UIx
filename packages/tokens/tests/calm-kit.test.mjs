@@ -115,7 +115,7 @@ test("no chart slot is red or amber (OKLCH hue), in either mode", () => {
 
 test("arrival tokens are the proposal's timings, and reduced motion is a fade of <= 200 ms", () => {
   const scope = MODES[0][1];
-  const want = { "dur-arrive": "420ms", "stagger-arrive": "45ms", "delay-arrive-trace": "150ms", "dur-arrive-trace": "700ms", "dur-arrive-grow": "500ms", "stagger-arrive-grow": "25ms", "dur-arrive-count": "600ms", "arrive-rise": "8px" };
+  const want = { "dur-arrive": "420ms", "stagger-arrive": "45ms", "delay-arrive-trace": "150ms", "dur-arrive-trace": "700ms", "dur-arrive-grow": "500ms", "stagger-arrive-grow": "25ms", "dur-arrive-count": "300ms", "arrive-rise": "8px" };
   for (const [name, value] of Object.entries(want)) assert.equal(scope[name], value, name);
   const css = read("arrive.css");
   const reduced = /@media \(prefers-reduced-motion: reduce\) \{([\s\S]*?)\n  \}/.exec(css)[1];

@@ -549,7 +549,7 @@ export const light = {
   "dur-arrive-trace": "700ms",
   "dur-arrive-grow": "500ms",
   "stagger-arrive-grow": "25ms",
-  "dur-arrive-count": "600ms",
+  "dur-arrive-count": "300ms",
   "lift": "4px",
   "arrive-rise": "8px",
   "z-raised": "1",

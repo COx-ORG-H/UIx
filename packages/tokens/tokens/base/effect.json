@@ -76,7 +76,7 @@
   "dur-arrive-trace":    { "$type": "duration", "$value": "700ms", "$description": "Arrival: a line or sparkline tracing in from the left." },
   "dur-arrive-grow":     { "$type": "duration", "$value": "500ms", "$description": "Arrival: one bar growing from its baseline (paired bars, a bar list, a meter)." },
   "stagger-arrive-grow": { "$type": "duration", "$value": "25ms",  "$description": "Arrival: the gap between one bar (or bucket) starting to grow and the next." },
-  "dur-arrive-count":    { "$type": "duration", "$value": "600ms", "$description": "Arrival: a headline number counting up from zero (Count arrive). Later changes tick once instead." },
+  "dur-arrive-count":    { "$type": "duration", "$value": "300ms", "$description": "Arrival: a headline number counting up from zero (Count arrive). Later changes tick once instead." },
 
   "lift": { "$type": "dimension", "$value": "4px" },
   "arrive-rise": { "$type": "dimension", "$value": "8px", "$description": "Arrival: how far a card rises while it fades in." },

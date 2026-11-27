@@ -142,7 +142,7 @@
     /* calm kit (2.56) */
     --uix-chart-series:var(--uix-chart-1); --uix-chart-series-soft:rgba(4,85,230,.14);
     /* calm kit (2.56) */
-    --uix-dur-arrive:420ms; --uix-stagger-arrive:45ms; --uix-delay-arrive-trace:150ms; --uix-dur-arrive-trace:700ms; --uix-dur-arrive-grow:500ms; --uix-stagger-arrive-grow:25ms; --uix-dur-arrive-count:600ms; --uix-arrive-rise:8px;
+    --uix-dur-arrive:420ms; --uix-stagger-arrive:45ms; --uix-delay-arrive-trace:150ms; --uix-dur-arrive-trace:700ms; --uix-dur-arrive-grow:500ms; --uix-stagger-arrive-grow:25ms; --uix-dur-arrive-count:300ms; --uix-arrive-rise:8px;
   }
 
   :root:where(.dark,[data-theme="dark"]) {
