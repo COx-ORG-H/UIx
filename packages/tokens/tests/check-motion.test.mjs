@@ -89,7 +89,7 @@ test("loop-not-loading: the allowlist stays short, and every entry says why it m
 
 test("overshoot-effect: the overshooting token list comes from the token source", () => {
   // read from tokens/base/effect.json, so a new spring that passes 1 joins the rule by itself
-  assert.deepEqual([...OVERSHOOT_TOKENS].sort(), ["--uix-ease-bounce", "--uix-ease-drawer", "--uix-ease-pop", "--uix-ease-spring", "--uix-ease-tooltip"]);
+  assert.deepEqual([...OVERSHOOT_TOKENS].sort(), ["--uix-ease-drawer", "--uix-ease-pop", "--uix-ease-spring", "--uix-ease-tooltip"]);
   assert.equal(curveOvershoots("cubic-bezier(.23,1,.32,1)"), false);
   assert.equal(curveOvershoots("cubic-bezier(.34,1.56,.64,1)"), true);
   assert.equal(curveOvershoots("cubic-bezier(.5,-.2,.5,1)"), true, "an anticipation below 0 is an overshoot too");
@@ -100,12 +100,12 @@ test("overshoot-effect: the overshooting token list comes from the token source"
 test("overshoot-effect: an overshooting curve moves geometry only", () => {
   // the shape the contract asks for: geometry on the spring, the fade on a curve that stops at 1
   assert.deepEqual(rules(".a { transition: transform var(--uix-dur-pop) var(--uix-ease-pop), opacity var(--uix-dur-fast) var(--uix-ease-out); }"), []);
-  assert.deepEqual(rules(".a { transition: scale var(--uix-dur-bounce) var(--uix-ease-bounce), translate var(--uix-dur-drawer) var(--uix-ease-drawer), rotate var(--uix-dur) var(--uix-ease-spring); }"), []);
+  assert.deepEqual(rules(".a { transition: scale var(--uix-dur-pop) var(--uix-ease-pop), translate var(--uix-dur-drawer) var(--uix-ease-drawer), rotate var(--uix-dur) var(--uix-ease-spring); }"), []);
   assert.deepEqual(rules(".a { transition: clip-path var(--uix-dur-tooltip) var(--uix-ease-tooltip); }"), [], "clip-path is a shape");
   assert.deepEqual(rules(".a { transition: opacity var(--uix-dur-glide) var(--uix-ease-glide); }"), [], "glide never passes 1");
   // opacity and every colour fail, on every overshooting token
   for (const p of ["opacity", "color", "background-color", "border-color", "fill", "stroke", "outline-color"]) {
-    for (const ease of ["pop", "tooltip", "bounce", "drawer", "spring"]) {
+    for (const ease of ["pop", "tooltip", "drawer", "spring"]) {
       assert.deepEqual(rules(`.a { transition: ${p} var(--uix-dur) var(--uix-ease-${ease}); }`), ["overshoot-effect"], `${p} on --uix-ease-${ease}`);
     }
   }
@@ -121,7 +121,7 @@ test("overshoot-effect: an overshooting curve moves geometry only", () => {
 test("overshoot-effect: timing longhands repeat over their property list", () => {
   assert.deepEqual(rules(".a { transition-property: transform, opacity; transition-duration: var(--uix-dur); transition-timing-function: var(--uix-ease-pop); }"), ["overshoot-effect"], "one curve repeats onto opacity");
   assert.deepEqual(rules(".a { transition-property: transform, opacity; transition-duration: var(--uix-dur); transition-timing-function: var(--uix-ease-pop), var(--uix-ease-out); }"), []);
-  assert.deepEqual(rules(".a { transition: transform var(--uix-dur) var(--uix-ease-out), color var(--uix-dur) var(--uix-ease-out); transition-timing-function: var(--uix-ease-out), var(--uix-ease-bounce); }"), ["overshoot-effect"]);
+  assert.deepEqual(rules(".a { transition: transform var(--uix-dur) var(--uix-ease-out), color var(--uix-dur) var(--uix-ease-out); transition-timing-function: var(--uix-ease-out), var(--uix-ease-pop); }"), ["overshoot-effect"]);
   assert.deepEqual(rules(".a { transition-timing-function: var(--uix-ease-pop); }"), ["overshoot-effect"], "with no list in the rule it applies to all");
 });
 
@@ -130,7 +130,7 @@ test("overshoot-effect: an animation is judged by what its @keyframes set", () =
   assert.deepEqual(rules(`@keyframes grow { from { transform: scale(.9); } } .a { animation: grow var(--uix-dur-pop) var(--uix-ease-pop); } ${reduced}`), []);
   assert.deepEqual(rules(`@keyframes in { from { opacity: 0; transform: scale(.9); } } .a { animation: in var(--uix-dur-pop) var(--uix-ease-pop); } ${reduced}`), ["overshoot-effect"]);
   assert.deepEqual(rules(`@keyframes in { from { opacity: 0; transform: scale(.9); } } .a { animation: in var(--uix-dur-pop) var(--uix-ease-out); } ${reduced}`), []);
-  assert.deepEqual(rules("@keyframes tint { from { background-color: var(--uix-bg-hover); } } .a { animation-name: tint; animation-timing-function: var(--uix-ease-bounce); }"), ["overshoot-effect"]);
+  assert.deepEqual(rules("@keyframes tint { from { background-color: var(--uix-bg-hover); } } .a { animation-name: tint; animation-timing-function: var(--uix-ease-pop); }"), ["overshoot-effect"]);
   assert.deepEqual(rules("@keyframes tint { from { background-color: var(--uix-bg-hover); animation-timing-function: var(--uix-ease-pop); } }"), ["overshoot-effect"], "a frame's own timing");
   assert.deepEqual(rules(".a { animation-timing-function: var(--uix-ease-pop); }"), ["overshoot-effect"], "no animation named, nothing to check it against");
 });
@@ -210,7 +210,7 @@ test("overshoot-effect: motion-allow exempts with its reason", () => {
 test("overshoot-effect: TS inline transitions and script-driven easing", () => {
   assert.equal(checkTs("const s = { transition: 'opacity var(--uix-dur) var(--uix-ease-pop)' };", "a.tsx").length, 1);
   assert.equal(checkTs("const s = { transition: 'transform var(--uix-dur-pop) var(--uix-ease-pop)' };", "a.tsx").length, 0);
-  assert.equal(checkTs("blurIn([el], { from: 4, duration: 300, ease: tokenEase('--uix-ease-bounce') });", "a.ts").length, 1);
+  assert.equal(checkTs("blurIn([el], { from: 4, duration: 300, ease: tokenEase('--uix-ease-pop') });", "a.ts").length, 1);
   assert.equal(checkTs("blurIn([el], { from: 4, duration: 300, ease: tokenEase('--uix-ease-soft') });", "a.ts").length, 0);
   assert.equal(checkTs("const s = { ['transition']: 'opacity var(--uix-dur) cubic-bezier(.25,1.25,.25,1)' };", "a.tsx").length, 1, "a computed key");
   assert.equal(checkTs("el.style.setProperty('transition', 'opacity var(--uix-dur) var(--uix-ease-pop)');", "a.ts").length, 1, "setProperty");

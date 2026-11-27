@@ -201,8 +201,6 @@ export const cssVar = {
   "ease-fill": "var(--uix-ease-fill)",
   "ease-drawer": "var(--uix-ease-drawer)",
   "ease-fade": "var(--uix-ease-fade)",
-  "ease-bounce": "var(--uix-ease-bounce)",
-  "dur-bounce": "var(--uix-dur-bounce)",
   "dur-menu": "var(--uix-dur-menu)",
   "dur-fade-in": "var(--uix-dur-fade-in)",
   "dur-row": "var(--uix-dur-row)",
@@ -515,8 +513,6 @@ export const light = {
   "ease-fill": "cubic-bezier(.4,0,.2,1)",
   "ease-drawer": "cubic-bezier(.34,1.2,.64,1)",
   "ease-fade": "cubic-bezier(.25,.1,.25,1)",
-  "ease-bounce": "linear(0, 0.043, 0.151, 0.296, 0.455, 0.612, 0.753, 0.872, 0.966, 1.035, 1.081, 1.106, 1.116, 1.113, 1.101, 1.085, 1.067, 1.049, 1.032, 1.017, 1.006, 0.997, 0.992, 0.988, 0.987, 0.987, 0.988, 0.99, 0.992, 0.994, 0.996, 0.998, 0.999, 1, 1.001, 1.001, 1.002, 1.002, 1.001, 1.001, 1)",
-  "dur-bounce": "880ms",
   "dur-menu": "120ms",
   "dur-fade-in": "100ms",
   "dur-row": "300ms",
@@ -832,5 +828,4 @@ export const spring = {
   "ease-glide": {"stiffness":550,"damping":43,"mass":1,"overshoot":0,"durationToken":"dur-glide","cubicBezier":[0.29,0.32,0.17,1],"durationMs":280},
   "ease-pop": {"stiffness":800,"damping":42,"mass":1,"overshoot":0.031,"durationToken":"dur-pop","cubicBezier":[0.36,0.66,0.09,1.16],"durationMs":280},
   "ease-tooltip": {"stiffness":400,"damping":31,"mass":1,"overshoot":0.021,"durationToken":"dur-tooltip","cubicBezier":[0.36,0.71,0.08,1.12],"durationMs":410},
-  "ease-bounce": {"stiffness":200,"damping":16,"mass":1,"overshoot":0.116,"durationToken":"dur-bounce","cubicBezier":[0.4,1.79,0,0.85],"durationMs":880},
 };

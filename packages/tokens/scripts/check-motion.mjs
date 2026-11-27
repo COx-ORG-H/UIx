@@ -102,7 +102,7 @@ export function curveOvershoots(curve) {
 
 /**
  * Rule 10's token list, read from the token source so it cannot drift: every --uix-ease-* whose
- * curve passes 1 (today pop, tooltip, bounce, drawer and the legacy spring; glide stops at 1).
+ * curve passes 1 (today pop, tooltip, drawer and the legacy spring; glide stops at 1).
  */
 export function overshootingTokens(effectJson) {
   return Object.entries(effectJson)

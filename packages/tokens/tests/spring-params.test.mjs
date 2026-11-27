@@ -43,7 +43,7 @@ const peakOf = (f, n = 400) => Math.max(...Array.from({ length: n + 1 }, (_, i) 
 test("every spring-sampled linear() easing publishes its spring", () => {
   const sampled = Object.entries(effect).filter(([name, t]) => name.startsWith("ease-") && /^linear\(/.test(t.$value)).map(([name]) => name);
   assert.deepEqual(springs.map(([name]) => name).sort(), [...sampled].sort());
-  assert.deepEqual(sampled.sort(), ["ease-bounce", "ease-glide", "ease-pop", "ease-tooltip"]);
+  assert.deepEqual(sampled.sort(), ["ease-glide", "ease-pop", "ease-tooltip"]);
   for (const [name, t] of springs) {
     const s = t.$extensions["uix.spring"];
     for (const key of ["stiffness", "damping", "mass"]) assert.ok(s[key] > 0, `${name}.${key}`);

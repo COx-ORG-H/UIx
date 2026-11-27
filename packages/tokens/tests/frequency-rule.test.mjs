@@ -33,3 +33,12 @@ test("a checkbox is fully ticked within --uix-dur-check: the tick starts with th
   const checked = /input:checked \+ \.uix-checkbox__box polyline \{([^}]*)\}/.exec(box)[1];
   assert.match(checked, /transition: stroke-dashoffset var\(--uix-dur-check\) var\(--uix-ease-leave\);/, "one duration, no delay");
 });
+
+test("a radio dot grows from .6 over --uix-dur-fast on --uix-ease-out, with no overshoot", () => {
+  const radio = css("radio");
+  const dot = /\.uix-radio__dot::after \{([^}]*)\}/.exec(radio)[1];
+  assert.match(dot, /transform: scale\(\.6\)/);
+  assert.match(dot, /transform var\(--uix-dur-fast\) var\(--uix-ease-out\)/);
+  assert.equal(effect["ease-bounce"], undefined, "the 2.60 bounce spring is gone");
+  assert.equal(effect["dur-bounce"], undefined);
+});
