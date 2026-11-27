@@ -114,9 +114,9 @@
     --uix-hold-pick: 250ms;
     --uix-dur-icon: 300ms;
     --uix-dur-icon-turn: 400ms;
-    --uix-dur-icon-draw: 600ms;
-    --uix-dur-icon-swing: 900ms;
-    --uix-dur-icon-spin: 1250ms;
+    --uix-dur-icon-draw: 400ms;
+    --uix-dur-icon-swing: 400ms;
+    --uix-dur-icon-spin: 400ms;
     --uix-arrive-blur: 4px;
     --uix-dur-fast:120ms; --uix-dur:160ms; --uix-dur-slow:240ms; --uix-dur-slower:320ms;
     --uix-dur-exit-fast:80ms; --uix-dur-exit:110ms; --uix-dur-exit-slow:160ms; --uix-dur-highlight:2400ms;

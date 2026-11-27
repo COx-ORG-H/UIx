@@ -54,3 +54,13 @@ test("the side peek slides in over --uix-dur-slow on --uix-ease-out, with no ove
   assert.match(shared, /transform var\(--uix-dur-drawer\) var\(--uix-ease-drawer\)/, "the drawer's slide is unchanged");
   assert.ok(ms("dur-slow") <= 240);
 });
+
+test("every opt-in icon motion ends within 400 ms", () => {
+  const icons = Object.keys(effect).filter((name) => name.startsWith("dur-icon"));
+  assert.ok(icons.length >= 5);
+  for (const name of icons) assert.ok(ms(name) <= 400, `--uix-${name} is ${ms(name)} ms`);
+});
+
+test("numbers count up over 300 ms on arrival", () => {
+  assert.equal(ms("dur-arrive-count"), 300);
+});

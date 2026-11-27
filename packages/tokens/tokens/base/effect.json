@@ -38,9 +38,9 @@
   "hold-pick": { "$type": "duration", "$value": "250ms", "$description": "A select list stays open this long after an option is picked, so its check is seen drawing before the list shrinks away." },
   "dur-icon": { "$type": "duration", "$value": "300ms", "$description": "An animated icon's short move: an arrow or chevron leaning the way it points, a copy sheet shifting." },
   "dur-icon-turn": { "$type": "duration", "$value": "400ms", "$description": "An animated close or plus icon turning a quarter." },
-  "dur-icon-draw": { "$type": "duration", "$value": "600ms", "$description": "An animated check drawing itself with a small bump." },
-  "dur-icon-swing": { "$type": "duration", "$value": "900ms", "$description": "An animated bell swinging." },
-  "dur-icon-spin": { "$type": "duration", "$value": "1250ms", "$description": "An animated gear turning half a revolution." },
+  "dur-icon-draw": { "$type": "duration", "$value": "400ms", "$description": "An animated check drawing itself with a small bump. Every icon motion is capped at 400 ms (the frequency rule): icons are opt-in (`animate`) and off by default." },
+  "dur-icon-swing": { "$type": "duration", "$value": "400ms", "$description": "An animated bell tipping one way and back (two short swings), capped at 400 ms like every icon motion." },
+  "dur-icon-spin": { "$type": "duration", "$value": "400ms", "$description": "An animated gear turning half a revolution, capped at 400 ms like every icon motion." },
   "arrive-blur":  { "$type": "dimension", "$value": "4px", "$description": "The blur the rows of a list that just opened clear from (a Select's options, a Menu's items, a sidebar group's rows; 2.60). Driven per frame in script, never by CSS. 0px turns it off; reduced transparency sets it to 0px." },
 
   "dur-fast":   { "$type": "duration", "$value": "120ms" },
