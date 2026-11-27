@@ -90,13 +90,28 @@ test('the sidebar keeps one glide layer and one current-page mark, both hidden f
   await pointer('pointerover', a);
   assert.ok(nav.hasAttribute('data-uix-glide'));
   const atA = glide.style.transform;
-  // the keyboard takes the mark too (operator, 2026-11-08, as animate-ui): a row reached by a key
+  assert.ok(glide.hasAttribute('data-shown'), 'the mark shows at once, without waiting a frame');
+  // a pointer move to the next row moves the layer there (a short transform transition, motion.css)
+  await pointer('pointerover', b);
+  assert.equal(glide.hasAttribute('data-gliding'), true, 'row to row, it moves');
+  const atB = glide.style.transform;
+  // the frequency rule: the keyboard never moves the mark. A key press hides it at once and a row
+  // reached by a key (focus, or a listbox's [data-active]) paints its own background
   await act(async () => { a.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Tab', bubbles: true })); });
-  await act(async () => { b.dispatchEvent(new window.FocusEvent('focusin', { bubbles: true })); });
-  assert.ok(nav.hasAttribute('data-uix-glide'), 'a row reached from the keyboard keeps the mark');
-  assert.match(glide.style.transform, /^translate\([^)]*\) scale\(/, 'it travels by translate and scale');
-  assert.equal(glide.hasAttribute('data-gliding'), true, 'and glides there');
-  assert.ok(atA, 'it had been on the first row');
+  assert.ok(!nav.hasAttribute('data-uix-glide'), 'a key press takes the pointer mark away');
+  assert.ok(!glide.hasAttribute('data-shown'));
+  assert.ok(glide.hasAttribute('data-uix-instant'), 'at once, without the fade-out');
+  await act(async () => { a.dispatchEvent(new window.FocusEvent('focusin', { bubbles: true })); });
+  await act(async () => { b.setAttribute('data-active', ''); });
+  assert.ok(!nav.hasAttribute('data-uix-glide'), 'keyboard focus and [data-active] never bring the mark back');
+  assert.equal(glide.style.transform, atB, 'and never move it');
+  b.removeAttribute('data-active');
+  // the pointer moving again brings it back, shown at once where the pointer is
+  await pointer('pointermove', a);
+  assert.ok(nav.hasAttribute('data-uix-glide') && glide.hasAttribute('data-shown'));
+  assert.ok(!glide.hasAttribute('data-uix-instant'), 'its fade-out is a normal one again');
+  assert.ok(!glide.hasAttribute('data-gliding'), 'a new visit appears in place, without travelling');
+  assert.ok(atA);
   // back to the pointer for the tests that follow
   await act(async () => { window.document.dispatchEvent(new window.Event('pointerdown')); });
   await m.unmount();

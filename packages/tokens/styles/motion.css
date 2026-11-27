@@ -110,24 +110,25 @@
     .uix-lift-hover:hover { transform: translateY(calc(-1 * var(--uix-lift))); box-shadow: var(--uix-shadow-popover); }
   }
 
-  /* The glide highlight (useHoverGlide, 2.60): one row-sized layer under a list's rows, moved to the
-     pointer's row with transform alone. It fades in where the pointer enters, glides between rows on
-     --uix-ease-glide and fades out when the pointer leaves. The list (its parent) is its containing
-     block; isolation keeps the layer's z-index -1 above the list's own background and beneath the
-     rows. Under reduced motion the global policy drops transform from the transition: the mark jumps,
-     the fade stays. */
+  /* The glide highlight (useHoverGlide): one row-sized layer under a list's rows, moved to the
+     pointer's row with transform alone. A daily control, so it barely moves (the frequency rule,
+     Foundations → Motion): it shows at once where the pointer enters, moves between rows over
+     --uix-dur-glide-hover on --uix-ease-out (no spring, so it never trails the pointer) and fades out
+     over --uix-dur-exit-fast when the pointer leaves. The keyboard never moves it: a focused or active
+     row paints its own background. The list (its parent) is its containing block; isolation keeps the
+     layer's z-index -1 above the list's own background and beneath the rows. Under reduced motion the
+     global policy drops transform from the transition: the mark jumps, the fade-out stays. */
   /* The hosts are named, never found with :has(): a subject-less :has() makes every element a
      candidate, and WebKit then restyles the page on every DOM change (CI timed out on it). */
   :where(.uix-sidebar, .uix-select__listbox, .uix-menu) { isolation: isolate; }
   .uix-glide {
     position: absolute; top: 0; left: 0; transform-origin: 0 0; z-index: calc(-1 * var(--uix-z-raised)); pointer-events: none;
     background: var(--uix-glide-bg, var(--uix-bg-hover)); opacity: 0;
-    transition: opacity var(--uix-dur-fade) var(--uix-ease-fade);
+    transition: opacity var(--uix-dur-exit-fast) var(--uix-ease-out);
   }
-  /* 2.60 (animate-ui's highlight): fades in and out over --uix-dur-fade; between rows it glides and
-     resizes (a scale from the first row's size, useHoverGlide) */
-  .uix-glide[data-shown] { opacity: 1; transition: opacity var(--uix-dur-fade) var(--uix-ease-fade); }
-  .uix-glide[data-shown][data-gliding] { transition: opacity var(--uix-dur-fade) var(--uix-ease-fade), transform var(--uix-dur-glide) var(--uix-ease-glide); }
+  /* between rows it moves and resizes (a scale from the first row's size, useHoverGlide) */
+  .uix-glide[data-shown] { opacity: 1; transition: none; }
+  .uix-glide[data-shown][data-gliding] { transition: transform var(--uix-dur-glide-hover) var(--uix-ease-out); }
   @media (forced-colors: active) { .uix-glide { display: none; } }
 
   /* Instant surfaces. Keyboard-initiated and 100×-a-day surfaces open and close with no animation — the

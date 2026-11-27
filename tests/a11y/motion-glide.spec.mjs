@@ -1,7 +1,8 @@
 /* The 2.60 motion in a real browser (the animate-ui study, rebuilt natively in UIx). The harness is
  * tests/motion-glide/harness.tsx. Each check proves what moves, that it settles where it should, and
  * that reduced motion and the keyboard get none of it:
- *   - the sidebar's hover mark glides (clip-path on the glide spring) and the current-page tint slides;
+ *   - the sidebar's hover mark moves between rows in 90 ms on --uix-ease-out, and never for the keyboard;
+ *     the current-page tint slides;
  *   - a tooltip glides to its neighbour and lands exactly where a fresh one would (no jump);
  *   - a select list's rows arrive staggered, clearing from a short blur, from a pointer and from the
  *     keyboard (operator, 2026-11-08);
@@ -48,11 +49,12 @@ const record = async (page, read, ms = 700) => {
   };
 };
 
-test('the sidebar hover mark glides between rows; reduced motion jumps', async ({ page }) => {
+test('the sidebar hover mark moves between rows in under 100 ms; reduced motion jumps', async ({ page }) => {
   await row(page, 'Übersicht').hover();
   await expect(page.locator('#nav')).toHaveAttribute('data-uix-glide', '');
-  // the layer has faded in before it can glide
+  // the layer shows at once, with no fade-in
   await expect(page.locator('#nav > .uix-glide')).toHaveAttribute('data-shown', '');
+  expect(await page.locator('#nav > .uix-glide').evaluate((el) => getComputedStyle(el).opacity), 'fully shown at once').toBe('1');
   const start = await clipTop(page);
   const frames = await record(page, "return new DOMMatrixReadOnly(getComputedStyle(document.querySelector('#nav > .uix-glide')).transform).m42;", 600);
   await row(page, 'Teams').hover();
@@ -60,10 +62,34 @@ test('the sidebar hover mark glides between rows; reduced motion jumps', async (
   const tops = (await frames()).map((f) => f.v);
   expect(tops.some((y) => y > start + 1 && y < end - 1), `part way there on some frame: ${tops.map(Math.round).join(' ')}`).toBe(true);
   await expect.poll(() => clipTop(page)).toBeCloseTo(end, 0);
+  // the frequency rule: a short move on --uix-ease-out, never the 2.60 spring
+  const timing = await page.locator('#nav > .uix-glide').evaluate((el) => {
+    const s = getComputedStyle(el);
+    return { duration: s.transitionDuration, ease: s.transitionTimingFunction };
+  });
+  expect(timing.duration).toBe('0.09s');
+  expect(timing.ease).toBe('cubic-bezier(0.23, 1, 0.32, 1)');
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const property = await page.locator('#nav > .uix-glide').evaluate((el) => getComputedStyle(el).transitionProperty);
   expect(property, 'reduced motion drops the glide, keeps the fade').not.toContain('transform');
+});
+
+test('the keyboard never moves the glide layer: a key press hides it at once and the row paints its own background', async ({ page }) => {
+  const glide = page.locator('#nav > .uix-glide');
+  await row(page, 'Übersicht').hover();
+  await expect(glide).toHaveAttribute('data-shown', '');
+  const before = await clipTop(page);
+  await row(page, 'Übersicht').focus();
+  const frames = await record(page, "const g = document.querySelector('#nav > .uix-glide'); return [new DOMMatrixReadOnly(getComputedStyle(g).transform).m42, getComputedStyle(g).opacity];", 300);
+  await page.keyboard.press('Tab');
+  const seen = await frames();
+  expect(seen.every((f) => Math.abs(f.v[0] - before) < 0.5), 'the layer stays where it was').toBe(true);
+  expect(seen.slice(1).every((f) => f.v[1] === '0'), 'and is gone from the first frame after the key').toBe(true);
+  await expect(page.locator('#nav')).not.toHaveAttribute('data-uix-glide', '');
+  // the row the key reached has its own hover background
+  const focused = await page.evaluate(() => getComputedStyle(document.activeElement).backgroundColor);
+  expect(focused).not.toBe('rgba(0, 0, 0, 0)');
 });
 
 test('the glide layer never makes a list scroll (no overflow of its own)', async ({ page }) => {
