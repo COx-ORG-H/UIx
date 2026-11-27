@@ -1,0 +1,11 @@
+import { webkit } from 'playwright';
+import AxeBuilder from '@axe-core/playwright';
+const css = process.argv[2] ?? '';
+const b = await webkit.launch(); const p = await (await b.newContext()).newPage();
+if (css) await p.addInitScript((c) => document.addEventListener('DOMContentLoaded', () => { const s = document.createElement('style'); s.textContent = c; document.head.append(s); }), css);
+await p.goto('http://localhost:4291/tests/search-bar/harness.html', { waitUntil: 'networkidle' });
+await p.locator('#portal').getByRole('searchbox').fill('Drucker');
+const t = Date.now();
+const r = await Promise.race([new AxeBuilder({ page: p }).include('#root').analyze().then((r) => `done ${r.violations.length} violations`), new Promise((res) => setTimeout(() => res('TIMEOUT 25s'), 25000))]);
+console.log(css ? 'with override' : 'as is', r, Date.now() - t, 'ms');
+await b.close(); process.exit(0);

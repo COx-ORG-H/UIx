@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "serve:styleguide"],
       "port": 4178
+    },
+    {
+      "name": "motion-doc-fixes",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["E:/Development/Worktrees/uix-styleguide-motion-doc-fixes/node_modules/serve/build/main.js", "-l", "4199", "-c", "serve.json", "E:/Development/Worktrees/uix-styleguide-motion-doc-fixes"],
+      "port": 4199
     }
   ]
 }
