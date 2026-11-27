@@ -14,7 +14,6 @@ import { useAnchoredPosition, zoomOf } from '../hooks/useAnchoredPosition.js';
 import { blurIn, keyboardInitiated, markKeyOpened, tokenEase, tokenMs, tokenPx, watchInputModality } from '../motion.js';
 import { prefersReducedMotion } from '../hooks/useReducedMotion.js';
 import { useHoverGlide } from '../hooks/useHoverGlide.js';
-import { useArrivalBlur } from '../hooks/useArrivalBlur.js';
 import type { Placement } from '../overlay-position.js';
 import { Drawer } from './Drawer.js';
 import {
@@ -693,7 +692,6 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   }, [showing, isSearchable]);
   useEffect(() => { watchInputModality(); }, []);
   useAnchoredPosition(triggerRef, popupRef, { open: showing, placement, offset: OFFSET, padding: EDGE });
-  useArrivalBlur(() => popupRef.current, '.uix-listbox > :is(.uix-listbox__option, .uix-listbox__group)', showing);
 
   /* ---- the phone sheet: the listbox takes focus */
   useEffect(() => {

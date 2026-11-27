@@ -101,8 +101,7 @@
     :root:not([data-motion="reduce"]) button.uix-select[data-swap]::before { animation: uix-value-out var(--uix-select-swap-out) var(--uix-ease-soft) forwards; }
   }
 
-  /* overflow-x: the list never scrolls sideways; rows arriving 8 px from the inline end (2.60) must not
-     raise a horizontal scrollbar on engines with classic scrollbars, which shifted rows mid-click */
+  /* the list never scrolls sideways */
   .uix-select__listbox { flex: 1 1 auto; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; position: relative; }
   /* flat inside the popup: the options take the popup's corner and inset, not the listbox's own */
   .uix-select__popup .uix-listbox { min-width: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; --uix-radius-outer: inherit; --uix-radius-inset: inherit; }

@@ -13,7 +13,6 @@ import { useShortcutKeys } from '../shortcut-hooks.js';
 import { useHoverGlide } from '../hooks/useHoverGlide.js';
 import { useUixLocale } from '../labels-context.js';
 import { foldContext, textMatcher } from '../locale-text.js';
-import { useArrivalBlur } from '../hooks/useArrivalBlur.js';
 import type { KeyShortcut } from './Kbd.js';
 
 /**
@@ -134,7 +133,6 @@ export function Menu({ trigger, children, open: controlledOpen, defaultOpen = fa
     return () => document.removeEventListener('pointerdown', onPointer, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, menuId]);
-  useArrivalBlur(menu, ':scope > :is(.uix-menu__item, .uix-menu__label, .uix-menu__sep, [role="group"])', open);
 
   const onMenuKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const list = items();

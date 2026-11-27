@@ -3,8 +3,8 @@
  * from the keyboard is instant).
  *
  * Every other docs preview is HTML and CSS with a little docs script. This motion is driven by
- * the React components themselves (the hover glide, the tooltip delay group, the rows clearing from
- * a blur, the drawer's swipe), so this one mounts the real @tensor_1/react components, bundled from
+ * the React components themselves (the hover glide, the tooltip delay group, a select's
+ * value swapping, the drawer's swipe), so this one mounts the real @tensor_1/react components, bundled from
  * source by build.mjs. Nothing here re-implements a behaviour: what moves is what consumers get.
  *
  * Built into docs/live/dist/ (not committed) by `node packages/tokens/docs/live/build.mjs`; the docs
@@ -307,7 +307,7 @@ function Playground() {
             ))}
           </div>
         </Demo>
-        <Demo title="Select and Menu" hint="Click to open a list: it grows from the trigger in 120 ms, rows arrive one after another. Pick a team: its check draws, the value swaps. Open it with ↓: it is simply there.">
+        <Demo title="Select and Menu" hint="Click to open a list: it grows from the trigger in 120 ms, its rows with it. Pick a team: its check draws, the value swaps. Open it with ↓: it is simply there.">
           <ListsDemo />
         </Demo>
         <Demo title="Checkbox and radio" hint="Tick a box: it fills and ticks in 120 ms. Pick a channel: the dot grows in, with no bounce.">
