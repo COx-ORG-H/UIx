@@ -29,8 +29,10 @@
   /* an empty card is one sentence (proposal rule 7); it shrinks to fit it */
   .uix-chart-card__empty { margin: 0; padding-block: var(--uix-space-2); color: var(--uix-text-muted); font-size: var(--uix-text-body); }
 
-  /* a Chart inside the card drops its own card chrome; the plot keeps its height */
-  .uix-chart-card .uix-chart { padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; overflow: visible; }
+  /* a Chart inside the card drops its own card chrome; the plot keeps its height. So does a glance
+     chart in a dashboard grid item: the item is already the card it answers in (no box in a box). */
+  .uix-chart-card .uix-chart,
+  .uix-dashboard-grid-item .uix-chart--glance { padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; overflow: visible; }
   /* axis digits in the UI face with tabular figures (ECharts' SVG text takes CSS) */
   .uix-chart-card svg text { font-variant-numeric: tabular-nums; }
 
@@ -41,11 +43,17 @@
   .uix-glance-tooltip__swatch { width: 8px; height: 8px; flex: none; border-radius: var(--uix-radius-xs); background: var(--swatch); }
   .uix-glance-tooltip__value { margin-inline-start: auto; font-weight: 650; padding-inline-start: var(--uix-space-3); }
 
-  /* ── bar list: one row per bucket, label | bar | value ─────────────────────────────────── */
-  .uix-bar-list { display: flex; flex-direction: column; gap: var(--uix-space-2); margin: 0; padding: 0; list-style: none; }
+  /* ── bar list: one row per bucket, label | bar | value ───────────────────────────────────
+     The rows share one set of columns (subgrid), so every bar starts at the same x. The label
+     column fits its longest label but never takes more than 40 % of the list: a long name wraps
+     and its bar keeps its room. */
+  .uix-bar-list {
+    display: grid; grid-template-columns: fit-content(40%) minmax(0, 1fr) minmax(2rem, max-content);
+    gap: var(--uix-space-2) var(--uix-space-3); margin: 0; padding: 0; list-style: none;
+  }
   .uix-bar-list__row {
-    display: grid; grid-template-columns: minmax(4rem, max-content) minmax(0, 1fr) minmax(2rem, max-content);
-    align-items: center; gap: var(--uix-space-3); font-size: var(--uix-text-meta);
+    display: grid; grid-column: 1 / -1; grid-template-columns: subgrid;
+    align-items: center; font-size: var(--uix-text-meta);
   }
   .uix-bar-list__label { min-width: 0; color: var(--uix-text-hushed); overflow-wrap: anywhere; }
   .uix-bar-list__track { display: block; height: 8px; border-radius: var(--uix-radius-pill); background: var(--uix-bg-active); overflow: hidden; }
