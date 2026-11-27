@@ -34,10 +34,7 @@
                 overlay var(--uix-dur-drawer) allow-discrete, display var(--uix-dur-drawer) allow-discrete;
   }
   @starting-style { :is(.uix-drawer, .uix-peek)[open] { transform: translateX(calc(100% + 2 * var(--uix-drawer-gap))); opacity: 0; } }
-  /* The side peek opens and closes many times a day, one row after another, so it moves less than a
-     drawer (the frequency rule, Foundations → Motion): it slides in over --uix-dur-slow on
-     --uix-ease-out, with no overshoot, and leaves over --uix-dur-exit-slow, also on --uix-ease-out.
-     The scrim keeps the drawer's fade. Opened or closed from the keyboard it is instant (useDialog). */
+  /* the peek is opened many times a day (the frequency rule): ease-out both ways, no overshoot */
   .uix-peek {
     transition: transform var(--uix-dur-exit-slow) var(--uix-ease-out),
                 opacity var(--uix-dur-fade-in) var(--uix-ease-out) calc(var(--uix-dur-exit-slow) - var(--uix-dur-fade-in)),

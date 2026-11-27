@@ -17,9 +17,7 @@
     opacity: 0; transform: scale(.6); transition: opacity var(--uix-dur-fast) var(--uix-ease-out), transform var(--uix-dur-fast) var(--uix-ease-out);
   }
   .uix-radio > input:checked + .uix-radio__dot { border-color: var(--uix-accent); }
-  /* A radio is picked many times a day, so its dot settles fast and never bounces (the frequency rule,
-     Foundations → Motion): it grows from .6 and fades in over --uix-dur-fast on --uix-ease-out, and
-     goes the same way. Reduced motion keeps the fade. */
+  /* the frequency rule: the dot grows from .6 over --uix-dur-fast, no bounce */
   .uix-radio > input:checked + .uix-radio__dot::after { opacity: 1; transform: none; }
   .uix-radio > input:focus-visible + .uix-radio__dot { outline: 2px solid var(--uix-ring); outline-offset: 2px; }
   .uix-radio > input:disabled ~ * { opacity: .5; }

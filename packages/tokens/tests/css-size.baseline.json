@@ -2,9 +2,9 @@
   "_note": "CSS size budget baseline (PERF-2). Written by `npm run size:css:update` (scripts/size-report.mjs --update). Sizes in bytes; gzip level 9, brotli quality 11. `npm run size:css` (--check) fails if any file's raw, gzip or brotli size grows past max(2%, 64B) vs these numbers, or if a tracked file is added/removed. --update rewrites only the entries that are out of tolerance, new or gone, so an entry changes only in the PR that resized that file. The two bundles (build/css/styles.css, components.css) deliberately have no entry: they are checked against the sum of their inputs instead.",
   "sizes": {
     "build/css/tokens.css": {
-      "raw": 21626,
-      "gzip": 4254,
-      "brotli": 3539
+      "raw": 21071,
+      "gzip": 4093,
+      "brotli": 3392
     },
     "styles/base.css": {
       "raw": 5339,
@@ -197,9 +197,9 @@
       "brotli": 1003
     },
     "styles/components/drawer.css": {
-      "raw": 6258,
-      "gzip": 2028,
-      "brotli": 1714
+      "raw": 7080,
+      "gzip": 2125,
+      "brotli": 1790
     },
     "styles/components/editorial-home.css": {
       "raw": 25039,
@@ -322,9 +322,9 @@
       "brotli": 361
     },
     "styles/components/menu.css": {
-      "raw": 4018,
-      "gzip": 1345,
-      "brotli": 1124
+      "raw": 3665,
+      "gzip": 1319,
+      "brotli": 1083
     },
     "styles/components/meter.css": {
       "raw": 2304,
@@ -467,9 +467,9 @@
       "brotli": 561
     },
     "styles/components/sidebar.css": {
-      "raw": 23371,
-      "gzip": 5723,
-      "brotli": 4952
+      "raw": 21612,
+      "gzip": 5398,
+      "brotli": 4648
     },
     "styles/components/sla.css": {
       "raw": 3252,
@@ -567,9 +567,9 @@
       "brotli": 2093
     },
     "styles/components/tooltip.css": {
-      "raw": 7207,
-      "gzip": 2408,
-      "brotli": 2031
+      "raw": 5140,
+      "gzip": 1847,
+      "brotli": 1535
     },
     "styles/components/tree.css": {
       "raw": 3247,
@@ -597,9 +597,9 @@
       "brotli": 2549
     },
     "styles/motion.css": {
-      "raw": 13894,
-      "gzip": 4279,
-      "brotli": 3614
+      "raw": 13474,
+      "gzip": 4208,
+      "brotli": 3553
     },
     "styles/scroll-edge.css": {
       "raw": 9927,
