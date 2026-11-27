@@ -350,3 +350,42 @@ test('Menu retains multi-character typeahead within one opening', (t) => {
     assert.ok(document.activeElement?.textContent === 'Teilen', 'the accumulated prefix selects Teilen, not Termine');
   } finally { unmount(); }
 });
+
+test('a menu opened or closed from the keyboard is marked [data-uix-key-opened]; a click open is not (the frequency rule)', async () => {
+  // the real engine fires beforetoggle on show and hide; the stub above does not
+  const proto = window.HTMLElement.prototype;
+  const [show, hide] = [proto.showPopover, proto.hidePopover];
+  const toggling = (fn) => function toggled() { this.dispatchEvent(new window.Event('beforetoggle')); fn.call(this); };
+  proto.showPopover = toggling(show);
+  proto.hidePopover = toggling(hide);
+  try {
+    const { host, unmount } = mount(h(ui.Menu, { trigger: h(ui.Button, null, 'Actions') },
+      h(ui.MenuItem, { onSelect() {} }, 'Rename'),
+      h(ui.MenuItem, { onSelect() {} }, 'Delete')));
+    const trigger = host.querySelector('button.uix-btn');
+    trigger.focus();
+    key(trigger, 'ArrowDown');
+    await frame();
+    const menu = menuOf(trigger);
+    assert.ok(menu.matches(':popover-open'), 'ArrowDown opens the menu');
+    assert.ok(!menu.hasAttribute('data-uix-animate-keys'), 'the 2.60 keyboard opt-out is gone');
+    assert.ok(menu.hasAttribute('data-uix-key-opened'), 'a keyboard open is instant');
+    key(document.activeElement, 'Escape');
+    await frame();
+    assert.ok(!menu.matches(':popover-open'));
+    assert.ok(menu.hasAttribute('data-uix-key-opened'), 'an Escape close is instant too');
+    // a pointer press, then its click: the menu grows in
+    // motion.ts reads the press target with a global `Element`
+    expose('Element', window.Element);
+    act(() => { document.dispatchEvent(new window.MouseEvent('pointerdown', { bubbles: true })); });
+    delete globalThis.Element;
+    click(trigger);
+    await frame();
+    assert.ok(menu.matches(':popover-open'));
+    assert.ok(!menu.hasAttribute('data-uix-key-opened'), 'a pointer open animates');
+    unmount();
+  } finally {
+    proto.showPopover = show;
+    proto.hidePopover = hide;
+  }
+});
