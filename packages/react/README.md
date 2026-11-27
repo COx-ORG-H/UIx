@@ -2162,7 +2162,7 @@ both the same. `useReducedMotion` honours `data-motion`.
 
 Transparency (`standard | reduce | system`) is the kit's answer to iOS "Reduce Transparency" and One UI
 "Reduce transparency and blur". Under `reduce`, every blur the kit draws is gone: `--uix-scrim-blur`,
-`--uix-arrive-blur` and `--uix-swap-blur` are `0px`, the progress overlay stops blurring, and the modal and
+and `--uix-arrive-blur` are `0px`, the progress overlay stops blurring, and the modal and
 drawer scrims turn firmer (`.5` → `.6` black) so the layer still stands apart from the sharp page behind it.
 Rows still fade and move in; only the blur goes. `data-contrast="more"` implies it. `system` follows
 `prefers-reduced-transparency: reduce`, which only Chromium reports (Firefox ships it off, WebKit declines),

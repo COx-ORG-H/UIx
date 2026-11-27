@@ -89,7 +89,7 @@ test("loop-not-loading: the allowlist stays short, and every entry says why it m
 
 test("overshoot-effect: the overshooting token list comes from the token source", () => {
   // read from tokens/base/effect.json, so a new spring that passes 1 joins the rule by itself
-  assert.deepEqual([...OVERSHOOT_TOKENS].sort(), ["--uix-ease-drawer", "--uix-ease-pop", "--uix-ease-spring", "--uix-ease-tooltip"]);
+  assert.deepEqual([...OVERSHOOT_TOKENS].sort(), ["--uix-ease-drawer", "--uix-ease-pop", "--uix-ease-spring"]);
   assert.equal(curveOvershoots("cubic-bezier(.23,1,.32,1)"), false);
   assert.equal(curveOvershoots("cubic-bezier(.34,1.56,.64,1)"), true);
   assert.equal(curveOvershoots("cubic-bezier(.5,-.2,.5,1)"), true, "an anticipation below 0 is an overshoot too");
@@ -101,15 +101,15 @@ test("overshoot-effect: an overshooting curve moves geometry only", () => {
   // the shape the contract asks for: geometry on the spring, the fade on a curve that stops at 1
   assert.deepEqual(rules(".a { transition: transform var(--uix-dur-pop) var(--uix-ease-pop), opacity var(--uix-dur-fast) var(--uix-ease-out); }"), []);
   assert.deepEqual(rules(".a { transition: scale var(--uix-dur-pop) var(--uix-ease-pop), translate var(--uix-dur-drawer) var(--uix-ease-drawer), rotate var(--uix-dur) var(--uix-ease-spring); }"), []);
-  assert.deepEqual(rules(".a { transition: clip-path var(--uix-dur-tooltip) var(--uix-ease-tooltip); }"), [], "clip-path is a shape");
+  assert.deepEqual(rules(".a { transition: clip-path var(--uix-dur-pop) var(--uix-ease-pop); }"), [], "clip-path is a shape");
   assert.deepEqual(rules(".a { transition: opacity var(--uix-dur-glide) var(--uix-ease-glide); }"), [], "glide never passes 1");
   // opacity and every colour fail, on every overshooting token
   for (const p of ["opacity", "color", "background-color", "border-color", "fill", "stroke", "outline-color"]) {
-    for (const ease of ["pop", "tooltip", "drawer", "spring"]) {
+    for (const ease of ["pop", "drawer", "spring"]) {
       assert.deepEqual(rules(`.a { transition: ${p} var(--uix-dur) var(--uix-ease-${ease}); }`), ["overshoot-effect"], `${p} on --uix-ease-${ease}`);
     }
   }
-  assert.deepEqual(rules(".a { transition: transform var(--uix-dur-tooltip) var(--uix-ease-tooltip), opacity var(--uix-dur-tooltip) var(--uix-ease-tooltip); }"), ["overshoot-effect"], "the 2.70 tooltip shape");
+  assert.deepEqual(rules(".a { transition: transform var(--uix-dur-pop) var(--uix-ease-pop), opacity var(--uix-dur-pop) var(--uix-ease-pop); }"), ["overshoot-effect"], "the 2.70 tooltip shape");
   assert.deepEqual(rules(".a { transition: all var(--uix-dur) var(--uix-ease-pop); }"), ["transition-all", "overshoot-effect"]);
   // literal curves and local aliases count
   assert.deepEqual(rules(".a { transition: opacity var(--uix-dur) cubic-bezier(.34,1.56,.64,1); }"), ["overshoot-effect"]);

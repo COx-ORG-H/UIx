@@ -4,7 +4,7 @@ import { useSyncExternalStore } from 'react';
 
 /* Reduced transparency (the display preference's transparency axis). The stylesheets already follow
  * it: under <html data-transparency="reduce">, and under data-contrast="more", which implies it,
- * --uix-scrim-blur, --uix-arrive-blur and --uix-swap-blur are 0px, the progress overlay drops its
+ * --uix-scrim-blur and --uix-arrive-blur are 0px, the progress overlay drops its
  * blur and the scrims are firmer (display-preferences.css). This is for blur or glass that
  * JavaScript draws: blurIn already asks it.
  *

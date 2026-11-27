@@ -235,7 +235,7 @@ test('a slide cut short by a narrower window never widens the page', async ({ pa
  * opened for real) and the progress overlay. `alpha` is the scrim colour's alpha. */
 async function layers(page) {
   await expect(page.locator('html')).not.toHaveAttribute('data-uix-switching', /.*/);
-  const tokens = await page.evaluate(() => Object.fromEntries(['--uix-scrim-blur', '--uix-arrive-blur', '--uix-swap-blur']
+  const tokens = await page.evaluate(() => Object.fromEntries(['--uix-scrim-blur', '--uix-arrive-blur']
     .map((n) => [n, getComputedStyle(document.documentElement).getPropertyValue(n).trim()])));
   // rgba(r, g, b, a) and color(srgb r g b / a) both carry the alpha fourth; rgb() has none
   const alpha = (c) => c.match(/[\d.]+/g)?.map(Number)[3] ?? 1;
@@ -257,7 +257,7 @@ for (const theme of ['light', 'dark']) {
   test(`${theme}: standard transparency keeps the blur; reduce (chosen, or implied by more contrast) removes it and firms the scrims`, async ({ page }) => {
     await open(page, { theme, transparency: 'standard' });
     const standard = await layers(page);
-    expect(standard.tokens).toEqual({ '--uix-scrim-blur': '4px', '--uix-arrive-blur': '4px', '--uix-swap-blur': '6px' });
+    expect(standard.tokens).toEqual({ '--uix-scrim-blur': '4px', '--uix-arrive-blur': '4px' });
     expect(standard.modal.filter).toBe('blur(4px)');
     expect(standard.drawer.filter).toBe('blur(4px)');
     expect(standard.overlay.filter).toBe('blur(2px)');
@@ -267,7 +267,7 @@ for (const theme of ['light', 'dark']) {
       await open(page, stored);
       const reduced = await layers(page);
       const label = JSON.stringify(stored);
-      expect(reduced.tokens, label).toEqual({ '--uix-scrim-blur': '0px', '--uix-arrive-blur': '0px', '--uix-swap-blur': '0px' });
+      expect(reduced.tokens, label).toEqual({ '--uix-scrim-blur': '0px', '--uix-arrive-blur': '0px' });
       for (const layer of ['modal', 'drawer']) {
         expect(['none', 'blur(0px)'], `${label} ${layer}`).toContain(reduced[layer].filter);
         // a sharp page behind needs a firmer scrim to keep the layer apart: .5 -> .6

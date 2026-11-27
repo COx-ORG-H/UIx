@@ -1,5 +1,5 @@
-/* 2.60 motion (the animate-ui study, rebuilt natively): the gliding hover mark, the tooltip's glide
- * markup, the drawer swipe, the drawn tick, the picked option's check, the trigger's value rise-in
+/* Motion contracts from the 2.60 animate-ui study, as the frequency rule (Foundations → Motion) left
+ * them: the pointer-only hover mark, the tooltip's instant hand-over, the drawer swipe, the drawn tick, the picked option's check, the trigger's value rise-in
  * and the animated icons. jsdom has no layout or animation, so these hold the contract (which
  * element, which attribute, which input does nothing); the motion itself is measured in Chromium by
  * tests/a11y/motion-glide.spec.mjs. Renders the BUILT dist — run `npm run build` first. */
@@ -122,7 +122,7 @@ test('menus and select lists carry the glide layer as their first child', async 
   assert.match(html, /role="listbox"[^>]*><span class="uix-glide" aria-hidden="true"><\/span>/, 'the listbox starts with the hidden glide layer');
 });
 
-test('the tooltip wraps its label in a clip window so the hand-over can slide it; keys keep their ids', () => {
+test('the tooltip keeps its label markup (content, label); keys keep their ids', () => {
   const plain = renderToStaticMarkup(h(ui.Tooltip, { label: 'Kopieren' }, h('button', { type: 'button' }, 'C')));
   assert.match(plain, /class="uix-tooltip__content"><span class="uix-tooltip__label">Kopieren<\/span><\/span>/);
   const keyed = renderToStaticMarkup(h(ui.Tooltip, { label: 'Suchen', shortcut: ['Mod', 'K'] }, h('button', { type: 'button' }, 'S')));
@@ -220,4 +220,41 @@ test('a sidebar group toggled from the keyboard changes at once ([data-uix-key-o
   assert.equal(trigger.getAttribute('aria-expanded'), 'false');
   assert.ok(!group.hasAttribute('data-uix-key-opened'), 'a pointer toggle keeps its short fade');
   await m.unmount();
+});
+
+test('a neighbouring tooltip in a warm delay group opens with [data-uix-instant] and no hand-over (no data-morph)', async () => {
+  const proto = window.HTMLElement.prototype;
+  const matches = window.Element.prototype.matches;
+  const [show, hide] = [proto.showPopover, proto.hidePopover];
+  proto.showPopover = function showPopover() { this.setAttribute('data-test-popover-open', ''); };
+  proto.hidePopover = function hidePopover() { this.removeAttribute('data-test-popover-open'); };
+  window.Element.prototype.matches = function patched(selector) {
+    return selector === ':popover-open' ? this.hasAttribute('data-test-popover-open') : matches.call(this, selector);
+  };
+  if (!globalThis.ResizeObserver) expose('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
+  const m = mount();
+  try {
+    await m.render(h('div', null,
+      h(ui.Tooltip, { label: 'Kopieren' }, h('button', { type: 'button', id: 'tip-copy' }, 'C')),
+      h(ui.Tooltip, { label: 'Suchen' }, h('button', { type: 'button', id: 'tip-find' }, 'S'))));
+    const [a, b] = [...m.host.querySelectorAll('.uix-tooltip')];
+    const bubbleOf = (t) => t.querySelector('.uix-tooltip__bubble');
+    await act(async () => { window.document.dispatchEvent(new window.Event('pointerdown')); });
+    await act(async () => { a.firstElementChild.dispatchEvent(new window.MouseEvent('mouseover', { bubbles: true, relatedTarget: document.body })); });
+    await act(async () => { await new Promise((r) => setTimeout(r, 450)); });
+    assert.ok(bubbleOf(a).matches(':popover-open'), 'the first one opens after the hover delay');
+    assert.ok(!bubbleOf(a).hasAttribute('data-uix-instant'), 'and grows in');
+    await act(async () => { a.firstElementChild.dispatchEvent(new window.MouseEvent('mouseout', { bubbles: true, relatedTarget: b.firstElementChild })); });
+    await act(async () => { b.firstElementChild.dispatchEvent(new window.MouseEvent('mouseover', { bubbles: true, relatedTarget: a.firstElementChild })); });
+    assert.ok(bubbleOf(b).matches(':popover-open'), 'the neighbour opens at once');
+    assert.ok(!bubbleOf(a).matches(':popover-open'), 'the one it replaces is gone');
+    assert.ok(bubbleOf(b).hasAttribute('data-uix-instant'), 'with no motion');
+    assert.ok(!bubbleOf(b).hasAttribute('data-morph') && !bubbleOf(b).hasAttribute('data-morphing'), 'and no hand-over');
+    assert.equal(m.host.querySelectorAll('.uix-tooltip__content--leaving').length, 0, 'no old label sliding out');
+  } finally {
+    await m.unmount();
+    proto.showPopover = show;
+    proto.hidePopover = hide;
+    window.Element.prototype.matches = matches;
+  }
 });

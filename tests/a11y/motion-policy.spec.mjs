@@ -278,11 +278,18 @@ test.describe('tooltip delay group', () => {
     await page.waitForTimeout(150);
     expect(await isOpen(bubble(page, 'tip-a')), 'not before the delay').toBe(false);
     await expect.poll(() => isOpen(bubble(page, 'tip-a')), { timeout: 1500 }).toBe(true);
+    // the first bubble grows from .95 over --uix-dur (160 ms) on --uix-ease-out, no spring
+    const first = await bubble(page, 'tip-a').evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { duration: s.transitionDuration, ease: s.transitionTimingFunction.split(', cubic')[0] };
+    });
+    expect(first).toEqual({ duration: '0.16s', ease: 'cubic-bezier(0.23, 1, 0.32, 1)' });
 
     await page.locator('#tip-b').hover();
     expect(await isOpen(bubble(page, 'tip-b')), 'a neighbour opens at once').toBe(true);
-    // 2.60: no fade from nothing; it either glides from the neighbour (within 320 px) or appears at once
-    expect(await bubble(page, 'tip-b').evaluate((el) => el.hasAttribute('data-morph') || el.hasAttribute('data-uix-instant'))).toBe(true);
+    // the frequency rule: a neighbour appears at once, with no hand-over
+    await expect(bubble(page, 'tip-b')).toHaveAttribute('data-uix-instant', '');
+    await expect(bubble(page, 'tip-b')).not.toHaveAttribute('data-morph');
 
     await page.mouse.move(5, 5);
     await page.waitForTimeout(800); // past the close delay and --uix-delay-tooltip-skip

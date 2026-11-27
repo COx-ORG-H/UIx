@@ -3,7 +3,7 @@
  * that reduced motion and the keyboard get none of it:
  *   - the sidebar's hover mark moves between rows in 90 ms on --uix-ease-out, and never for the keyboard;
  *     the current-page tint slides;
- *   - a tooltip glides to its neighbour and lands exactly where a fresh one would (no jump);
+ *   - a tooltip neighbour appears at once ([data-uix-instant]), with no hand-over;
  *   - a select list's rows arrive staggered, clearing from a short blur, from a pointer and from the
  *     keyboard (operator, 2026-11-08);
  *   - the side drawer floats 8 px in from the edges and keeps a fade under reduced motion;
@@ -122,10 +122,10 @@ test('the current-page tint slides to a clicked row and hands back at rest; the 
 
 const bubbleTop = (page) => page.evaluate(() => {
   const b = [...document.querySelectorAll('.uix-tooltip__bubble')].find((x) => x.matches(':popover-open'));
-  return b ? { top: Math.round(b.getBoundingClientRect().top), morph: b.hasAttribute('data-morph') } : null;
+  return b ? { top: Math.round(b.getBoundingClientRect().top), morph: b.hasAttribute('data-morph'), instant: b.hasAttribute('data-uix-instant') } : null;
 });
 
-test('a tooltip glides to its neighbour and lands where a fresh one would', async ({ page }) => {
+test('a tooltip neighbour appears at once, with no hand-over, where a fresh one would', async ({ page }) => {
   const button = (name) => page.locator('#toolbar').getByRole('button', { name });
   // where a freshly opened "Kopieren" sits
   await button('Kopieren').hover();
@@ -134,22 +134,17 @@ test('a tooltip glides to its neighbour and lands where a fresh one would', asyn
   const fresh = (await bubbleTop(page)).top;
   await page.mouse.move(5, 5);
   await page.waitForTimeout(800);
-  // wider → narrower (the case that used to jump 10 px up)
   await button('Link einfügen').hover();
   await page.waitForTimeout(700);
+  // the frequency rule: within the skip window the neighbour is simply there
   await button('Kopieren').hover();
-  await page.waitForTimeout(40);
-  expect((await bubbleTop(page)).morph, 'gliding from the neighbour').toBe(true);
-  // The jump came from the UA's popover overflow:auto: the scaled background raised a classic
-  // scrollbar (10 px) mid-glide and the engine placed the bubble that much higher. Headless Chromium
-  // draws overlay scrollbars (no height), so check the cause directly: the bubble never scrolls.
-  const overflow = await page.evaluate(() => {
-    const b = [...document.querySelectorAll('.uix-tooltip__bubble')].find((x) => x.matches(':popover-open'));
-    return `${getComputedStyle(b).overflowX} ${getComputedStyle(b).overflowY}`;
-  });
-  expect(overflow).toBe('visible visible');
-  await expect.poll(async () => (await bubbleTop(page)).morph).toBe(false);
-  expect((await bubbleTop(page)).top).toBe(fresh);
+  const seen = await bubbleTop(page);
+  expect(seen.instant, 'shown at once ([data-uix-instant])').toBe(true);
+  expect(seen.morph, 'no 2.60 hand-over').toBe(false);
+  expect(seen.top, 'already in its own place').toBe(fresh);
+  const motion = await page.evaluate(() => [...document.querySelectorAll('.uix-tooltip__bubble')].flatMap((b) => b.getAnimations({ subtree: true })).length);
+  expect(motion, 'nothing moves').toBe(0);
+  expect(await page.locator('.uix-tooltip__content--leaving').count(), 'no old label sliding out').toBe(0);
 });
 
 test('under reduced motion a neighbour swaps at once', async ({ page }) => {
@@ -160,6 +155,7 @@ test('under reduced motion a neighbour swaps at once', async ({ page }) => {
   await button('Link einfügen').hover();
   await page.waitForTimeout(30);
   expect((await bubbleTop(page)).morph).toBe(false);
+  expect((await bubbleTop(page)).instant).toBe(true);
 });
 
 const opacities = (page) => page.locator('.uix-select__popup .uix-listbox__option').evaluateAll((els) => els.map((e) => Number(getComputedStyle(e).opacity)));

@@ -23,7 +23,6 @@
   :root:is([data-transparency="reduce"], [data-contrast="more"]) {
     --uix-scrim-blur: 0px;
     --uix-arrive-blur: 0px;
-    --uix-swap-blur: 0px;
     --uix-scrim: color-mix(in srgb, var(--uix-scrim-strong) 86%, transparent);
   }
 
