@@ -337,7 +337,8 @@ test.describe('Callouts and dialogs', () => {
       return { scroll: element.scrollWidth, client: element.clientWidth, contentWidth: content.width, actionWidth: action.width, contentBottom: content.bottom, actionTop: action.top };
     });
     expect(narrow.scroll).toBeLessThanOrEqual(narrow.client);
-    expect(narrow.contentWidth).toBeGreaterThan(narrow.actionWidth);
+    // HAR-4803: under the text, the action has the text's full row, so it is no wider than the text.
+    expect(narrow.contentWidth).toBeGreaterThanOrEqual(narrow.actionWidth - 0.5);
     expect(narrow.actionTop).toBeGreaterThanOrEqual(narrow.contentBottom);
     await alert.evaluate((element) => { element.style.width = '700px'; });
     const sideBySide = await alert.evaluate((element) => {
@@ -347,11 +348,11 @@ test.describe('Callouts and dialogs', () => {
     });
     expect(sideBySide).toBe(true);
   });
-  test('Alert at 320 px: a long title wraps in a column that fills the row; actions and × keep their size', async ({ page }, testInfo) => {
+  test('Alert at 320 px: a long title wraps in a column that fills the row; the actions move under it and the × keeps its size', async ({ page }, testInfo) => {
     await open(page, testInfo);
     await page.setViewportSize({ width: 320, height: 800 });
     const m = await page.locator('#announcement').evaluate((el) => {
-      const box = (node) => { const r = node.getBoundingClientRect(); return { left: r.left, right: r.right, width: r.width, height: r.height }; };
+      const box = (node) => { const r = node.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height }; };
       const title = el.querySelector('.uix-alert__title');
       return {
         alert: box(el), content: box(el.querySelector('.uix-alert__content')), actions: box(el.querySelector('.uix-alert__actions')),
@@ -361,11 +362,14 @@ test.describe('Callouts and dialogs', () => {
     });
     expect(m.scroll, 'nothing overflows the alert').toBeLessThanOrEqual(m.client);
     expect(m.titleLines, 'the title wraps').toBeGreaterThan(1.5);
-    expect(m.content.right).toBeLessThanOrEqual(m.actions.left + 0.5);
-    expect(m.actions.right).toBeLessThanOrEqual(m.dismiss.left + 0.5);
+    // HAR-4803: with less than 14rem beside them, the actions sit under the text (they used to stay
+    // beside it and squeeze it); the × keeps the top end.
+    expect(m.actions.top, 'the actions move under the text').toBeGreaterThanOrEqual(m.content.bottom - 0.5);
+    expect(Math.abs(m.actions.left - m.content.left), 'lined up with the text').toBeLessThan(1);
+    expect(m.content.right).toBeLessThanOrEqual(m.dismiss.left + 0.5);
     expect(m.dismiss.right).toBeLessThanOrEqual(m.alert.right);
     expect(Math.round(m.dismiss.width), 'the × is not squeezed').toBe(24);
-    expect(m.content.width, 'the text column takes the free width').toBeGreaterThan(120);
+    expect(m.content.width, 'the text column takes the free width').toBeGreaterThan(180);
     // a title with an unbreakable 80-character word still stays inside
     const unbroken = await page.locator('#unbroken').evaluate((el) => ({ scroll: el.scrollWidth, client: el.clientWidth }));
     expect(unbroken.scroll).toBeLessThanOrEqual(unbroken.client);

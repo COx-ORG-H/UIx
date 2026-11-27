@@ -26,3 +26,16 @@
   .uix-alert__actions .uix-btn--link { max-width: 100%; white-space: normal; text-align: start; }
   .uix-alert__dismiss { flex: none; align-self: flex-start; margin-block: calc(-1 * var(--uix-space-1) / 2); margin-inline-end: calc(-1 * var(--uix-space-1)); color: var(--uix-text-hushed); }
 }
+
+/* HAR-4803: beside the text, an action took the room the sentence needed: at 320 px the sentence
+   of an alert with a short button broke a few letters per line. The text and the actions share
+   one wrapping row, .uix-alert__main, between the icon and the ×: the text asks for 14rem before
+   anything sits beside it, so an action with no room moves under the text, lined up with it,
+   while the icon and the × keep their places. The row is sized by its content, so an alert that
+   fits beside its action stays as narrow as before (a toast, a fit-content wrapper). Markup
+   without the row keeps the layout above. */
+@layer uix.components {
+  .uix-alert__main { flex: 1 1 0; min-width: 0; display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--uix-space-2) var(--uix-space-3); }
+  .uix-alert__main > .uix-alert__content { flex: 1 1 14rem; }
+  .uix-alert__main > .uix-alert__actions { max-width: 100%; }
+}

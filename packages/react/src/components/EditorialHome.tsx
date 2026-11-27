@@ -73,7 +73,10 @@ export interface SectionHeadProps extends Omit<HTMLAttributes<HTMLDivElement>, '
   help?: string | null;
   /** Accessible name of the ? button. Default: the `UixLabelsProvider` `infoTip` template with the title (`"About: <title>"` without a provider). */
   helpLabel?: string;
-  /** Right-aligned slot — a `.uix-section-link` anchor, a button, a pill. */
+  /**
+   * Right-aligned slot — a `.uix-section-link` anchor, a button, a pill, a `Segmented`. With no
+   * room beside the title it moves under it, whole (HAR-4803).
+   */
   action?: ReactNode;
   /**
    * `compact` is the in-card section preset (HAR-1815): a 15 px / 1.3 / 600 title in place of

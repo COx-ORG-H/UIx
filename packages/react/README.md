@@ -1576,7 +1576,8 @@ const v = useVirtualRows(rows, { rowHeight: 44, estimatedViewportHeight: 600, en
 ```
 
 - `Alert`: `onDismiss` + `dismissLabel` (`UixLabelsProvider` `alert.dismiss`), a trailing `actions`
-  slot, a forwarded ref, and a text column that wraps a long title at 320 px.
+  slot, a forwarded ref, and a text column that wraps a long title at 320 px. With less than 14rem
+  for the text beside them, the actions move under the text (HAR-4803).
 - `Note tone={undefined}` and `tone="neutral"` are the default look.
 - `StatusPill size`: `'sm' | 'md' | 'lg'`.
 - `PromptDialog`: `multiline` (a textarea; Ctrl/⌘+Enter submits), `destructive` (a danger submit,
