@@ -319,7 +319,16 @@ test('the Motion page states the text-swap rule in tokens: out, then in, no over
   assert.match(motion, /Text swaps go out, then in/);
   for (const token of ['--uix-dur-exit-fast', '--uix-dur-swap-out', 'transition-delay', 'calc(var(--uix-dur) - var(--uix-dur-exit-fast))']) assert.ok(motion.includes(token), token);
   assert.match(motion, /Icons and images may overlap/);
-  assert.match(motion, /tooltip hand-over/);
+  // the 2.60 tooltip hand-over (two labels sliding past each other) is gone: a neighbour is simply there
+  assert.doesNotMatch(motion, /tooltip hand-over/);
+});
+
+test('the Motion page states the frequency rule and what it sets for the daily controls', () => {
+  const motion = pageContent('motion');
+  assert.match(motion, /The more often something is seen, the less it moves/);
+  assert.match(motion, /anything started from the keyboard is instant/);
+  for (const token of ['--uix-dur-menu', '--uix-dur-glide-hover', '--uix-dur-check', '--uix-dur-arrive-count', '[data-uix-key-opened]', '[data-uix-instant]']) assert.ok(motion.includes(token), token);
+  for (const gone of ['--uix-ease-tooltip', '--uix-ease-bounce', '--uix-swap-blur', 'from the keyboard too']) assert.ok(!motion.includes(gone), gone);
 });
 
 test('docs prose list rules never reach kit lists', () => {

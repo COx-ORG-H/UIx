@@ -1,7 +1,9 @@
-/* The live 2.60 motion on the docs Motion page (Foundations → Motion → "Try it").
+/* The live motion on the docs Motion page (Foundations → Motion → "Try it"): the 2.60 study as the
+ * frequency rule left it (the more often something is seen, the less it moves; anything started
+ * from the keyboard is instant).
  *
- * Every other docs preview is HTML and CSS with a little docs script. The 2.60 motion is driven by
- * the React components themselves (the hover glide, the tooltip hand-over, the rows clearing from
+ * Every other docs preview is HTML and CSS with a little docs script. This motion is driven by
+ * the React components themselves (the hover glide, the tooltip delay group, the rows clearing from
  * a blur, the drawer's swipe), so this one mounts the real @tensor_1/react components, bundled from
  * source by build.mjs. Nothing here re-implements a behaviour: what moves is what consumers get.
  *
@@ -294,21 +296,21 @@ function MorphDemo() {
 function Playground() {
   return (
     <div className="uix-docs__live-grid">
-      <Demo title="Sidebar" hint="Move the pointer down the rows, click another page, open Einstellungen. Tab moves the highlight too.">
+      <Demo title="Sidebar" hint="Move the pointer down the rows: the highlight follows at once. Click another page, open Einstellungen: the group opens without sliding. From the keyboard nothing moves.">
         <SidebarDemo />
       </Demo>
       <div className="uix-docs__live-col">
-        <Demo title="Tooltip hand-over" hint="Hover one button, then slide to its neighbours: one bubble travels and swaps its label.">
+        <Demo title="Tooltip delay group" hint="Hover one button: after a moment its bubble grows in. Slide to its neighbours: theirs are simply there, with no motion.">
           <div role="toolbar" aria-label="Werkzeuge" className="uix-docs__live-toolbar">
             {TOOLS.map(([label, icon]) => (
               <Tooltip key={label} label={label}><Button icon variant="ghost" aria-label={label}>{icon}</Button></Tooltip>
             ))}
           </div>
         </Demo>
-        <Demo title="Select and Menu" hint="Open a list: it grows from the trigger, rows arrive one after another. Pick a team: its check draws, the value swaps.">
+        <Demo title="Select and Menu" hint="Click to open a list: it grows from the trigger in 120 ms, rows arrive one after another. Pick a team: its check draws, the value swaps. Open it with ↓: it is simply there.">
           <ListsDemo />
         </Demo>
-        <Demo title="Checkbox and radio" hint="Tick a box: it fills, then the tick draws. Pick a channel: the dot springs in.">
+        <Demo title="Checkbox and radio" hint="Tick a box: it fills and ticks in 120 ms. Pick a channel: the dot grows in, with no bounce.">
           <ChoiceDemo />
         </Demo>
       </div>
