@@ -9,7 +9,8 @@
      page sideways. 12rem is neither: it fits a card on a 280 px screen, and a list in a flex
      row is 12rem wide (stacked) unless you size it (`flex: 1`, a width). */
   .uix-dl {
-    display: grid; grid-template-columns: fit-content(50%) minmax(0, 1fr); gap: var(--uix-space-3) var(--uix-space-6);
+    /* --uix-dl-terms: DescriptionList `termWidth`, one term column for a page's lists. */
+    display: grid; grid-template-columns: var(--uix-dl-terms, fit-content(50%)) minmax(0, 1fr); gap: var(--uix-space-3) var(--uix-space-6);
     container: uix-dl / inline-size; contain-intrinsic-inline-size: 12rem; min-width: 0;
   }
   /* Long terms wrap within half the list, leaving values a usable aligned column. */
