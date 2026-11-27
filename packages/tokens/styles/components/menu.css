@@ -8,8 +8,8 @@
   }
   .uix-menu__item svg { width: var(--uix-icon-md); height: var(--uix-icon-md); color: var(--uix-text-muted); }
   .uix-menu__item:hover, .uix-menu__item[data-active] { background: var(--uix-bg-hover); }
-  /* 2.60: the glide layer (useHoverGlide) marks the pointer's item; a keyboard focus keeps its own tint */
-  .uix-menu[data-uix-glide] .uix-menu__item:is(:hover, :focus-visible, [data-active]) { background: transparent; }
+  /* the glide layer (useHoverGlide) marks the pointer's item; a keyboard focus keeps its own tint, at once */
+  .uix-menu[data-uix-glide] .uix-menu__item:hover { background: transparent; }
   .uix-menu__item--danger { color: var(--uix-danger-text); }
   .uix-menu__item--danger svg { color: var(--uix-danger-text); }
   .uix-menu__item .uix-kbd { margin-inline-start: auto; }
@@ -36,19 +36,12 @@
   .uix-menu__item[aria-checked="true"] { font-weight: 500; }
 }
 
-/* 2.60: a menu grows from .9 like the select's list (the generic popover keeps .95) */
+/* A menu is a daily control, so it moves little: the more often something is seen, the less it moves
+   (Foundations → Motion, the frequency rule). From the pointer it grows from the generic popover's .95
+   over --uix-dur-menu on --uix-ease-out and shrinks away over --uix-dur-exit-fast (popover.css). From
+   the keyboard it opens and closes at once: Popover marks it [data-uix-key-opened] (motion.css). */
 @layer uix.components {
-  /* 2.60 (animate-ui's pace, operator 2026-11-08): the select list's timing, both ways and from the
-     keyboard too (Menu passes data-uix-animate-keys, so Popover never marks a key open) */
-  [popover].uix-popover.uix-menu {
-    --popover-from: scale(.9);
-    transition: opacity var(--uix-dur-menu) var(--uix-ease-soft), transform var(--uix-dur-menu) var(--uix-ease-soft),
-                overlay var(--uix-dur-menu) allow-discrete, display var(--uix-dur-menu) allow-discrete;
-  }
-  [popover].uix-popover.uix-menu:popover-open:not([data-uix-placing]) {
-    transition: opacity var(--uix-dur-fade-in) var(--uix-ease-out), transform var(--uix-dur-menu) var(--uix-ease-soft),
-                overlay var(--uix-dur-menu) allow-discrete, display var(--uix-dur-menu) allow-discrete;
-  }
+  [popover].uix-popover.uix-menu:popover-open:not([data-uix-placing]) { transition-duration: var(--uix-dur-menu); }
   /* the UA's popover overflow:auto would let rows arriving from the inline end raise a horizontal
      scrollbar on classic-scrollbar engines; a menu never scrolls sideways */
   .uix-menu { overflow-x: hidden; }

@@ -91,14 +91,16 @@ function sequenceMs(stage: HTMLElement): number {
     t('--uix-dur-arrive-trace', 700),
     t('--uix-dur-arrive-grow', 500) + lastBar * t('--uix-stagger-arrive-grow', 25),
   );
-  return start + Math.max(t('--uix-dur-arrive', 420), drawn, t('--uix-dur-arrive-count', 600)) + 50;
+  return start + Math.max(t('--uix-dur-arrive', 420), drawn, t('--uix-dur-arrive-count', 300)) + 50;
 }
 
 export interface ArriveProps extends HTMLAttributes<HTMLDivElement> {
   /**
    * Remember the arrival under this name for the browser session (sessionStorage, with an
    * in-memory fallback): the page arrives on its first visit and is simply there after a reload,
-   * a tab switch or a route change back to it. Without a name it plays on every mount.
+   * a tab switch or a route change back to it. Without a name it plays on every mount, so a
+   * product dashboard should always pass one: a page opened many times a day arrives once per
+   * session (the frequency rule, Foundations → Motion).
    */
   name?: string;
   /**

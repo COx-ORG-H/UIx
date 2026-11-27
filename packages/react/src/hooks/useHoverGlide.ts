@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import type { RefObject } from 'react';
-import { keyboardInitiated, watchInputModality } from '../motion.js';
 
 /**
  * One hover highlight that glides from row to row (the animate-ui study, 2.60): in a menu, a
@@ -10,8 +9,8 @@ import { keyboardInitiated, watchInputModality } from '../motion.js';
  * `aria-hidden` `.uix-glide` span whose parent is the list) instead of each row painting its own
  * hover. The parent must be its containing block (positioned, or a fixed popover). Pass `enabled`
  * as the list's open state when the layer mounts with it, so the hook binds once it exists. Moving the pointer down a list, the
- * mark travels with it on `--uix-ease-glide`, so the eye follows one shape instead of a flicker of
- * rows lighting up and going out.
+ * mark travels with it in under 100 ms, so the eye follows one shape instead of a flicker of rows
+ * lighting up and going out, without the mark ever trailing the pointer.
  *
  * The layer travels on `transform` alone (the Tabs indicator's way): it takes the first row's size
  * and reaches every other row by `translate` plus `scale` (animate-ui's highlight), so a taller row
@@ -19,9 +18,13 @@ import { keyboardInitiated, watchInputModality } from '../motion.js';
  * scroll size, so it cannot add overflow or a scrollbar under the pointer, and a new target retargets
  * a running glide from where it is; nothing animates width, height or position.
  *
- * - Mouse and pen, and the keyboard too (operator, 2026-11-08, as animate-ui): a row reached with the
- *   arrow keys or Tab (focus, or a listbox's `[data-active]`) takes the highlight. Touch has no hover.
- * - The first row fades in where it is; only row-to-row moves glide.
+ * - Mouse and pen only. A row reached with the arrow keys or Tab (focus, or a listbox's
+ *   `[data-active]`) shows its own row background at once and the layer never moves for it: the
+ *   frequency rule (Foundations → Motion) makes anything started from the keyboard instant, and a
+ *   mark trailing behind the arrow keys made every key press wait. Touch has no hover.
+ * - The first row shows the mark at once, where it is; row-to-row moves take --uix-dur-glide-hover
+ *   on --uix-ease-out (no spring), and the mark fades out over --uix-dur-exit-fast when the pointer
+ *   leaves.
  * - Reduced motion: the global policy drops transform from transitions, so the mark jumps and fades.
  * - Forced colours: CSS hides the layer and the rows' own system-colour hover returns.
  * - While the layer shows, the container carries `data-uix-glide`; the component's CSS uses it to
@@ -37,13 +40,12 @@ export function useHoverGlide(
     const container = layer?.parentElement;
     if (!enabled || !container || !layer) return undefined;
     let current: HTMLElement | null = null;
-    let raf = 0;
     let base = { w: 0, h: 0 };
-    watchInputModality();
 
-    const hide = () => {
+    const hide = (instant = false) => {
       current = null;
-      window.cancelAnimationFrame(raf);
+      // a key press takes the mark away at once ([data-uix-instant], motion.css); the pointer leaving fades it
+      layer.toggleAttribute('data-uix-instant', instant);
       layer.removeAttribute('data-shown');
       layer.removeAttribute('data-gliding');
       container.removeAttribute('data-uix-glide');
@@ -80,12 +82,12 @@ export function useHoverGlide(
       current = item;
       if (first) {
         // appear in place: no travel from wherever the last visit ended
+        layer.removeAttribute('data-uix-instant');
         layer.removeAttribute('data-gliding');
         settle(item);
         place(item);
         container.setAttribute('data-uix-glide', '');
-        window.cancelAnimationFrame(raf);
-        raf = window.requestAnimationFrame(() => { layer.setAttribute('data-shown', ''); });
+        layer.setAttribute('data-shown', '');
         return;
       }
       layer.setAttribute('data-gliding', '');
@@ -99,56 +101,31 @@ export function useHoverGlide(
       if (!item) { if (current) hide(); return; }
       show(item);
     };
-    // the keyboard: a row that takes focus from a key, or a listbox option that becomes active
-    // (focus stays on a select's trigger; aria-activedescendant and [data-active] mark the row)
-    const onFocus = (event: FocusEvent) => {
-      if (!keyboardInitiated() || forced()) return;
-      const item = target(event);
-      if (item) show(item);
-    };
-    const active = typeof MutationObserver === 'undefined' ? null : new MutationObserver((records) => {
-      if (!keyboardInitiated() || forced()) return;
-      for (const r of records) {
-        const el = r.target as HTMLElement;
-        if (el.hasAttribute('data-active') && el.matches(itemSelector) && !el.matches(':disabled, [aria-disabled="true"]')) { show(el); return; }
-      }
-    });
-    active?.observe(container, { subtree: true, attributes: true, attributeFilter: ['data-active'] });
-
-    // the row the keyboard holds: the focused row, or a listbox's [data-active] option
-    const keyRow = (): HTMLElement | null => {
-      const focused = document.activeElement;
-      if (focused instanceof HTMLElement && focused !== container && container.contains(focused) && focused.matches(itemSelector)) return focused;
-      const active = container.querySelector<HTMLElement>(`${itemSelector}[data-active]`);
-      return active && container.contains(active) ? active : null;
-    };
-    // the pointer leaves: back to the keyboard's row when there is one, else gone
+    // the pointer leaves: the mark goes (a row the keyboard holds keeps its own background)
     const onLeave = (event: PointerEvent) => {
       if (event.pointerType === 'touch') return;
-      const row = keyRow();
-      if (row && !forced()) show(row); else hide();
+      hide();
     };
-    // focus leaves the list (Tab out): a mark the keyboard put there goes with it
-    const onFocusOut = (event: FocusEvent) => {
-      const next = event.relatedTarget as Node | null;
-      if (next && container.contains(next)) return;
-      if (!container.matches(':hover')) hide();
+    // a key press hands the list to the keyboard: the pointer's mark goes at once, so only the row the
+    // keys reach is lit (a select's options take [data-active] while focus stays on the trigger, so
+    // this listens on the document). The pointer moving again brings the mark back.
+    const onKey = (event: KeyboardEvent) => {
+      if (current && !['Shift', 'Control', 'Alt', 'Meta'].includes(event.key)) hide(true);
     };
-    const resized = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => { if (current) hide(); });
+    const resized = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => { if (current) hide(true); });
     resized?.observe(container);
 
     container.addEventListener('pointerover', onOver);
+    container.addEventListener('pointermove', onOver);
     container.addEventListener('pointerleave', onLeave);
-    container.addEventListener('focusin', onFocus);
-    container.addEventListener('focusout', onFocusOut);
+    document.addEventListener('keydown', onKey, true);
     return () => {
-      container.removeEventListener('focusout', onFocusOut);
       resized?.disconnect();
-      active?.disconnect();
+      document.removeEventListener('keydown', onKey, true);
       container.removeEventListener('pointerover', onOver);
+      container.removeEventListener('pointermove', onOver);
       container.removeEventListener('pointerleave', onLeave);
-      container.removeEventListener('focusin', onFocus);
-      hide();
+      hide(true);
     };
   }, [layerRef, itemSelector, enabled]);
 }

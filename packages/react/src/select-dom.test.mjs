@@ -404,3 +404,39 @@ test('Field names the trigger and wires its message; labels come from UixLabelsP
   assert.match(t.textContent, /2 gewählt/);
   unmount();
 });
+
+test('a select list opened or closed from the keyboard is marked [data-uix-key-opened]; a click open is not (the frequency rule)', async () => {
+  // a Popover API stub, for this test only
+  const proto = window.HTMLElement.prototype;
+  const matches = window.Element.prototype.matches;
+  const [show, hide] = [proto.showPopover, proto.hidePopover];
+  proto.showPopover = function showPopover() { this.setAttribute('data-test-popover-open', ''); };
+  proto.hidePopover = function hidePopover() { this.removeAttribute('data-test-popover-open'); };
+  window.Element.prototype.matches = function patched(selector) {
+    return selector === ':popover-open' ? this.hasAttribute('data-test-popover-open') : matches.call(this, selector);
+  };
+  try {
+    const { host, unmount } = mount(h(ui.Select, { 'aria-label': 'Status', defaultValue: 'open' }, statuses));
+    const t = trig(host);
+    const popup = host.querySelector('.uix-select__popup');
+    t.focus();
+    key(t, 'ArrowDown');
+    assert.equal(t.getAttribute('aria-expanded'), 'true');
+    assert.ok(popup.hasAttribute('data-uix-key-opened'), 'a keyboard open is instant, its rows included');
+    key(t, 'Escape');
+    assert.equal(t.getAttribute('aria-expanded'), 'false');
+    assert.ok(popup.hasAttribute('data-uix-key-opened'), 'an Escape close is instant too');
+    // motion.ts reads the press target with a global `Element`
+    expose('Element', window.Element);
+    act(() => { document.dispatchEvent(new window.MouseEvent('pointerdown', { bubbles: true })); });
+    delete globalThis.Element;
+    click(t);
+    assert.equal(t.getAttribute('aria-expanded'), 'true');
+    assert.ok(!popup.hasAttribute('data-uix-key-opened'), 'a pointer open grows in');
+    unmount();
+  } finally {
+    proto.showPopover = show;
+    proto.hidePopover = hide;
+    window.Element.prototype.matches = matches;
+  }
+});

@@ -1065,7 +1065,7 @@ The option builders are public for your own glance charts: `glanceLineOption`, `
 </ChartCard>
 ```
 
-**The arrival.** Wrap the page in `Arrive` and mark the cards in reading order with `ArriveItem index` (or `ChartCard arriveIndex`). On the first mount the cards fade and rise 8 px, 45 ms apart, over 420 ms; lines trace in (700 ms, 150 ms after their card), bars grow 25 ms apart (500 ms) and `Count arrive` counts up (600 ms). Then the stage rests: a re-render, a refetch or new data never replays it, and the resting state is the finished page. `name="home"` remembers it for the browser session (sessionStorage), so a reload or a route change back does not replay it either; `ready={!loading}` waits for the data. Under reduced motion each card only fades for 160 ms and the marks are drawn at once. `useArrive()` tells your own marks whether the stage is playing; plain markup opts in with `.uix-arrive__item`, `.uix-arrive__trace` (an SVG stroke with `pathLength="1"`), `.uix-arrive__grow` and `.uix-arrive__slide`.
+**The arrival.** Wrap the page in `Arrive` and mark the cards in reading order with `ArriveItem index` (or `ChartCard arriveIndex`). On the first mount the cards fade and rise 8 px, 45 ms apart, over 420 ms; lines trace in (700 ms, 150 ms after their card), bars grow 25 ms apart (500 ms) and `Count arrive` counts up (300 ms). Then the stage rests: a re-render, a refetch or new data never replays it, and the resting state is the finished page. `name="home"` remembers it for the browser session (sessionStorage), so a reload or a route change back does not replay it either. A product dashboard should always pass `name`: a page people open many times a day arrives once per session, not on every visit (the frequency rule, Foundations → Motion); `ready={!loading}` waits for the data. Under reduced motion each card only fades for 160 ms and the marks are drawn at once. `useArrive()` tells your own marks whether the stage is playing; plain markup opts in with `.uix-arrive__item`, `.uix-arrive__trace` (an SVG stroke with `pathLength="1"`), `.uix-arrive__grow` and `.uix-arrive__slide`.
 
 ```tsx
 <Arrive name="home" ready={!loading}>
@@ -2162,7 +2162,7 @@ both the same. `useReducedMotion` honours `data-motion`.
 
 Transparency (`standard | reduce | system`) is the kit's answer to iOS "Reduce Transparency" and One UI
 "Reduce transparency and blur". Under `reduce`, every blur the kit draws is gone: `--uix-scrim-blur`,
-`--uix-arrive-blur` and `--uix-swap-blur` are `0px`, the progress overlay stops blurring, and the modal and
+and `--uix-arrive-blur` are `0px`, the progress overlay stops blurring, and the modal and
 drawer scrims turn firmer (`.5` → `.6` black) so the layer still stands apart from the sharp page behind it.
 Rows still fade and move in; only the blur goes. `data-contrast="more"` implies it. `system` follows
 `prefers-reduced-transparency: reduce`, which only Chromium reports (Firefox ships it off, WebKit declines),

@@ -1,8 +1,9 @@
 /* The 2.60 motion in a real browser (the animate-ui study, rebuilt natively in UIx). The harness is
  * tests/motion-glide/harness.tsx. Each check proves what moves, that it settles where it should, and
  * that reduced motion and the keyboard get none of it:
- *   - the sidebar's hover mark glides (clip-path on the glide spring) and the current-page tint slides;
- *   - a tooltip glides to its neighbour and lands exactly where a fresh one would (no jump);
+ *   - the sidebar's hover mark moves between rows in 90 ms on --uix-ease-out, and never for the keyboard;
+ *     the current-page tint slides;
+ *   - a tooltip neighbour appears at once ([data-uix-instant]), with no hand-over;
  *   - a select list's rows arrive staggered, clearing from a short blur, from a pointer and from the
  *     keyboard (operator, 2026-11-08);
  *   - the side drawer floats 8 px in from the edges and keeps a fade under reduced motion;
@@ -48,11 +49,12 @@ const record = async (page, read, ms = 700) => {
   };
 };
 
-test('the sidebar hover mark glides between rows; reduced motion jumps', async ({ page }) => {
+test('the sidebar hover mark moves between rows in under 100 ms; reduced motion jumps', async ({ page }) => {
   await row(page, 'Übersicht').hover();
   await expect(page.locator('#nav')).toHaveAttribute('data-uix-glide', '');
-  // the layer has faded in before it can glide
+  // the layer shows at once, with no fade-in
   await expect(page.locator('#nav > .uix-glide')).toHaveAttribute('data-shown', '');
+  expect(await page.locator('#nav > .uix-glide').evaluate((el) => getComputedStyle(el).opacity), 'fully shown at once').toBe('1');
   const start = await clipTop(page);
   const frames = await record(page, "return new DOMMatrixReadOnly(getComputedStyle(document.querySelector('#nav > .uix-glide')).transform).m42;", 600);
   await row(page, 'Teams').hover();
@@ -60,10 +62,34 @@ test('the sidebar hover mark glides between rows; reduced motion jumps', async (
   const tops = (await frames()).map((f) => f.v);
   expect(tops.some((y) => y > start + 1 && y < end - 1), `part way there on some frame: ${tops.map(Math.round).join(' ')}`).toBe(true);
   await expect.poll(() => clipTop(page)).toBeCloseTo(end, 0);
+  // the frequency rule: a short move on --uix-ease-out, never the 2.60 spring
+  const timing = await page.locator('#nav > .uix-glide').evaluate((el) => {
+    const s = getComputedStyle(el);
+    return { duration: s.transitionDuration, ease: s.transitionTimingFunction };
+  });
+  expect(timing.duration).toBe('0.09s');
+  expect(timing.ease).toBe('cubic-bezier(0.23, 1, 0.32, 1)');
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const property = await page.locator('#nav > .uix-glide').evaluate((el) => getComputedStyle(el).transitionProperty);
   expect(property, 'reduced motion drops the glide, keeps the fade').not.toContain('transform');
+});
+
+test('the keyboard never moves the glide layer: a key press hides it at once and the row paints its own background', async ({ page }) => {
+  const glide = page.locator('#nav > .uix-glide');
+  await row(page, 'Übersicht').hover();
+  await expect(glide).toHaveAttribute('data-shown', '');
+  const before = await clipTop(page);
+  await row(page, 'Übersicht').focus();
+  const frames = await record(page, "const g = document.querySelector('#nav > .uix-glide'); return [new DOMMatrixReadOnly(getComputedStyle(g).transform).m42, getComputedStyle(g).opacity];", 300);
+  await page.keyboard.press('Tab');
+  const seen = await frames();
+  expect(seen.every((f) => Math.abs(f.v[0] - before) < 0.5), 'the layer stays where it was').toBe(true);
+  expect(seen.slice(1).every((f) => f.v[1] === '0'), 'and is gone from the first frame after the key').toBe(true);
+  await expect(page.locator('#nav')).not.toHaveAttribute('data-uix-glide', '');
+  // the row the key reached has its own hover background
+  const focused = await page.evaluate(() => getComputedStyle(document.activeElement).backgroundColor);
+  expect(focused).not.toBe('rgba(0, 0, 0, 0)');
 });
 
 test('the glide layer never makes a list scroll (no overflow of its own)', async ({ page }) => {
@@ -96,10 +122,10 @@ test('the current-page tint slides to a clicked row and hands back at rest; the 
 
 const bubbleTop = (page) => page.evaluate(() => {
   const b = [...document.querySelectorAll('.uix-tooltip__bubble')].find((x) => x.matches(':popover-open'));
-  return b ? { top: Math.round(b.getBoundingClientRect().top), morph: b.hasAttribute('data-morph') } : null;
+  return b ? { top: Math.round(b.getBoundingClientRect().top), morph: b.hasAttribute('data-morph'), instant: b.hasAttribute('data-uix-instant') } : null;
 });
 
-test('a tooltip glides to its neighbour and lands where a fresh one would', async ({ page }) => {
+test('a tooltip neighbour appears at once, with no hand-over, where a fresh one would', async ({ page }) => {
   const button = (name) => page.locator('#toolbar').getByRole('button', { name });
   // where a freshly opened "Kopieren" sits
   await button('Kopieren').hover();
@@ -108,22 +134,17 @@ test('a tooltip glides to its neighbour and lands where a fresh one would', asyn
   const fresh = (await bubbleTop(page)).top;
   await page.mouse.move(5, 5);
   await page.waitForTimeout(800);
-  // wider → narrower (the case that used to jump 10 px up)
   await button('Link einfügen').hover();
   await page.waitForTimeout(700);
+  // the frequency rule: within the skip window the neighbour is simply there
   await button('Kopieren').hover();
-  await page.waitForTimeout(40);
-  expect((await bubbleTop(page)).morph, 'gliding from the neighbour').toBe(true);
-  // The jump came from the UA's popover overflow:auto: the scaled background raised a classic
-  // scrollbar (10 px) mid-glide and the engine placed the bubble that much higher. Headless Chromium
-  // draws overlay scrollbars (no height), so check the cause directly: the bubble never scrolls.
-  const overflow = await page.evaluate(() => {
-    const b = [...document.querySelectorAll('.uix-tooltip__bubble')].find((x) => x.matches(':popover-open'));
-    return `${getComputedStyle(b).overflowX} ${getComputedStyle(b).overflowY}`;
-  });
-  expect(overflow).toBe('visible visible');
-  await expect.poll(async () => (await bubbleTop(page)).morph).toBe(false);
-  expect((await bubbleTop(page)).top).toBe(fresh);
+  const seen = await bubbleTop(page);
+  expect(seen.instant, 'shown at once ([data-uix-instant])').toBe(true);
+  expect(seen.morph, 'no 2.60 hand-over').toBe(false);
+  expect(seen.top, 'already in its own place').toBe(fresh);
+  const motion = await page.evaluate(() => [...document.querySelectorAll('.uix-tooltip__bubble')].flatMap((b) => b.getAnimations({ subtree: true })).length);
+  expect(motion, 'nothing moves').toBe(0);
+  expect(await page.locator('.uix-tooltip__content--leaving').count(), 'no old label sliding out').toBe(0);
 });
 
 test('under reduced motion a neighbour swaps at once', async ({ page }) => {
@@ -134,6 +155,7 @@ test('under reduced motion a neighbour swaps at once', async ({ page }) => {
   await button('Link einfügen').hover();
   await page.waitForTimeout(30);
   expect((await bubbleTop(page)).morph).toBe(false);
+  expect((await bubbleTop(page)).instant).toBe(true);
 });
 
 const opacities = (page) => page.locator('.uix-select__popup .uix-listbox__option').evaluateAll((els) => els.map((e) => Number(getComputedStyle(e).opacity)));
@@ -144,7 +166,7 @@ const ROWS = "const o = [...document.querySelectorAll('.uix-select__popup:popove
 /** Some frame shows the rows arriving top to bottom (the first ahead of the last) with the last still blurred. */
 const arriving = (frames) => frames.some(({ v }) => v.length > 2 && v[0][0] > v.at(-1)[0] && v.at(-1)[1].includes('blur'));
 
-test('select rows arrive top to bottom, clearing from a blur, from a pointer and from the keyboard', async ({ page }) => {
+test('select rows arrive top to bottom, clearing from a blur, from a pointer; the keyboard shows them at once', async ({ page }) => {
   let frames = await record(page, ROWS);
   await page.locator('#team').click();
   expect(arriving(await frames()), 'the rows arrive top to bottom, the later ones still blurred').toBe(true);
@@ -155,11 +177,13 @@ test('select rows arrive top to bottom, clearing from a blur, from a pointer and
   await page.locator('#team').focus();
   // the list holds open --uix-hold-pick after a pointer pick; an Escape closed it at once
   await expect(page.locator('.uix-select__popup')).toBeHidden();
-  // 2.60 (operator 2026-11-08, as animate-ui): the keyboard gets the same arrival
+  // the frequency rule: a list opened from the keyboard is there at once, its rows included
   frames = await record(page, ROWS);
   await page.keyboard.press('ArrowDown');
-  expect(arriving(await frames()), 'opened from the keyboard, the rows arrive too, clearing from a blur').toBe(true);
-  await expect.poll(async () => Math.min(...(await opacities(page)))).toBe(1);
+  await expect(page.locator('.uix-select__popup')).toHaveAttribute('data-uix-key-opened', '');
+  expect(arriving(await frames()), 'opened from the keyboard, nothing arrives').toBe(false);
+  expect(Math.min(...(await opacities(page))), 'every row is fully shown').toBe(1);
+  expect([...new Set(await filters(page))], 'and sharp').toEqual(['none']);
 });
 
 test('the side drawer floats 8 px in from the edges and still fades under reduced motion', async ({ page }) => {

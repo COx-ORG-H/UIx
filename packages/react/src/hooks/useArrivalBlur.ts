@@ -6,8 +6,8 @@ import { prefersReducedMotion } from './useReducedMotion.js';
 
 /**
  * The rows of a list that just opened clear from a short blur as they arrive (2.60, the
- * animate-ui study): a Select's options, a Menu's items, a sidebar group's rows. The fade and the
- * slide are CSS (`uix-row-in`, the sidebar's row transition); the blur runs per frame in script with
+ * animate-ui study): a Select's options and a Menu's items. The fade and the slide are CSS
+ * (`uix-row-in`); the blur runs per frame in script with
  * the same timing (--uix-dur-row, --uix-ease-soft, --uix-stagger-rows; the first ten step), because
  * Linux WebKit's renderer crashes on a CSS-animated `filter` (motion.ts `blurIn`).
  *

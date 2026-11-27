@@ -67,20 +67,21 @@
   }
   .uix-select__popup:not([hidden]) { display: flex; }
   [popover].uix-select__popup:not(:popover-open) { display: none; }
-  /* 2.60 (animate-ui's pace, operator 2026-11-08): grows out of the trigger (--uix-anchor-origin) from
-     .9 over --uix-dur-menu on --uix-ease-soft, visible at once (--uix-dur-fade-in), and shrinks away
-     the same way, from the keyboard too. */
+  /* A daily control (the frequency rule, Foundations → Motion): from the pointer it grows out of the
+     trigger (--uix-anchor-origin) from .95 over --uix-dur-menu on --uix-ease-out and shrinks away over
+     --uix-dur-exit-fast, the menu's pace. Opened or closed from the keyboard it appears and goes at once:
+     Select.tsx marks the popup [data-uix-key-opened] (motion.css). */
   [popover].uix-select__popup {
-    opacity: 0; transform: scale(.9); transform-origin: var(--uix-anchor-origin, top left);
-    transition: opacity var(--uix-dur-menu) var(--uix-ease-soft), transform var(--uix-dur-menu) var(--uix-ease-soft),
-                overlay var(--uix-dur-menu) allow-discrete, display var(--uix-dur-menu) allow-discrete;
+    opacity: 0; transform: scale(.95); transform-origin: var(--uix-anchor-origin, top left);
+    transition: opacity var(--uix-dur-exit-fast) var(--uix-ease-out), transform var(--uix-dur-exit-fast) var(--uix-ease-out),
+                overlay var(--uix-dur-exit-fast) allow-discrete, display var(--uix-dur-exit-fast) allow-discrete;
   }
   [popover].uix-select__popup:popover-open {
     opacity: 1; transform: none;
-    transition: opacity var(--uix-dur-fade-in) var(--uix-ease-out), transform var(--uix-dur-menu) var(--uix-ease-soft),
+    transition: opacity var(--uix-dur-menu) var(--uix-ease-out), transform var(--uix-dur-menu) var(--uix-ease-out),
                 overlay var(--uix-dur-menu) allow-discrete, display var(--uix-dur-menu) allow-discrete;
   }
-  @starting-style { [popover].uix-select__popup:popover-open { opacity: 0; transform: scale(.9); } }
+  @starting-style { [popover].uix-select__popup:popover-open { opacity: 0; transform: scale(.95); } }
   /* 2.60: the option just picked draws its check (pathLength 1) while the list holds open for
      --uix-hold-pick (Select.tsx); the trigger's old value rises out, then the new one rises in
      (a text swap, Foundations → Motion: the old one leaves on --uix-dur-swap-out, the new one

@@ -78,7 +78,7 @@ export function tokenMs(name: string, fallback: number, el?: Element | null): nu
   return m[2] === 's' ? Number(m[1]) * 1000 : Number(m[1]);
 }
 
-/** A length token (`--uix-swap-blur`) in px, read from the root, or `fallback`. */
+/** A length token (`--uix-arrive-blur`) in px, read from the root, or `fallback`. */
 export function tokenPx(name: string, fallback: number): number {
   if (typeof window === 'undefined' || typeof document === 'undefined') return fallback;
   const raw = window.getComputedStyle(document.documentElement).getPropertyValue(name).trim();

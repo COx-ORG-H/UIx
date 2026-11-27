@@ -49,15 +49,17 @@
 @keyframes uix-icon-nudge-x { 40% { transform: translateX(2px); } }
 @keyframes uix-icon-turn-quarter { to { transform: rotate(90deg); } }
 @keyframes uix-icon-turn-half { to { transform: rotate(180deg); } }
-@keyframes uix-icon-swing { 15% { transform: rotate(20deg); } 35% { transform: rotate(-10deg); } 55% { transform: rotate(10deg); } 75% { transform: rotate(-5deg); } 90% { transform: rotate(3deg); } }
+@keyframes uix-icon-swing { 30% { transform: rotate(16deg); } 65% { transform: rotate(-8deg); } }
 @keyframes uix-icon-lid { 45% { transform: translateY(-1.5px) rotate(-10deg); } }
 @keyframes uix-icon-pop { 45% { transform: scale(1.18); } }
 @keyframes uix-icon-bump { 50% { transform: scale(1.1); } }
 @keyframes uix-icon-draw { from { stroke-dashoffset: -23; } to { stroke-dashoffset: 0; } }
-/* 2.60 (animate-ui's icons, operator 2026-11-08): an arrow or chevron leans the way it points while its
-   control is hovered (25 % / 17 % of the glyph, --uix-dur-icon) and eases back; close and plus turn a
-   quarter (--uix-dur-icon-turn); the gear turns half a revolution (--uix-dur-icon-spin); the bell swings
-   (--uix-dur-icon-swing); a check draws itself with a small bump (--uix-dur-icon-draw). */
+/* Opt-in icon motions (`animate`, off by default; from the 2.60 animate-ui study): an arrow or chevron
+   leans the way it points while its control is hovered (25 % / 17 % of the glyph, --uix-dur-icon) and
+   eases back; close and plus turn a quarter (--uix-dur-icon-turn); the gear turns half a revolution
+   (--uix-dur-icon-spin); the bell tips one way and back (--uix-dur-icon-swing); a check draws itself
+   with a small bump (--uix-dur-icon-draw). Every one ends within 400 ms (the frequency rule,
+   Foundations → Motion), so a control never waits on its icon. */
 @layer uix.components {
   :is(.uix-icon, .uix-icon-intrinsic)[data-icon="bell"][data-animate] { transform-origin: 50% 12%; }
   :is(.uix-icon, .uix-icon-intrinsic)[data-icon="trash-2"][data-animate] > :nth-child(n+4) { transform-box: view-box; transform-origin: 12.5% 25%; }

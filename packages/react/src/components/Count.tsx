@@ -18,7 +18,7 @@ export interface CountProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'child
   format?: (value: number) => string;
   /**
    * Count up from zero while the enclosing `Arrive` stage plays its arrival (calm kit 2.56):
-   * --uix-dur-arrive-count (600 ms), starting with its card. Only then: after the arrival, and
+   * --uix-dur-arrive-count (300 ms), starting with its card. Only then: after the arrival, and
    * outside a stage, a change still ticks once. Under reduced motion the number is simply there.
    */
   arrive?: boolean;
@@ -50,7 +50,7 @@ export function Count({ value, format, arrive = false, className, ...props }: Co
     if (!countUp || !el || prefersReducedMotion()) return undefined;
     const index = Number.parseFloat(getComputedStyle(el).getPropertyValue('--uix-arrive-i')) || 0;
     const delay = index * tokenMs('--uix-stagger-arrive', 45, el);
-    const duration = tokenMs('--uix-dur-arrive-count', 600, el);
+    const duration = tokenMs('--uix-dur-arrive-count', 300, el);
     const target = value;
     let frame = 0;
     let start = 0;
