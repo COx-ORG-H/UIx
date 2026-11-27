@@ -111,7 +111,9 @@ test('Alert onDismiss: a named × at the end; the label comes from the prop, the
 test('Alert actions: a trailing slot between the text and the ×', () => {
   const html = renderToStaticMarkup(h(ui.Alert, { title: 'Provider notice', actions: h(ui.Button, { size: 'xs', variant: 'ghost' }, 'Details'), onDismiss() {} }, 'Text'));
   const root = parse(html);
-  assert.deepEqual([...root.children].map((c) => c.className.split(' ').pop()), ['uix-alert__content', 'uix-alert__actions', 'uix-alert__dismiss']);
+  // HAR-4803: the text and the actions share one wrapping row; the × stays outside it.
+  assert.deepEqual([...root.children].map((c) => c.className.split(' ').pop()), ['uix-alert__main', 'uix-alert__dismiss']);
+  assert.deepEqual([...root.querySelector('.uix-alert__main').children].map((c) => c.className), ['uix-alert__content', 'uix-alert__actions']);
   assert.equal(root.querySelector('.uix-alert__actions .uix-btn').textContent, 'Details');
   assert.equal(root.querySelector('.uix-alert__title .uix-btn'), null, 'the action is no longer squeezed into the title');
 });

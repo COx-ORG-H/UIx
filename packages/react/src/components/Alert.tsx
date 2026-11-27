@@ -12,9 +12,8 @@ export interface AlertProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'
   children?: ReactNode;
   /**
    * A trailing slot for what the alert offers to do: a `Button`, a link (HAR-1614). It sits at
-   * the end of the text; when the alert is narrower than 30rem (its own width, not the screen's)
-   * it moves to a row under the text, lined up with it, so the sentence keeps its measure
-   * (HAR-4803).
+   * the end of the text; when the text would have less than 14rem beside it, it moves under the
+   * text, lined up with it, and the × keeps the top end (HAR-4803).
    */
   actions?: ReactNode;
   /**
@@ -34,6 +33,12 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
   { tone, title, icon, children, actions, onDismiss, dismissLabel, className, ...props },
   ref,
 ) {
+  const content = (
+    <div className="uix-alert__content">
+      {title && <div className="uix-alert__title">{title}</div>}
+      {children && <div className="uix-alert__body">{children}</div>}
+    </div>
+  );
   return (
     <div
       ref={ref}
@@ -43,11 +48,16 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
       {...props}
     >
       {icon && <div className="uix-alert__icon">{icon}</div>}
-      <div className="uix-alert__content">
-        {title && <div className="uix-alert__title">{title}</div>}
-        {children && <div className="uix-alert__body">{children}</div>}
-      </div>
-      {actions != null && <div className="uix-alert__actions">{actions}</div>}
+      {actions != null ? (
+        // HAR-4803: text and actions share one wrapping row, so the actions move under the text
+        // when there is no room beside it, and the × keeps the top end.
+        <div className="uix-alert__main">
+          {content}
+          <div className="uix-alert__actions">{actions}</div>
+        </div>
+      ) : (
+        content
+      )}
       {onDismiss && <AlertDismissButton label={dismissLabel} onDismiss={onDismiss} />}
     </div>
   );

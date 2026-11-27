@@ -123,7 +123,7 @@
   /* HAR-4803: the row wraps, so an action with no room beside the title moves under it whole
      (a three-option Segmented used to wrap inside itself at 320 px); the title may still break. */
   .uix-section-head { min-height: 36px; margin-bottom: var(--uix-space-3); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--uix-space-2) var(--uix-space-4); }
-  .uix-section-head > :first-child { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+  .uix-section-head > :first-child { min-width: 0; max-width: 100%; overflow-wrap: break-word; }
   .uix-section-title { margin: 0; font-family: var(--uix-font-heading); font-size: var(--uix-text-h2); font-weight: 400; letter-spacing: var(--uix-tracking-tight); }
   .uix-section-head__title-row { display: flex; align-items: baseline; gap: var(--uix-space-1); min-width: 0; font-family: var(--uix-font-heading); font-size: var(--uix-text-h2); }
   /* inline-flex + min-height: the link stands on its own, so it owns a 24 px target (WCAG 2.5.8, HAR-3097) */
@@ -260,7 +260,7 @@
 /* Eyebrow section label (HAR-3097): the small uppercase heading over a group of tiles or rows
    (a settings category, "Recently viewed"). .uix-eyebrow is the text style on its own;
    .uix-section-head--eyebrow is the section head at that size. Its row is 24 px tall whether or not
-   the title links, so a linked and an unlinked label put their text in the same place, and a linked
+   the title links (an action with no room beside the title adds a row under it, HAR-4803), so a linked and an unlinked label put their text in the same place, and a linked
    title (.uix-section-title__link) owns the whole 24 px row height as its target (WCAG 2.5.8). */
 @layer uix.components {
   .uix-eyebrow,

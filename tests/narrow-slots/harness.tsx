@@ -1,10 +1,13 @@
 /* Live harness for the Alert `actions` and SectionHead `action` slots at narrow widths (HAR-4803),
  * bundled by build.mjs from source for tests/a11y/narrow-slots.spec.mjs. TENSOR's vulnerability
  * programme page, in German, is where both broke at 320 px:
- *   - #alert: an alert with an icon, a title, a sentence and a button;
- *   - #alert-dismiss: the same with a × as well;
+ *   - #alert: icon, title, a long sentence and a button;
+ *   - #alert-short / #alert-short-dismiss: icon, a sentence and a short button ("Öffnen"), the
+ *     case that squeezed the sentence most, without and with a ×;
  *   - #alert-plain: no icon, a link action;
- *   - #alert-flex: an alert as a flex item with no width of its own (sized by its content);
+ *   - #alert-panel: a short message and its action in a 30rem panel (a drawer, a dialog);
+ *   - #alert-fit / #alert-col / #alert-grid: alerts sized by their content (a fit-content
+ *     wrapper, a column flex with align-items: flex-start, a grid with justify-items: start);
  *   - #head: a section head with a three-option Segmented;
  *   - #head-link: a section head with a quiet link that fits beside a short title. */
 import { StrictMode, useState } from 'react';
@@ -14,6 +17,7 @@ import { TriangleAlertIcon } from '../../packages/react/src/icons/components.js'
 
 const SENTENCE =
   'Für 12 Befunde gibt es noch keine Frist. Legen Sie Fristen nach Schweregrad fest, damit überfällige Befunde auffallen.';
+const SHORT = 'Drei Importe warten seit gestern auf die Prüfung der Asset-Zuordnung.';
 
 function Periods() {
   const [value, setValue] = useState('30');
@@ -26,6 +30,8 @@ function Periods() {
   );
 }
 
+const undo = <Button variant="secondary">Rückgängig</Button>;
+
 function Harness() {
   return (
     <>
@@ -37,16 +43,34 @@ function Harness() {
         </Alert>
       </section>
       <section>
-        <Alert id="alert-dismiss" tone="info" icon={<TriangleAlertIcon />} title="Importe prüfen"
-          actions={<Button variant="secondary">Importe öffnen</Button>} onDismiss={() => {}} dismissLabel="Schließen">
-          {SENTENCE}
+        <Alert id="alert-short" tone="info" icon={<TriangleAlertIcon />} actions={<Button variant="secondary">Öffnen</Button>}>
+          {SHORT}
+        </Alert>
+      </section>
+      <section>
+        <Alert id="alert-short-dismiss" tone="info" icon={<TriangleAlertIcon />}
+          actions={<Button variant="secondary">Öffnen</Button>} onDismiss={() => {}} dismissLabel="Schließen">
+          {SHORT}
         </Alert>
       </section>
       <section>
         <Alert id="alert-plain" actions={<a href="#x">Alle Befunde</a>}>{SENTENCE}</Alert>
       </section>
-      <section style={{ display: 'flex' }}>
-        <Alert id="alert-flex" tone="info" actions={<Button variant="secondary">Öffnen</Button>}>Kurz.</Alert>
+      <section id="panel" style={{ width: '30rem', maxWidth: '100%' }}>
+        <Alert id="alert-panel" tone="success" icon={<TriangleAlertIcon />} actions={undo}>Gespeichert.</Alert>
+      </section>
+      <section>
+        <div id="fit-wrap" style={{ width: 'fit-content', maxWidth: '100%' }}>
+          <Alert id="alert-fit" tone="success" actions={undo}>Gespeichert.</Alert>
+        </div>
+      </section>
+      <section style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+        <Alert id="alert-col" tone="warning" icon={<TriangleAlertIcon />} actions={<Button variant="secondary">Öffnen</Button>}>
+          {SENTENCE}
+        </Alert>
+      </section>
+      <section style={{ display: 'grid', justifyItems: 'start' }}>
+        <Alert id="alert-grid" tone="info" actions={undo}>{SHORT}</Alert>
       </section>
       <section>
         <SectionHead id="head" title="Offen nach Schweregrad" action={<Periods />} />

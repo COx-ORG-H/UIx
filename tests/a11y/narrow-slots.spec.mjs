@@ -1,12 +1,12 @@
 /* The Alert `actions` and the SectionHead `action` move under the text when the row has no room
- * (HAR-4803; TENSOR HAR-4779). At 320 px an alert with a button squeezed its sentence to a letter
- * or a few per line, and a section head wrapped a three-option Segmented inside itself instead of
- * moving it under the title. The alert is now its own inline-size container: below 30rem its
- * actions take a row under the text, lined up with it, and the × keeps the top end. The section
- * head's row wraps.
+ * (HAR-4803; TENSOR HAR-4779). At 320 px an alert with a short button squeezed its sentence to a
+ * few letters per line, and a section head wrapped a three-option Segmented inside itself instead
+ * of moving it under the title. The alert's text and actions now share one wrapping row
+ * (.uix-alert__main) in which the text asks for 14rem first; the section head's row wraps.
  *
  * Measured on a React harness (tests/narrow-slots/harness.tsx) in both themes, at 320 px and at
- * 1280 px (where nothing moves). */
+ * 1280 px, including alerts sized by their content: those must keep their natural width (a
+ * size-contained alert became a fixed 354 px in review). */
 import { test, expect } from '@playwright/test';
 import AxeBuilder from './axe.mjs';
 
@@ -15,7 +15,7 @@ const GATED = new Set(['serious', 'critical']);
 const themeOf = (testInfo) => (testInfo.project.name === 'dark' ? 'dark' : 'light');
 
 const open = async (page, testInfo, width) => {
-  await page.setViewportSize({ width, height: 1000 });
+  await page.setViewportSize({ width, height: 1400 });
   await page.addInitScript((t) => {
     try { localStorage.setItem('uix-theme', t); } catch { /* private mode */ }
   }, themeOf(testInfo));
@@ -25,24 +25,16 @@ const open = async (page, testInfo, width) => {
   await page.evaluate(() => document.fonts.ready);
 };
 
-/** Boxes of an alert's parts, and how many characters its sentence fits on a line. */
+/** Boxes of an alert's parts. */
 const alertParts = (page, id) => page.locator(`#${id}`).evaluate((alert) => {
   const box = (el) => { if (!el) return null; const r = el.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width }; };
-  const body = alert.querySelector('.uix-alert__body');
-  let perLine = Infinity;
-  if (body) {
-    const range = document.createRange(); range.selectNodeContents(body);
-    const lines = new Set(Array.from(range.getClientRects()).map((rect) => Math.round(rect.top))).size;
-    perLine = body.textContent.length / Math.max(1, lines);
-  }
   return {
     alert: box(alert),
+    // Markup before HAR-4803 has no shared row: the text column stands in for it.
+    main: box(alert.querySelector('.uix-alert__main') ?? alert.querySelector('.uix-alert__content')),
     content: box(alert.querySelector('.uix-alert__content')),
-    actions: box(alert.querySelector('.uix-alert__actions')),
     action: box(alert.querySelector('.uix-alert__actions > *')),
     dismiss: box(alert.querySelector('.uix-alert__dismiss')),
-    icon: box(alert.querySelector('.uix-alert__icon')),
-    perLine,
   };
 });
 
@@ -58,36 +50,50 @@ const headParts = (page, id) => page.locator(`#${id}`).evaluate((head) => {
   };
 });
 
-test('at 320 px an alert\'s actions sit under its text, and the text stays readable', async ({ page }, info) => {
+const noPageOverflow = (page) => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
+
+test('at 320 px an alert\'s action sits under its text, which keeps the full row', async ({ page }, info) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await open(page, info, 320);
-  for (const id of ['alert', 'alert-dismiss', 'alert-plain']) {
+  for (const id of ['alert', 'alert-short', 'alert-short-dismiss', 'alert-plain', 'alert-col']) {
     const p = await alertParts(page, id);
-    // A readable measure: the sentence used to break every few characters beside the button.
-    expect(p.perLine, `${id}: characters per line`).toBeGreaterThanOrEqual(20);
-    expect(p.actions.top, `${id}: the actions start under the text`).toBeGreaterThanOrEqual(p.content.bottom - 0.5);
-    expect(p.actions.right, `${id}: the actions stay inside the alert`).toBeLessThanOrEqual(p.alert.right + 0.5);
-    // Lined up with the text, not with the icon.
+    // The sentence used to share the row with the button and break every few letters.
+    expect(p.content.width, `${id}: the text takes the whole row beside the icon`).toBeGreaterThan(p.main.width - 1);
+    expect(p.action.top, `${id}: the action starts under the text`).toBeGreaterThanOrEqual(p.content.bottom - 0.5);
     expect(Math.abs(p.action.left - p.content.left), `${id}: the action starts where the text does`).toBeLessThan(1);
+    expect(p.action.right, `${id}: the action stays inside the alert`).toBeLessThanOrEqual(p.alert.right + 0.5);
     if (p.dismiss) {
       expect(p.dismiss.top, `${id}: the × stays on the first row`).toBeLessThan(p.content.bottom);
-      expect(p.dismiss.right, `${id}: the × keeps the end`).toBeGreaterThan(p.content.right);
+      expect(p.dismiss.left, `${id}: the × keeps the end`).toBeGreaterThanOrEqual(p.content.right - 0.5);
     }
   }
-  // A flex item with no width of its own keeps a usable width.
-  const flex = await alertParts(page, 'alert-flex');
-  expect(flex.alert.width).toBeGreaterThan(200);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect(await noPageOverflow(page), 'nothing scrolls sideways').toBe(true);
   await page.screenshot({ path: info.outputPath('alerts-320.png'), fullPage: true });
 });
 
-test('at 1280 px an alert\'s actions stay beside its text', async ({ page }, info) => {
+test('at 1280 px an alert\'s action stays beside its text, and a content-sized alert keeps its width', async ({ page }, info) => {
   await open(page, info, 1280);
-  for (const id of ['alert', 'alert-dismiss', 'alert-plain']) {
+  for (const id of ['alert', 'alert-short', 'alert-short-dismiss', 'alert-plain', 'alert-panel', 'alert-col', 'alert-grid']) {
     const p = await alertParts(page, id);
-    expect(p.actions.left, `${id}: the actions follow the text`).toBeGreaterThanOrEqual(p.content.right - 0.5);
-    expect(p.actions.top, `${id}: on the text's row`).toBeLessThan(p.content.bottom);
+    expect(p.action.left, `${id}: the action follows the text`).toBeGreaterThanOrEqual(p.content.right - 0.5);
+    expect(p.action.top, `${id}: on the text's row`).toBeLessThan(p.content.bottom);
   }
+  // Sized by its content: "Gespeichert." and its button, not a fixed fallback width. Its text is
+  // shorter than the 14rem the text asks for, so the button sits under it: a narrow box, still
+  // its own content's width.
+  const fit = await alertParts(page, 'alert-fit');
+  expect(fit.alert.width, 'a fit-content alert is as wide as its content').toBeLessThan(300);
+  expect(fit.action.right, 'and holds its button').toBeLessThanOrEqual(fit.alert.right + 0.5);
+  expect(await noPageOverflow(page)).toBe(true);
+});
+
+test('alerts sized by their content never push a 320 px page sideways', async ({ page }, info) => {
+  await open(page, info, 320);
+  const column = await page.locator('#alert-col').evaluate((el) => el.getBoundingClientRect().right <= el.parentElement.getBoundingClientRect().right + 0.5);
+  const grid = await page.locator('#alert-grid').evaluate((el) => el.getBoundingClientRect().right <= el.parentElement.getBoundingClientRect().right + 0.5);
+  expect(column, 'the column-flex alert fits its column').toBe(true);
+  expect(grid, 'the grid alert fits its column').toBe(true);
+  expect(await noPageOverflow(page)).toBe(true);
 });
 
 test('at 320 px a section head\'s action moves under its title, whole', async ({ page }, info) => {
