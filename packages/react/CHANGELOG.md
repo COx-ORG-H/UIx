@@ -1,5 +1,12 @@
 # @tensor_1/react
 
+## 2.76.0
+
+### Minor Changes
+
+- 12e9bbf: DescriptionList takes an optional `termWidth`, so the lists of one page (a record's cards) share one term column and their values start at the same edge.
+  The width is capped at half the list; without it terms keep their natural width, and narrow lists still stack.
+
 ## 2.75.0
 
 ### Minor Changes
