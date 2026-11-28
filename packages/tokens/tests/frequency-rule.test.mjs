@@ -64,3 +64,8 @@ test("every opt-in icon motion ends within 400 ms", () => {
 test("numbers count up over 300 ms on arrival", () => {
   assert.equal(ms("dur-arrive-count"), 300);
 });
+
+test("menu and select rows come with the list: no row stagger, slide or blur", () => {
+  const motion = read("../styles/motion.css");
+  assert.doesNotMatch(motion, /uix-row-in|--uix-stagger-rows|--uix-row-i/, "the 2.60 row arrival is gone");
+});

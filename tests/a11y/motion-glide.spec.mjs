@@ -4,8 +4,8 @@
  *   - the sidebar's hover mark moves between rows in 90 ms on --uix-ease-out, and never for the keyboard;
  *     the current-page tint slides;
  *   - a tooltip neighbour appears at once ([data-uix-instant]), with no hand-over;
- *   - a select list's rows arrive staggered, clearing from a short blur, from a pointer and from the
- *     keyboard (operator, 2026-11-08);
+ *   - a select list's rows come with the list, with no stagger, from a pointer and from the
+ *     keyboard (the frequency rule, operator 2026-11-27);
  *   - the side drawer floats 8 px in from the edges and keeps a fade under reduced motion;
  *   - an `animate`d icon plays on hover only; an icon without it never moves;
  *   - axe finds nothing serious in either theme.
@@ -99,8 +99,7 @@ test('the glide layer never makes a list scroll (no overflow of its own)', async
   expect(await size('#nav')).toBe(nav);
   await page.locator('#team').click();
   await expect(page.locator('.uix-select__popup')).toBeVisible();
-  // rows arriving 8 px from the inline end overflow for a moment: the list must clip sideways, so no
-  // classic scrollbar ever appears (it shifted the rows mid-click in Linux WebKit)
+  // the list clips sideways, so no classic scrollbar ever appears (it shifted the rows mid-click in Linux WebKit)
   expect(await page.locator('.uix-select__listbox').evaluate((el) => getComputedStyle(el).overflowX)).toBe('hidden');
   await expect.poll(() => page.locator('.uix-select__popup').evaluate((el) => el.getAnimations({ subtree: true }).filter((a) => a.timeline === document.timeline).filter((a) => a.playState === 'running').length)).toBe(0);
   const list = await size('.uix-select__listbox');
@@ -166,18 +165,16 @@ const ROWS = "const o = [...document.querySelectorAll('.uix-select__popup:popove
 /** Some frame shows the rows arriving top to bottom (the first ahead of the last) with the last still blurred. */
 const arriving = (frames) => frames.some(({ v }) => v.length > 2 && v[0][0] > v.at(-1)[0] && v.at(-1)[1].includes('blur'));
 
-test('select rows arrive top to bottom, clearing from a blur, from a pointer; the keyboard shows them at once', async ({ page }) => {
+test('select rows come with the list, all at once, from a pointer and from the keyboard (no stagger)', async ({ page }) => {
   let frames = await record(page, ROWS);
   await page.locator('#team').click();
-  expect(arriving(await frames()), 'the rows arrive top to bottom, the later ones still blurred').toBe(true);
-  await expect.poll(async () => Math.min(...(await opacities(page)))).toBe(1);
-  // the fade takes --uix-dur-fade-in, the blur the whole arrival: wait for it to clear
-  await expect.poll(async () => [...new Set(await filters(page))], { message: 'at rest every row is sharp' }).toEqual(['none']);
+  expect(arriving(await frames()), 'from the pointer, nothing staggers').toBe(false);
+  expect(Math.min(...(await opacities(page))), 'every row is fully shown').toBe(1);
+  expect([...new Set(await filters(page))], 'and sharp').toEqual(['none']);
+  expect(await page.locator('.uix-select__popup .uix-listbox__option').evaluateAll((els) => els.flatMap((e) => e.getAnimations()).length), 'no row animates').toBe(0);
   await page.keyboard.press('Escape');
   await page.locator('#team').focus();
-  // the list holds open --uix-hold-pick after a pointer pick; an Escape closed it at once
   await expect(page.locator('.uix-select__popup')).toBeHidden();
-  // the frequency rule: a list opened from the keyboard is there at once, its rows included
   frames = await record(page, ROWS);
   await page.keyboard.press('ArrowDown');
   await expect(page.locator('.uix-select__popup')).toHaveAttribute('data-uix-key-opened', '');

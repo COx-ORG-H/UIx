@@ -42,7 +42,6 @@
    the keyboard it opens and closes at once: Popover marks it [data-uix-key-opened] (motion.css). */
 @layer uix.components {
   [popover].uix-popover.uix-menu:popover-open:not([data-uix-placing]) { transition-duration: var(--uix-dur-menu); }
-  /* the UA's popover overflow:auto would let rows arriving from the inline end raise a horizontal
-     scrollbar on classic-scrollbar engines; a menu never scrolls sideways */
+  /* a menu never scrolls sideways (the UA gives a popover overflow:auto) */
   .uix-menu { overflow-x: hidden; }
 }
